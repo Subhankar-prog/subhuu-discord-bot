@@ -50,7 +50,7 @@ module.exports = {
     ),
 
   async execute(interaction) {
-    if (!isModuleEnabled(interaction.guildId, 'economy')) {
+    if (!(await isModuleEnabled(interaction.guildId, 'economy'))) {
       return interaction.reply({ 
         content: '❌ **Economy Module is disabled.** Enable it in the Web Dashboard first.', 
         ephemeral: true 
@@ -63,12 +63,12 @@ module.exports = {
 
     if (sub === 'balance') {
       const target = interaction.options.getUser('user') || interaction.user;
-      const bal = economy.getBalance(guildId, target.id);
+      const bal = await economy.getBalance(guildId, target.id);
       return interaction.reply(`💰 **${target.username}** has **${bal}** coins.`);
     }
 
     else if (sub === 'daily') {
-      const result = economy.claimDaily(guildId, userId);
+      const result = await economy.claimDaily(guildId, userId);
       if (!result.success) {
         const hours = Math.floor(result.timeLeft / (1000 * 60 * 60));
         const minutes = Math.floor((result.timeLeft % (1000 * 60 * 60)) / (1000 * 60));
@@ -84,10 +84,10 @@ module.exports = {
       if (target.id === userId) return interaction.reply({ content: '❌ You cannot pay yourself!', ephemeral: true });
       if (target.bot) return interaction.reply({ content: '❌ You cannot pay a bot!', ephemeral: true });
 
-      const success = economy.removeCoins(guildId, userId, amount);
+      const success = await economy.removeCoins(guildId, userId, amount);
       if (!success) return interaction.reply({ content: '❌ You do not have enough coins!', ephemeral: true });
 
-      economy.addCoins(guildId, target.id, amount);
+      await economy.addCoins(guildId, target.id, amount);
       return interaction.reply(`💸 You paid **${amount}** coins to ${target}.`);
     }
 
@@ -95,7 +95,7 @@ module.exports = {
       const bet = interaction.options.getInteger('bet');
       const choice = interaction.options.getString('choice');
 
-      const bal = economy.getBalance(guildId, userId);
+      const bal = await economy.getBalance(guildId, userId);
       if (bal < bet) {
         return interaction.reply({ content: '❌ You do not have enough coins to make that bet!', ephemeral: true });
       }
@@ -105,17 +105,17 @@ module.exports = {
       const won = choice === result;
 
       if (won) {
-        economy.addCoins(guildId, userId, bet); // Give them their winnings (they keep the original bet + win the bet amount)
+        await economy.addCoins(guildId, userId, bet); // Give them their winnings
         return interaction.reply(`🪙 The coin landed on **${result}**!\n🎉 **YOU WON!** You gained **${bet}** coins. New balance: **${bal + bet}**.`);
       } else {
-        economy.removeCoins(guildId, userId, bet); // Take away their bet
+        await economy.removeCoins(guildId, userId, bet); // Take away their bet
         return interaction.reply(`🪙 The coin landed on **${result}**...\n💀 **YOU LOST!** You lost **${bet}** coins. New balance: **${bal - bet}**.`);
       }
     }
 
     else if (sub === 'slots') {
       const bet = interaction.options.getInteger('bet');
-      const bal = economy.getBalance(guildId, userId);
+      const bal = await economy.getBalance(guildId, userId);
       
       if (bal < bet) {
         return interaction.reply({ content: '❌ You do not have enough coins to make that bet!', ephemeral: true });
@@ -130,22 +130,19 @@ module.exports = {
       let msg = '';
 
       if (slot1 === slot2 && slot2 === slot3) {
-        // Jackpot (3 matches)
         winAmount = bet * 10;
-        economy.addCoins(guildId, userId, winAmount);
+        await economy.addCoins(guildId, userId, winAmount);
         msg = `🎉 **JACKPOT!!!** You won **${winAmount}** coins!`;
       } else if (slot1 === slot2 || slot2 === slot3 || slot1 === slot3) {
-        // 2 matches
         winAmount = bet * 2;
-        economy.addCoins(guildId, userId, winAmount);
+        await economy.addCoins(guildId, userId, winAmount);
         msg = `🎊 **WIN!** You doubled your bet and won **${winAmount}** coins!`;
       } else {
-        // Lose
-        economy.removeCoins(guildId, userId, bet);
+        await economy.removeCoins(guildId, userId, bet);
         msg = `💀 **LOSE!** You lost **${bet}** coins.`;
       }
 
-      const newBal = economy.getBalance(guildId, userId);
+      const newBal = await economy.getBalance(guildId, userId);
       
       const { EmbedBuilder } = require('discord.js');
       const embed = new EmbedBuilder()
@@ -163,14 +160,14 @@ ${msg}
 
     else if (sub === 'blackjack') {
       const bet = interaction.options.getInteger('bet');
-      const bal = economy.getBalance(guildId, userId);
+      const bal = await economy.getBalance(guildId, userId);
       
       if (bal < bet) {
         return interaction.reply({ content: '❌ You do not have enough coins to make that bet!', ephemeral: true });
       }
 
       // We need to take the bet immediately to prevent spamming
-      economy.removeCoins(guildId, userId, bet);
+      await economy.removeCoins(guildId, userId, bet);
 
       // Create Deck
       const suits = ['♠️', '♥️', '♦️', '♣️'];
@@ -212,7 +209,7 @@ ${msg}
       // Check instant blackjack
       if (playerScore === 21) {
         const winAmount = Math.floor(bet * 2.5); // 3:2 payout for instant blackjack
-        economy.addCoins(guildId, userId, winAmount + bet);
+        await economy.addCoins(guildId, userId, winAmount + bet);
         const embed = new EmbedBuilder()
           .setColor('#00ff00')
           .setTitle('🃏 Blackjack - YOU WON!')

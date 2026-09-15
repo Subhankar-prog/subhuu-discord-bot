@@ -65,15 +65,12 @@ module.exports = {
         const minutes = Math.floor(timeSpentMs / 60000);
         
         if (minutes > 0) {
-          // Give 5 XP per minute spent in VC
-          const xpGained = minutes * 5;
-          const result = xpManager.addXP(guildId, userId, username, xpGained);
+          const result = await xpManager.addVoiceXp(guildId, userId, minutes);
           
-          // Optionally, we could announce it, but VC level ups are better sent in a bot channel
-          // or DM so we don't spam. For now, we'll silently          // send a message if they leveled up.
-          if (result.levelUp) {
+          if (result.leveledUp) {
             let targetChannel = newState.guild.systemChannel;
-            const settings = require('../utils/settingsManager').getGuildSettings(guildId);
+            const { getGuildSettings } = require('../utils/settingsManager');
+            const settings = await getGuildSettings(guildId);
             
             if (settings.levelChannel) {
               const customChannel = newState.guild.channels.cache.get(settings.levelChannel);

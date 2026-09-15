@@ -21,12 +21,12 @@ module.exports = {
     ),
 
   async execute(interaction) {
-    if (!isModuleEnabled(interaction.guildId, 'economy')) {
+    if (!(await isModuleEnabled(interaction.guildId, 'economy'))) {
       return interaction.reply({ content: '❌ **Economy Module is disabled.**', ephemeral: true });
     }
 
     const sub = interaction.options.getSubcommand();
-    const shopItems = configManager.getShopItems(interaction.guildId);
+    const shopItems = await configManager.getShopItems(interaction.guildId);
 
     if (sub === 'view') {
       const embed = new EmbedBuilder()
@@ -34,10 +34,10 @@ module.exports = {
         .setTitle('🛒 Server Shop')
         .setDescription('Use `/shop buy <item name>` to purchase roles!');
       
-      if (Object.keys(shopItems).length === 0) {
+      if (shopItems.length === 0) {
         embed.setDescription('The shop is currently empty.');
       } else {
-        for (const [key, item] of Object.entries(shopItems)) {
+        for (const item of shopItems) {
           embed.addFields({ name: `⭐ ${item.name}`, value: `Cost: **${item.price}** coins`, inline: false });
         }
       }
@@ -49,13 +49,7 @@ module.exports = {
       const itemQuery = interaction.options.getString('item').toLowerCase();
       
       // Find item
-      let foundItem = null;
-      for (const [key, item] of Object.entries(shopItems)) {
-        if (item.name.toLowerCase() === itemQuery || key.toLowerCase() === itemQuery) {
-          foundItem = item;
-          break;
-        }
-      }
+      const foundItem = shopItems.find(i => i.name.toLowerCase() === itemQuery);
 
       if (!foundItem) {
         return interaction.reply({ content: `❌ Could not find an item named **${itemQuery}** in the shop.`, ephemeral: true });
@@ -65,27 +59,17 @@ module.exports = {
       const guild = interaction.guild;
       const member = interaction.member;
 
-      const bal = economy.getBalance(guild.id, member.id);
+      const bal = await economy.getBalance(guild.id, member.id);
       if (bal < item.price) {
         return interaction.reply({ content: `❌ You do not have enough coins! You need **${item.price}** coins to buy the **${item.name}** role.`, ephemeral: true });
       }
 
       await interaction.deferReply();
 
-      // Check if role exists, if not create it
-      let role = guild.roles.cache.find(r => r.name === item.name);
+      // Check if role exists
+      const role = guild.roles.cache.get(item.roleId);
       if (!role) {
-        try {
-          role = await guild.roles.create({
-            name: item.name,
-            color: item.color,
-            hoist: true,
-            reason: 'Economy shop purchase'
-          });
-        } catch (err) {
-          console.error(err);
-          return interaction.editReply('❌ Failed to create the role. Ensure my bot role is high enough!');
-        }
+         return interaction.editReply('❌ That shop item is broken (Role does not exist). Ask an admin to recreate it in the Web Dashboard!');
       }
 
       if (member.roles.cache.has(role.id)) {
@@ -94,7 +78,7 @@ module.exports = {
 
       try {
         await member.roles.add(role);
-        economy.removeCoins(guild.id, member.id, item.price);
+        await economy.removeCoins(guild.id, member.id, item.price);
         interaction.editReply(`🎉 **SUCCESS!** You bought the **${item.name}** role for **${item.price}** coins! Enjoy your new look!`);
       } catch (err) {
         console.error(err);

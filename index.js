@@ -15,9 +15,17 @@ const { YtDlpPlugin } = require('@distube/yt-dlp');
 const { SoundCloudPlugin } = require('@distube/soundcloud');
 const { SpotifyPlugin } = require('@distube/spotify');
 const { buildNowPlayingEmbed, buildMusicButtons } = require('./utils/nowPlaying');
+const { connectDB } = require('./utils/database');
 const pm = require('./utils/playlistManager');
 const reminderManager = require('./utils/reminderManager');
 const socialAlerts = require('./utils/socialAlerts');
+
+// Connect to MongoDB
+connectDB().then(() => {
+  // Run migration if data folder exists
+  const migrate = require('./scripts/migrateData');
+  migrate().catch(console.error);
+});
 
 // Make the bundled ffmpeg-static binary discoverable by DisTube (which searches PATH)
 const ffmpegStatic = require('ffmpeg-static');

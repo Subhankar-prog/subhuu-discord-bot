@@ -1,79 +1,49 @@
-const fs = require('fs');
-const path = require('path');
+const { User } = require('./database');
 
-const dataPath = path.join(__dirname, '..', 'data', 'economy.json');
-
-// Ensure file exists
-if (!fs.existsSync(dataPath)) {
-  fs.writeFileSync(dataPath, JSON.stringify({}));
-}
-
-function loadData() {
-  try {
-    return JSON.parse(fs.readFileSync(dataPath, 'utf8'));
-  } catch (err) {
-    return {};
+async function ensureUser(guildId, userId) {
+  let user = await User.findOne({ guildId, userId });
+  if (!user) {
+    user = new User({ guildId, userId });
+    await user.save();
   }
+  return user;
 }
 
-function saveData(data) {
-  fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
+async function getBalance(guildId, userId) {
+  const user = await ensureUser(guildId, userId);
+  return user.coins;
 }
 
-/**
- * Ensures user has an economy profile
- */
-function ensureUser(data, guildId, userId) {
-  if (!data[guildId]) data[guildId] = {};
-  if (!data[guildId][userId]) {
-    data[guildId][userId] = {
-      coins: 0,
-      lastDaily: 0
-    };
-  }
+async function addCoins(guildId, userId, amount) {
+  const user = await ensureUser(guildId, userId);
+  user.coins += amount;
+  await user.save();
+  return user.coins;
 }
 
-function getBalance(guildId, userId) {
-  const data = loadData();
-  ensureUser(data, guildId, userId);
-  return data[guildId][userId].coins;
-}
-
-function addCoins(guildId, userId, amount) {
-  const data = loadData();
-  ensureUser(data, guildId, userId);
-  data[guildId][userId].coins += amount;
-  saveData(data);
-  return data[guildId][userId].coins;
-}
-
-function removeCoins(guildId, userId, amount) {
-  const data = loadData();
-  ensureUser(data, guildId, userId);
-  if (data[guildId][userId].coins < amount) return false; // Not enough money
-  data[guildId][userId].coins -= amount;
-  saveData(data);
+async function removeCoins(guildId, userId, amount) {
+  const user = await ensureUser(guildId, userId);
+  if (user.coins < amount) return false;
+  user.coins -= amount;
+  await user.save();
   return true;
 }
 
-function claimDaily(guildId, userId) {
-  const data = loadData();
-  ensureUser(data, guildId, userId);
-  
+async function claimDaily(guildId, userId) {
+  const user = await ensureUser(guildId, userId);
   const now = Date.now();
-  const lastDaily = data[guildId][userId].lastDaily;
   const cooldown = 24 * 60 * 60 * 1000; // 24 hours
 
-  if (now - lastDaily < cooldown) {
-    return { success: false, timeLeft: cooldown - (now - lastDaily) };
+  if (now - user.lastDaily < cooldown) {
+    return { success: false, timeLeft: cooldown - (now - user.lastDaily) };
   }
 
   const reward = 500;
-  data[guildId][userId].coins += reward;
-  data[guildId][userId].lastDaily = now;
-  saveData(data);
+  user.coins += reward;
+  user.lastDaily = now;
+  await user.save();
 
-  return { success: true, reward, newBalance: data[guildId][userId].coins };
+  return { success: true, reward, newBalance: user.coins };
 }
 
 module.exports = {

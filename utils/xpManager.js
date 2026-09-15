@@ -1,115 +1,89 @@
-const fs = require('fs');
-const path = require('path');
+const { User } = require('./database');
 
-const DATA_PATH = path.join(__dirname, '..', 'data', 'xp.json');
-
-// ---- I/O ----
-function load() {
-  if (!fs.existsSync(DATA_PATH)) return {};
-  try { return JSON.parse(fs.readFileSync(DATA_PATH, 'utf8')); } catch { return {}; }
-}
-
-function save(data) {
-  const dir = path.dirname(DATA_PATH);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(DATA_PATH, JSON.stringify(data, null, 2), 'utf8');
-}
-
-// ---- Level Formula: Level = floor(sqrt(XP / 100)) ----
-// Level 0: 0 XP
-// Level 1: 100 XP
-// Level 2: 400 XP
-// Level 3: 900 XP
-function getLevelFromXP(xp) {
-  return Math.floor(Math.sqrt(xp / 100));
-}
-
-function getXPForLevel(level) {
-  return Math.pow(level, 2) * 100;
-}
-
-// ---- Core Logic ----
-
-/**
- * Add XP to a user. Returns { levelUp: boolean, newLevel: number } if they leveled up.
- */
-function addXP(guildId, userId, username, amount) {
-  const data = load();
-  data[guildId] ??= {};
-  data[guildId][userId] ??= { xp: 0, level: 0, messages: 0, username };
-
-  const user = data[guildId][userId];
-  
-  // Keep username updated
-  if (username) user.username = username;
-
-  const oldLevel = user.level;
-  user.xp += amount;
-  user.level = getLevelFromXP(user.xp);
-
-  save(data);
-
-  if (user.level > oldLevel) {
-    return { levelUp: true, newLevel: user.level, xp: user.xp };
+async function ensureUser(guildId, userId, username) {
+  let user = await User.findOne({ guildId, userId });
+  if (!user) {
+    user = new User({ guildId, userId, username });
+    await user.save();
+  } else if (username && user.username !== username) {
+    user.username = username;
+    await user.save();
   }
-  return { levelUp: false, newLevel: user.level, xp: user.xp };
+  return user;
 }
 
-/**
- * Increment message count for a user.
- */
-function addMessage(guildId, userId) {
-  const data = load();
-  if (!data[guildId]?.[userId]) return;
-  data[guildId][userId].messages = (data[guildId][userId].messages || 0) + 1;
-  save(data);
-}
+const XP_PER_MESSAGE = 15;
+const COOLDOWN_MS = 60000;
+const xpCooldowns = new Map();
 
-/**
- * Get a user's full XP profile.
- */
-function getProfile(guildId, userId) {
-  const data = load();
-  const user = data[guildId]?.[userId] || { xp: 0, level: 0, messages: 0 };
+async function addMessageXp(guildId, userId, username) {
+  const cooldownKey = `${guildId}-${userId}`;
+  const now = Date.now();
   
-  const currentLevelXP = getXPForLevel(user.level);
-  const nextLevelXP = getXPForLevel(user.level + 1);
-  const xpNeeded = nextLevelXP - user.xp;
-  
-  // Calculate leaderboard rank
-  let rank = 0;
-  if (data[guildId]) {
-    const sorted = Object.entries(data[guildId]).sort((a, b) => b[1].xp - a[1].xp);
-    rank = sorted.findIndex(([id]) => id === userId) + 1;
+  if (xpCooldowns.has(cooldownKey)) {
+    const lastMessage = xpCooldowns.get(cooldownKey);
+    if (now - lastMessage < COOLDOWN_MS) return { leveledUp: false };
   }
 
-  return {
-    ...user,
-    currentLevelXP,
-    nextLevelXP,
-    xpNeeded,
-    rank: rank > 0 ? rank : 'Unranked',
-  };
+  xpCooldowns.set(cooldownKey, now);
+
+  const user = await ensureUser(guildId, userId, username);
+  user.xp += XP_PER_MESSAGE;
+  
+  const nextLevelXp = calculateRequiredXp(user.level + 1);
+  let leveledUp = false;
+
+  if (user.xp >= nextLevelXp) {
+    user.level += 1;
+    leveledUp = true;
+  }
+  
+  await user.save();
+  return { leveledUp, newLevel: user.level, user };
 }
 
-/**
- * Get the top 10 users in a guild.
- */
-function getLeaderboard(guildId) {
-  const data = load();
-  if (!data[guildId]) return [];
+async function addVoiceXp(guildId, userId, minutes) {
+  if (minutes < 1) return { leveledUp: false };
+
+  const user = await ensureUser(guildId, userId);
+  const xpGained = minutes * 10;
+  user.xp += xpGained;
   
-  return Object.entries(data[guildId])
-    .map(([id, info]) => ({ userId: id, ...info }))
-    .sort((a, b) => b.xp - a.xp)
-    .slice(0, 10);
+  let leveledUp = false;
+  while (user.xp >= calculateRequiredXp(user.level + 1)) {
+    user.level += 1;
+    leveledUp = true;
+  }
+  
+  await user.save();
+  return { leveledUp, newLevel: user.level, user };
+}
+
+function calculateRequiredXp(level) {
+  return level * level * 100;
+}
+
+async function getLeaderboard(guildId, limit = 10) {
+  return await User.find({ guildId }).sort({ level: -1, xp: -1 }).limit(limit);
+}
+
+async function getRank(guildId, userId) {
+  const user = await ensureUser(guildId, userId);
+  const higherUsers = await User.countDocuments({
+    guildId,
+    $or: [
+      { level: { $gt: user.level } },
+      { level: user.level, xp: { $gt: user.xp } }
+    ]
+  });
+  return higherUsers + 1;
 }
 
 module.exports = {
-  addXP,
-  addMessage,
-  getProfile,
+  addMessageXp,
+  addVoiceXp,
+  calculateRequiredXp,
   getLeaderboard,
-  getLevelFromXP,
-  getXPForLevel
+  getRank,
+  ensureUser
 };

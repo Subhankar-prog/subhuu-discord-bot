@@ -1,0 +1,12 @@
+{
+  "default": {
+    "10": {
+      "roleName": "Veteran",
+      "color": "#3498db"
+    },
+    "50": {
+      "roleName": "Legend",
+      "color": "#9b59b6"
+    }
+  }
+}

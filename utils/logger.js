@@ -13,9 +13,9 @@ const { getGuildSettings } = require('./settingsManager');
  */
 async function sendLog(guild, title, description, hexColor, user = null, fields = null) {
   if (!guild) return;
-  if (!isModuleEnabled(guild.id, 'logging')) return;
+  if (!(await isModuleEnabled(guild.id, 'logging'))) return;
 
-  const settings = getGuildSettings(guild.id);
+  const settings = await getGuildSettings(guild.id);
   if (!settings.logChannel) return;
 
   const logChannel = guild.channels.cache.get(settings.logChannel);

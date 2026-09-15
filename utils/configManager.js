@@ -1,36 +1,38 @@
-const fs = require('fs');
-const path = require('path');
+const { Shop, LevelReward } = require('./database');
 
-const SHOP_PATH = path.join(__dirname, '..', 'data', 'shopItems.json');
-const LEVELS_PATH = path.join(__dirname, '..', 'data', 'levelRewards.json');
-
-function loadConfig(filePath) {
-  if (!fs.existsSync(filePath)) return {};
-  try { return JSON.parse(fs.readFileSync(filePath, 'utf8')); } catch { return {}; }
+async function getShopItems(guildId) {
+  const shop = await Shop.findOne({ guildId });
+  return shop ? shop.items : [];
 }
 
-function saveConfig(filePath, data) {
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+async function saveShopItems(guildId, items) {
+  let shop = await Shop.findOne({ guildId });
+  if (!shop) {
+    shop = new Shop({ guildId, items });
+  } else {
+    shop.items = items;
+  }
+  await shop.save();
+}
+
+async function getLevelRewards(guildId) {
+  const lr = await LevelReward.findOne({ guildId });
+  return lr ? lr.rewards : [];
+}
+
+async function saveLevelRewards(guildId, rewards) {
+  let lr = await LevelReward.findOne({ guildId });
+  if (!lr) {
+    lr = new LevelReward({ guildId, rewards });
+  } else {
+    lr.rewards = rewards;
+  }
+  await lr.save();
 }
 
 module.exports = {
-  getShopItems: (guildId) => {
-    const data = loadConfig(SHOP_PATH);
-    return data[guildId] || data['default'] || {};
-  },
-  saveShopItems: (guildId, items) => {
-    const data = loadConfig(SHOP_PATH);
-    data[guildId] = items;
-    saveConfig(SHOP_PATH, data);
-  },
-  
-  getLevelRewards: (guildId) => {
-    const data = loadConfig(LEVELS_PATH);
-    return data[guildId] || data['default'] || {};
-  },
-  saveLevelRewards: (guildId, rewards) => {
-    const data = loadConfig(LEVELS_PATH);
-    data[guildId] = rewards;
-    saveConfig(LEVELS_PATH, data);
-  }
+  getShopItems,
+  saveShopItems,
+  getLevelRewards,
+  saveLevelRewards
 };

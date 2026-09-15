@@ -1,57 +1,31 @@
-const fs = require('fs');
-const path = require('path');
+const { Guild } = require('./database');
 
-const SETTINGS_PATH = path.join(__dirname, '..', 'data', 'settings.json');
-
-function load() {
-  if (!fs.existsSync(SETTINGS_PATH)) return {};
-  try { return JSON.parse(fs.readFileSync(SETTINGS_PATH, 'utf8')); } catch { return {}; }
+async function getGuildSettings(guildId) {
+  let settings = await Guild.findOne({ guildId });
+  if (!settings) {
+    settings = new Guild({ guildId });
+    await settings.save();
+  }
+  return settings;
 }
 
-function save(data) {
-  const dir = path.dirname(SETTINGS_PATH);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(SETTINGS_PATH, JSON.stringify(data, null, 2), 'utf8');
-}
+async function updateGuildSettings(guildId, newSettings) {
+  let settings = await Guild.findOne({ guildId });
+  if (!settings) {
+    settings = new Guild({ guildId });
+  }
 
-/**
- * Get all settings for a specific guild.
- */
-function getGuildSettings(guildId) {
-  const data = load();
-  return data[guildId] || {
-    welcomeChannel: null,
-    levelChannel: null,
-    logChannel: null,
-    prefix: '/',
-    modules: {
-      moderation: false,
-      logging: false,
-      tickets: false,
-      economy: false,
-      giveaways: false
-    }
-  };
-}
-
-/**
- * Update settings for a specific guild.
- */
-function updateGuildSettings(guildId, newSettings) {
-  const data = load();
-  const currentSettings = getGuildSettings(guildId);
+  if (newSettings.welcomeChannel !== undefined) settings.welcomeChannel = newSettings.welcomeChannel;
+  if (newSettings.levelChannel !== undefined) settings.levelChannel = newSettings.levelChannel;
+  if (newSettings.logChannel !== undefined) settings.logChannel = newSettings.logChannel;
+  if (newSettings.prefix !== undefined) settings.prefix = newSettings.prefix;
   
-  data[guildId] = { 
-    ...currentSettings, 
-    ...newSettings,
-    modules: {
-      ...currentSettings.modules,
-      ...(newSettings.modules || {})
-    }
-  };
-  
-  save(data);
-  return data[guildId];
+  if (newSettings.modules) {
+    settings.modules = { ...settings.modules, ...newSettings.modules };
+  }
+
+  await settings.save();
+  return settings;
 }
 
 module.exports = {

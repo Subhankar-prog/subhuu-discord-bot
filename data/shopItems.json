@@ -1,0 +1,19 @@
+{
+  "default": {
+    "vip": {
+      "name": "VIP",
+      "price": 5000,
+      "color": "#f1c40f"
+    },
+    "legend": {
+      "name": "Legend",
+      "price": 25000,
+      "color": "#9b59b6"
+    },
+    "billionaire": {
+      "name": "Billionaire",
+      "price": 100000,
+      "color": "#1abc9c"
+    }
+  }
+}

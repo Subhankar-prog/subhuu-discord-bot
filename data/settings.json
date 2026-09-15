@@ -1,0 +1,15 @@
+{
+  "611244241032708127": {
+    "welcomeChannel": "611850228928348161",
+    "levelChannel": "632114606696824843",
+    "prefix": "/",
+    "logChannel": "632304092877815826",
+    "modules": {
+      "moderation": true,
+      "logging": true,
+      "tickets": true,
+      "economy": true,
+      "giveaways": true
+    }
+  }
+}

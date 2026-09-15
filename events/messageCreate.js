@@ -53,25 +53,14 @@ module.exports = {
       }
     }
 
-    // Increment message count
-    xpManager.addMessage(guildId, userId);
-
-    // Check cooldown (60 seconds)
-    const now = Date.now();
-    const lastGain = cooldowns.get(userId) || 0;
-    if (now - lastGain < 60000) return;
-
-    // Gain 15 to 25 XP
-    const xpGained = Math.floor(Math.random() * 11) + 15;
-    const result = xpManager.addXP(guildId, userId, message.author.username, xpGained);
-    
-    // Set new cooldown
-    cooldowns.set(userId, now);
+    // --- XP PROCESSING ---
+    const result = await xpManager.addMessageXp(guildId, userId, message.author.username);
 
     // Announce level up
-    if (result.levelUp) {
+    if (result.leveledUp) {
       let targetChannel = message.channel;
-      const settings = require('../utils/settingsManager').getGuildSettings(guildId);
+      const { getGuildSettings } = require('../utils/settingsManager');
+      const settings = await getGuildSettings(guildId);
       
       if (settings.levelChannel) {
         const customChannel = message.guild.channels.cache.get(settings.levelChannel);
@@ -81,24 +70,14 @@ module.exports = {
 
       // Auto-Role logic
       const configManager = require('../utils/configManager');
-      const levelRewards = configManager.getLevelRewards(guildId);
+      const levelRewards = await configManager.getLevelRewards(guildId);
       
-      const levelKey = result.newLevel.toString();
-      if (levelRewards[levelKey]) {
-        const reward = levelRewards[levelKey];
-        let role = message.guild.roles.cache.find(r => r.name === reward.roleName);
-        
-        if (!role) {
-          role = await message.guild.roles.create({ 
-            name: reward.roleName, 
-            color: reward.color,
-            reason: 'Auto-Role Level Reward'
-          }).catch(() => null);
-        }
-        
+      const reward = levelRewards.find(r => r.level === result.newLevel);
+      if (reward && reward.roleId) {
+        const role = message.guild.roles.cache.get(reward.roleId);
         if (role) {
           await message.member.roles.add(role).catch(() => {});
-          targetChannel.send(`🎖️ ${message.author} earned the **${reward.roleName}** role for reaching Level ${result.newLevel}!`).catch(() => {});
+          targetChannel.send(`🎖️ ${message.author} earned the **${role.name}** role for reaching Level ${result.newLevel}!`).catch(() => {});
         }
       }
     }

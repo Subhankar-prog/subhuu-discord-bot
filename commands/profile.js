@@ -21,27 +21,30 @@ module.exports = {
     ),
   async execute(interaction) {
     const targetUser = interaction.options.getUser('user') || interaction.user;
-    const profile = xpManager.getProfile(interaction.guildId, targetUser.id);
     
-    // We only have the username saved if they've spoken before.
-    // Use the targetUser's display info as fallback.
+    const user = await xpManager.ensureUser(interaction.guildId, targetUser.id);
+    const rank = await xpManager.getRank(interaction.guildId, targetUser.id);
+    
+    const currentLevelXp = xpManager.calculateRequiredXp(user.level);
+    const nextLevelXP = xpManager.calculateRequiredXp(user.level + 1);
+    
     const displayAvatar = targetUser.displayAvatarURL({ size: 1024, dynamic: true });
-    const displayName = profile.username || targetUser.username;
+    const displayName = user.username && user.username !== 'Unknown' ? user.username : targetUser.username;
 
-    const progressBar = createProgressBar(profile.xp - xpManager.getXPForLevel(profile.level), profile.nextLevelXP - xpManager.getXPForLevel(profile.level));
+    const progressBar = createProgressBar(user.xp - currentLevelXp, nextLevelXP - currentLevelXp);
+    const xpNeeded = nextLevelXP - user.xp;
 
     const embed = new EmbedBuilder()
       .setColor(0x5865F2)
       .setAuthor({ name: `${displayName}'s Profile`, iconURL: displayAvatar })
       .setThumbnail(displayAvatar)
       .addFields(
-        { name: '🏆 Rank', value: `#${profile.rank}`, inline: true },
-        { name: '⭐ Level', value: `${profile.level}`, inline: true },
-        { name: '✨ Total XP', value: `${profile.xp} XP`, inline: true },
-        { name: '💬 Messages', value: `${profile.messages}`, inline: true },
-        { name: `Progress to Level ${profile.level + 1}`, value: `**${profile.xp} / ${profile.nextLevelXP} XP**\n\`${progressBar}\``, inline: false }
+        { name: '🏆 Rank', value: `#${rank}`, inline: true },
+        { name: '⭐ Level', value: `${user.level}`, inline: true },
+        { name: '✨ Total XP', value: `${user.xp} XP`, inline: true },
+        { name: `Progress to Level ${user.level + 1}`, value: `**${user.xp} / ${nextLevelXP} XP**\n\`${progressBar}\``, inline: false }
       )
-      .setFooter({ text: `Need ${profile.xpNeeded} more XP to level up!` });
+      .setFooter({ text: `Need ${xpNeeded} more XP to level up!` });
 
     await interaction.reply({ embeds: [embed] });
   },

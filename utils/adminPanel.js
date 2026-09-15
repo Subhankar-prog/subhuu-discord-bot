@@ -53,7 +53,12 @@ module.exports = function startAdminPanel(client) {
       if (!tokenData.access_token) throw new Error('No access token returned');
 
       // Set cookie and redirect to dashboard
-      res.cookie('discord_token', tokenData.access_token, { maxAge: 1000 * 60 * 60 * 24 * 7, httpOnly: true });
+      res.cookie('discord_token', tokenData.access_token, { 
+        maxAge: 1000 * 60 * 60 * 24 * 7, 
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production' || req.hostname.includes('onrender'),
+        sameSite: 'lax'
+      });
       res.redirect('/?loggedin=true');
     } catch (err) {
       console.error('[OAuth2 Error]', err);
@@ -80,109 +85,86 @@ module.exports = function startAdminPanel(client) {
   // Get user profile + manageable guilds
   app.get('/api/user/guilds', requireDiscordAuth, async (req, res) => {
     try {
-      // 1. Get User Data
       const userRes = await fetch('https://discord.com/api/users/@me', {
         headers: { Authorization: `Bearer ${req.token}` }
       });
       const userData = await userRes.json();
 
-      // 2. Get User Guilds
       const guildsRes = await fetch('https://discord.com/api/users/@me/guilds', {
         headers: { Authorization: `Bearer ${req.token}` }
       });
       const userGuilds = await guildsRes.json();
 
-      // Filter: User has MANAGE_GUILD (0x20) or ADMINISTRATOR (0x8) 
-      // AND the bot is actually in the server.
       const manageableGuilds = userGuilds.filter(g => {
         const perms = BigInt(g.permissions);
         const isAdmin = (perms & 8n) === 8n;
         const isManager = (perms & 32n) === 32n;
         return (isAdmin || isManager) && client.guilds.cache.has(g.id);
-      }).map(g => ({
+      });
+
+      const formattedGuilds = manageableGuilds.map(g => ({
         id: g.id,
         name: g.name,
         icon: g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png` : null
       }));
 
       res.json({
-        user: { id: userData.id, username: userData.username, avatar: userData.avatar ? `https://cdn.discordapp.com/avatars/${userData.id}/${userData.avatar}.png` : null },
-        guilds: manageableGuilds
+        user: { username: userData.username, avatar: userData.avatar ? `https://cdn.discordapp.com/avatars/${userData.id}/${userData.avatar}.png` : null },
+        guilds: formattedGuilds
       });
     } catch (err) {
       console.error(err);
-      res.status(500).json({ error: 'Failed to fetch Discord data' });
+      res.status(500).json({ error: 'Failed to fetch guilds' });
     }
   });
 
   // Get specific guild settings
-  app.get('/api/guilds/:id', requireDiscordAuth, (req, res) => {
-    // Basic security: In a real app we'd verify the token actually has access to this guild ID again.
+  app.get('/api/guilds/:id', requireDiscordAuth, async (req, res) => {
     const guildId = req.params.id;
-    const guild = client.guilds.cache.get(guildId);
-    if (!guild) return res.status(404).json({ error: 'Bot not in guild' });
+    const discordGuild = client.guilds.cache.get(guildId);
+    if (!discordGuild) return res.status(404).json({ error: 'Bot not in guild' });
+
+    const settings = await settingsManager.getGuildSettings(guildId);
     
-    const settings = settingsManager.getGuildSettings(guildId);
-    
-    // Fetch text channels for dropdowns
-    const channels = guild.channels.cache
-      .filter(c => c.isTextBased())
-      .map(c => ({ id: c.id, name: c.name }))
-      .sort((a, b) => a.name.localeCompare(b.name));
+    // Fetch channels for dropdowns
+    const textChannels = discordGuild.channels.cache
+      .filter(c => c.type === 0)
+      .map(c => ({ id: c.id, name: c.name }));
 
     res.json({
-      name: guild.name,
-      settings,
-      channels
+      name: discordGuild.name,
+      settings: settings,
+      channels: textChannels
     });
   });
 
   // Update specific guild settings
-  app.post('/api/guilds/:id', requireDiscordAuth, (req, res) => {
+  app.post('/api/guilds/:id', requireDiscordAuth, async (req, res) => {
     const guildId = req.params.id;
     if (!client.guilds.cache.has(guildId)) return res.status(404).json({ error: 'Bot not in guild' });
 
     const newSettings = req.body;
-    const updated = settingsManager.updateGuildSettings(guildId, newSettings);
+    const updated = await settingsManager.updateGuildSettings(guildId, newSettings);
     res.json({ success: true, settings: updated });
   });
 
   // --- NEW PHASE 9 API ENDPOINTS ---
-
-  const fs = require('fs');
   const configManager = require('./configManager');
+  const { User } = require('./database');
 
   // Get all members data (XP + Coins)
-  app.get('/api/guilds/:id/members', requireDiscordAuth, (req, res) => {
+  app.get('/api/guilds/:id/members', requireDiscordAuth, async (req, res) => {
     const guildId = req.params.id;
     try {
-      let xpData = {};
-      let ecoData = {};
-      
-      const xpPath = path.join(__dirname, '..', 'data', 'xp.json');
-      const ecoPath = path.join(__dirname, '..', 'data', 'economy.json');
-
-      if (fs.existsSync(xpPath)) xpData = JSON.parse(fs.readFileSync(xpPath, 'utf8'));
-      if (fs.existsSync(ecoPath)) ecoData = JSON.parse(fs.readFileSync(ecoPath, 'utf8'));
-      
-      const guildXp = xpData[guildId] || {};
-      const guildEco = ecoData[guildId] || {};
-
-      // Merge data
-      const members = [];
-      const userIds = new Set([...Object.keys(guildXp), ...Object.keys(guildEco)]);
-      
-      userIds.forEach(userId => {
-        members.push({
-          userId,
-          username: guildXp[userId]?.username || 'Unknown',
-          xp: guildXp[userId]?.xp || 0,
-          level: guildXp[userId]?.level || 0,
-          coins: guildEco[userId]?.coins || 0
-        });
-      });
-
-      res.json(members);
+      const members = await User.find({ guildId });
+      const formatted = members.map(m => ({
+        userId: m.userId,
+        username: m.username,
+        xp: m.xp,
+        level: m.level,
+        coins: m.coins
+      }));
+      res.json(formatted);
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: 'Failed to load member data' });
@@ -190,38 +172,20 @@ module.exports = function startAdminPanel(client) {
   });
 
   // Edit or Delete member data
-  app.post('/api/guilds/:id/members/:userId', requireDiscordAuth, (req, res) => {
+  app.post('/api/guilds/:id/members/:userId', requireDiscordAuth, async (req, res) => {
     const { id: guildId, userId } = req.params;
     const { action, xp, level, coins } = req.body;
 
     try {
-      const xpPath = path.join(__dirname, '..', 'data', 'xp.json');
-      const ecoPath = path.join(__dirname, '..', 'data', 'economy.json');
-      
-      let xpData = {};
-      let ecoData = {};
-
-      if (fs.existsSync(xpPath)) xpData = JSON.parse(fs.readFileSync(xpPath, 'utf8'));
-      if (fs.existsSync(ecoPath)) ecoData = JSON.parse(fs.readFileSync(ecoPath, 'utf8'));
-
       if (action === 'delete') {
-        if (xpData[guildId]) delete xpData[guildId][userId];
-        if (ecoData[guildId]) delete ecoData[guildId][userId];
+        await User.deleteOne({ guildId, userId });
       } else if (action === 'update') {
-        if (!xpData[guildId]) xpData[guildId] = {};
-        if (!ecoData[guildId]) ecoData[guildId] = {};
-        
-        if (!xpData[guildId][userId]) xpData[guildId][userId] = { messages: 0, username: 'Unknown' };
-        xpData[guildId][userId].xp = Number(xp);
-        xpData[guildId][userId].level = Number(level);
-
-        if (!ecoData[guildId][userId]) ecoData[guildId][userId] = { lastDaily: 0 };
-        ecoData[guildId][userId].coins = Number(coins);
+        await User.updateOne(
+          { guildId, userId },
+          { $set: { xp: Number(xp), level: Number(level), coins: Number(coins) } },
+          { upsert: true }
+        );
       }
-
-      fs.writeFileSync(xpPath, JSON.stringify(xpData, null, 2));
-      fs.writeFileSync(ecoPath, JSON.stringify(ecoData, null, 2));
-
       res.json({ success: true });
     } catch (err) {
       console.error(err);
@@ -230,24 +194,24 @@ module.exports = function startAdminPanel(client) {
   });
 
   // Get Shop Items
-  app.get('/api/guilds/:id/shop', requireDiscordAuth, (req, res) => {
-    res.json(configManager.getShopItems(req.params.id));
+  app.get('/api/guilds/:id/shop', requireDiscordAuth, async (req, res) => {
+    res.json(await configManager.getShopItems(req.params.id));
   });
 
   // Update Shop Items
-  app.post('/api/guilds/:id/shop', requireDiscordAuth, (req, res) => {
-    configManager.saveShopItems(req.params.id, req.body);
+  app.post('/api/guilds/:id/shop', requireDiscordAuth, async (req, res) => {
+    await configManager.saveShopItems(req.params.id, req.body);
     res.json({ success: true });
   });
 
   // Get Level Rewards
-  app.get('/api/guilds/:id/levels', requireDiscordAuth, (req, res) => {
-    res.json(configManager.getLevelRewards(req.params.id));
+  app.get('/api/guilds/:id/levels', requireDiscordAuth, async (req, res) => {
+    res.json(await configManager.getLevelRewards(req.params.id));
   });
 
   // Update Level Rewards
-  app.post('/api/guilds/:id/levels', requireDiscordAuth, (req, res) => {
-    configManager.saveLevelRewards(req.params.id, req.body);
+  app.post('/api/guilds/:id/levels', requireDiscordAuth, async (req, res) => {
+    await configManager.saveLevelRewards(req.params.id, req.body);
     res.json({ success: true });
   });
 

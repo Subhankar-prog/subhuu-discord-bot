@@ -6,7 +6,7 @@ module.exports = {
     .setName('leaderboard')
     .setDescription('View the top 10 most active members in the server'),
   async execute(interaction) {
-    const topUsers = xpManager.getLeaderboard(interaction.guildId);
+    const topUsers = await xpManager.getLeaderboard(interaction.guildId);
 
     if (topUsers.length === 0) {
       return interaction.reply({ content: 'No one has gained any XP yet! Start chatting to claim #1.', ephemeral: true });
