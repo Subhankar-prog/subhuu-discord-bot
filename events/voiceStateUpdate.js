@@ -65,19 +65,22 @@ module.exports = {
         const minutes = Math.floor(timeSpentMs / 60000);
         
         if (minutes > 0) {
-          const result = await xpManager.addVoiceXp(guildId, userId, minutes);
-          
-          if (result.leveledUp) {
-            let targetChannel = newState.guild.systemChannel;
-            const { getGuildSettings } = require('../utils/settingsManager');
-            const settings = await getGuildSettings(guildId);
+          const mongoose = require('mongoose');
+          if (mongoose.connection.readyState === 1) {
+            const result = await xpManager.addVoiceXp(guildId, userId, minutes);
             
-            if (settings.levelChannel) {
-              const customChannel = newState.guild.channels.cache.get(settings.levelChannel);
-              if (customChannel) targetChannel = customChannel;
-            }
-            if (targetChannel) {
-              targetChannel.send(`🎉 Congrats ${newState.member}! You just advanced to **Level ${result.newLevel}** from hanging out in voice chat!`).catch(() => {});
+            if (result.leveledUp) {
+              let targetChannel = newState.guild.systemChannel;
+              const { getGuildSettings } = require('../utils/settingsManager');
+              const settings = await getGuildSettings(guildId);
+              
+              if (settings.levelChannel) {
+                const customChannel = newState.guild.channels.cache.get(settings.levelChannel);
+                if (customChannel) targetChannel = customChannel;
+              }
+              if (targetChannel) {
+                targetChannel.send(`🎉 Congrats ${newState.member}! You just advanced to **Level ${result.newLevel}** from hanging out in voice chat!`).catch(() => {});
+              }
             }
           }
         }

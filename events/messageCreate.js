@@ -54,6 +54,9 @@ module.exports = {
     }
 
     // --- XP PROCESSING ---
+    const mongoose = require('mongoose');
+    if (mongoose.connection.readyState !== 1) return; // Skip if DB is disconnected
+
     const result = await xpManager.addMessageXp(guildId, userId, message.author.username);
 
     // Announce level up
