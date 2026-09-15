@@ -156,8 +156,14 @@ module.exports = function startAdminPanel(client) {
   app.get('/api/guilds/:id/members', requireDiscordAuth, (req, res) => {
     const guildId = req.params.id;
     try {
-      const xpData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'xp.json'), 'utf8'));
-      const ecoData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'economy.json'), 'utf8'));
+      let xpData = {};
+      let ecoData = {};
+      
+      const xpPath = path.join(__dirname, '..', 'data', 'xp.json');
+      const ecoPath = path.join(__dirname, '..', 'data', 'economy.json');
+
+      if (fs.existsSync(xpPath)) xpData = JSON.parse(fs.readFileSync(xpPath, 'utf8'));
+      if (fs.existsSync(ecoPath)) ecoData = JSON.parse(fs.readFileSync(ecoPath, 'utf8'));
       
       const guildXp = xpData[guildId] || {};
       const guildEco = ecoData[guildId] || {};
@@ -192,8 +198,11 @@ module.exports = function startAdminPanel(client) {
       const xpPath = path.join(__dirname, '..', 'data', 'xp.json');
       const ecoPath = path.join(__dirname, '..', 'data', 'economy.json');
       
-      const xpData = JSON.parse(fs.readFileSync(xpPath, 'utf8'));
-      const ecoData = JSON.parse(fs.readFileSync(ecoPath, 'utf8'));
+      let xpData = {};
+      let ecoData = {};
+
+      if (fs.existsSync(xpPath)) xpData = JSON.parse(fs.readFileSync(xpPath, 'utf8'));
+      if (fs.existsSync(ecoPath)) ecoData = JSON.parse(fs.readFileSync(ecoPath, 'utf8'));
 
       if (action === 'delete') {
         if (xpData[guildId]) delete xpData[guildId][userId];
