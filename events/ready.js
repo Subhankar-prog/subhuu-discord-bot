@@ -12,10 +12,10 @@ module.exports = {
 
     // Start checking for scheduled reminders
     const reminderManager = require('../utils/reminderManager');
-    reminderManager.startReminderCheck(client);
+    reminderManager.initReminders(client);
 
     // Start checking for YouTube alerts
     const socialAlerts = require('../utils/socialAlerts');
-    socialAlerts.startSocialAlerts(client);
+    socialAlerts.initSocialAlerts(client);
   },
 };
