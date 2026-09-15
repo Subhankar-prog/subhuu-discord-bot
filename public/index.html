@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Subhuu Bot Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #09090b;
+      --card-bg: rgba(24, 24, 27, 0.4);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --card-hover: rgba(39, 39, 42, 0.6);
+      --primary: #8b5cf6; /* Vibrant Purple */
+      --primary-hover: #7c3aed;
+      --danger: #ef4444;
+      --success: #10b981;
+      --text: #f8fafc;
+      --text-muted: #a1a1aa;
+      --sidebar-width: 280px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Animated Glowing Background Orbs */
+    body::before, body::after {
+      content: ''; position: fixed; border-radius: 50%; filter: blur(120px); z-index: -1; opacity: 0.5;
+      animation: float 20s infinite alternate;
+    }
+    body::before {
+      width: 500px; height: 500px; background: rgba(139, 92, 246, 0.3);
+      top: -100px; left: -100px;
+    }
+    body::after {
+      width: 400px; height: 400px; background: rgba(56, 189, 248, 0.2);
+      bottom: -100px; right: -100px; animation-delay: -10s;
+    }
+    @keyframes float {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(100px, 50px); }
+    }
+
+    /* ---- Navbar ---- */
+    nav {
+      padding: 15px 40px; display: flex; justify-content: space-between; align-items: center;
+      background: rgba(9, 9, 11, 0.6); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--card-border); z-index: 10;
+    }
+    .brand { display: flex; align-items: center; gap: 16px; }
+    .brand img { width: 44px; height: 44px; border-radius: 50%; box-shadow: 0 0 20px rgba(139, 92, 246, 0.4); }
+    .brand h1 { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; background: linear-gradient(to right, #a78bfa, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    
+    .user-pill {
+      display: none; align-items: center; gap: 12px;
+      background: rgba(255,255,255,0.05); padding: 6px 16px 6px 6px;
+      border-radius: 30px; border: 1px solid var(--card-border); backdrop-filter: blur(10px);
+    }
+    .user-pill img { width: 28px; height: 28px; border-radius: 50%; }
+    .logout-btn { color: #fca5a5; text-decoration: none; font-size: 13px; margin-left: 10px; }
+
+    /* ---- Views ---- */
+    .view { display: none; }
+    .view.active { display: block; }
+    .view-dash-wrapper { display: none; flex: 1; overflow: hidden; }
+    .view-dash-wrapper.active { display: flex; }
+
+    /* ---- Login & Selector ---- */
+    .center-container { max-width: 1000px; margin: 60px auto; padding: 20px; text-align: center; }
+    .center-container h2 { font-size: 40px; font-weight: 800; margin-bottom: 16px; background: linear-gradient(to right, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .center-container p { color: var(--text-muted); font-size: 16px; margin-bottom: 40px; }
+    
+    .discord-btn {
+      display: inline-flex; align-items: center; gap: 12px;
+      background: var(--primary); color: white; text-decoration: none;
+      padding: 14px 28px; border-radius: 12px; font-size: 16px; font-weight: 600;
+      transition: all 0.2s;
+    }
+    .discord-btn:hover { background: var(--primary-hover); transform: translateY(-3px); }
+
+    .server-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+    .server-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; cursor: pointer; transition: all 0.2s; text-align: left;}
+    .server-card:hover { background: var(--card-hover); border-color: var(--primary); transform: translateY(-2px); }
+    .server-card img, .server-card .initials { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
+    .server-card .initials { background: #334155; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 600; }
+    .server-card h3 { font-size: 16px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* ---- Dashboard Sidebar Layout ---- */
+    .sidebar { width: var(--sidebar-width); background: #1e293b; border-right: 1px solid var(--card-border); padding: 20px 0; display: flex; flex-direction: column; }
+    .sidebar-header { padding: 0 20px 20px; border-bottom: 1px solid var(--card-border); margin-bottom: 10px; display: flex; align-items: center; gap: 12px;}
+    .sidebar-header img { width: 40px; height: 40px; border-radius: 12px; }
+    .sidebar-header h3 { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+    
+    .nav-item { padding: 12px 20px; cursor: pointer; color: var(--text-muted); font-weight: 500; font-size: 14px; transition: 0.2s; display: flex; align-items: center; gap: 10px;}
+    .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
+    .nav-item.active { background: rgba(88, 101, 242, 0.15); color: var(--primary); border-right: 3px solid var(--primary); }
+    
+    .back-btn { margin-top: auto; padding: 12px 20px; color: #fca5a5; font-size: 13px; cursor: pointer; font-weight: 500; }
+    .back-btn:hover { background: rgba(239, 68, 68, 0.1); }
+
+    .content-area { flex: 1; padding: 40px; overflow-y: auto; background: var(--bg); }
+    
+    /* ---- Tabs ---- */
+    .tab-content { display: none; animation: fadeUp 0.3s ease; }
+    .tab-content.active { display: block; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2.page-title { font-size: 28px; margin-bottom: 30px; font-weight: 700; }
+    
+    .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 24px; margin-bottom: 20px; max-width: 800px; }
+    .card h3 { font-size: 18px; margin-bottom: 20px; border-bottom: 1px solid var(--card-border); padding-bottom: 10px; }
+
+    /* ---- Forms & Tables ---- */
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; color: var(--text-muted); font-size: 13px; margin-bottom: 6px; font-weight: 500; }
+    input, select { width: 100%; padding: 12px; background: #0f172a; border: 1px solid var(--card-border); border-radius: 8px; color: white; outline: none; transition: 0.2s; }
+    input:focus, select:focus { border-color: var(--primary); }
+    
+    .btn { padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; border: none; font-size: 14px; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+    .btn-danger:hover { background: var(--danger); color: white; }
+    
+    .toast { display: none; color: var(--success); margin-left: 12px; font-weight: 500; font-size: 14px;}
+
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px;}
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--card-border); }
+    th { color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 12px; }
+    td input { width: 80px; padding: 6px; font-size: 13px; }
+    .td-actions { display: flex; gap: 8px; }
+    
+    /* ---- Toggles ---- */
+    .module-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--card-border); }
+    .module-item:last-child { border-bottom: none; }
+    .module-info strong { font-size: 15px; display: block; margin-bottom: 4px; }
+    .module-info span { font-size: 12px; color: var(--text-muted); }
+    
+    .switch { position: relative; display: inline-block; width: 40px; height: 22px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .4s; border-radius: 34px; }
+    .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--primary); }
+    input:checked + .slider:before { transform: translateX(18px); }
+
+    /* Flex row for forms */
+    .inline-form { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 20px;}
+    .inline-form .form-group { margin-bottom: 0; flex: 1; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="brand">
+      <img src="logo.jpg" alt="Subhuu Logo" />
+      <h1>Subhuu Bot</h1>
+    </div>
+    <div class="user-pill" id="user-pill">
+      <img id="nav-avatar" src="" alt="Avatar" />
+      <span id="nav-username">User</span>
+      <a href="/api/auth/logout" class="logout-btn">Logout</a>
+    </div>
+  </nav>
+
+  <!-- LOGIN VIEW -->
+  <div id="view-login" class="view active center-container">
+    <h2>Admin Dashboard</h2>
+    <p>Ultimate control over your server.</p>
+    <a href="/api/auth/login" class="discord-btn">Login with Discord</a>
+  </div>
+
+  <!-- SELECTOR VIEW -->
+  <div id="view-selector" class="view center-container">
+    <h2 style="font-size:30px; text-align:left;">Select a Server</h2>
+    <div class="server-grid" id="server-grid"></div>
+  </div>
+
+  <!-- DASHBOARD WRAPPER (SIDEBAR + CONTENT) -->
+  <div id="view-dashboard" class="view-dash-wrapper">
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <img id="dash-icon" src="" alt="Icon" />
+        <h3 id="dash-name">Server Name</h3>
+      </div>
+      
+      <div class="nav-item active" onclick="switchTab('settings')">⚙️ Modules & Config</div>
+      <div class="nav-item" onclick="switchTab('members')">👥 Member Database</div>
+      <div class="nav-item" onclick="switchTab('shop')">🛒 Economy Shop</div>
+      <div class="nav-item" onclick="switchTab('levels')">🎖️ Level Rewards</div>
+      
+      <div class="back-btn" onclick="showView('selector')">← Back to Server List</div>
+    </div>
+    
+    <div class="content-area">
+      
+      <!-- TAB: SETTINGS -->
+      <div id="tab-settings" class="tab-content active">
+        <h2 class="page-title">Modules & Config</h2>
+        
+        <div class="card">
+          <h3>Channel Routing</h3>
+          <div class="form-group">
+            <label>Welcome Channel</label>
+            <select id="select-welcome"><option value="">Loading...</option></select>
+          </div>
+          <div class="form-group">
+            <label>Level-up Channel</label>
+            <select id="select-level"><option value="">Loading...</option></select>
+          </div>
+          <div class="form-group">
+            <label>Mod Log Channel (For audit logs)</label>
+            <select id="select-log"><option value="">Loading...</option></select>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Server Modules</h3>
+          <div class="module-item">
+            <div class="module-info"><strong>Moderation</strong><span>Ban, kick, clear, and auto-mod filters.</span></div>
+            <label class="switch"><input type="checkbox" id="mod-moderation"><span class="slider"></span></label>
+          </div>
+          <div class="module-item">
+            <div class="module-info"><strong>Logging</strong><span>Tracks deleted/edited messages.</span></div>
+            <label class="switch"><input type="checkbox" id="mod-logging"><span class="slider"></span></label>
+          </div>
+          <div class="module-item">
+            <div class="module-info"><strong>Support Tickets</strong><span>/ticketpanel command</span></div>
+            <label class="switch"><input type="checkbox" id="mod-tickets"><span class="slider"></span></label>
+          </div>
+          <div class="module-item">
+            <div class="module-info"><strong>Economy & Fun</strong><span>Coins, daily, slots, blackjack, /imagine</span></div>
+            <label class="switch"><input type="checkbox" id="mod-economy"><span class="slider"></span></label>
+          </div>
+          <div class="module-item">
+            <div class="module-info"><strong>Giveaways</strong><span>/giveaway command</span></div>
+            <label class="switch"><input type="checkbox" id="mod-giveaways"><span class="slider"></span></label>
+          </div>
+        </div>
+        
+        <button class="btn btn-primary" onclick="saveSettings()">Save Configuration</button>
+        <span class="toast" id="toast-settings">✓ Saved</span>
+      </div>
+
+      <!-- TAB: MEMBERS -->
+      <div id="tab-members" class="tab-content">
+        <h2 class="page-title">Member Database</h2>
+        <div class="card" style="max-width: 1000px;">
+          <h3>All Members (XP & Coins)</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>User ID</th>
+                <th>Username</th>
+                <th>Level</th>
+                <th>XP</th>
+                <th>Coins</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="members-tbody">
+              <tr><td colspan="6">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB: SHOP -->
+      <div id="tab-shop" class="tab-content">
+        <h2 class="page-title">Economy Shop Config</h2>
+        
+        <div class="card">
+          <h3>Add New Item</h3>
+          <div class="inline-form">
+            <div class="form-group"><label>Key (ID)</label><input type="text" id="shop-new-id" placeholder="e.g. mvp"></div>
+            <div class="form-group"><label>Role Name</label><input type="text" id="shop-new-name" placeholder="e.g. MVP"></div>
+            <div class="form-group"><label>Price (Coins)</label><input type="number" id="shop-new-price" placeholder="5000"></div>
+            <div class="form-group"><label>Color (Hex)</label><input type="text" id="shop-new-color" placeholder="#ff0000"></div>
+            <button class="btn btn-primary" style="margin-bottom: 2px;" onclick="addShopItem()">Add</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Current Shop Items</h3>
+          <table>
+            <thead>
+              <tr><th>Key ID</th><th>Role Name</th><th>Price</th><th>Color</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="shop-tbody">
+              <tr><td colspan="5">Loading...</td></tr>
+            </tbody>
+          </table>
+          <br>
+          <button class="btn btn-primary" onclick="saveShopItems()">Save Shop Changes</button>
+          <span class="toast" id="toast-shop">✓ Saved</span>
+        </div>
+      </div>
+
+      <!-- TAB: LEVELS -->
+      <div id="tab-levels" class="tab-content">
+        <h2 class="page-title">Auto-Role Level Rewards</h2>
+        
+        <div class="card">
+          <h3>Add New Level Reward</h3>
+          <div class="inline-form">
+            <div class="form-group"><label>Level Required</label><input type="number" id="level-new-id" placeholder="e.g. 10"></div>
+            <div class="form-group"><label>Role Name</label><input type="text" id="level-new-name" placeholder="e.g. Veteran"></div>
+            <div class="form-group"><label>Color (Hex)</label><input type="text" id="level-new-color" placeholder="#3498db"></div>
+            <button class="btn btn-primary" style="margin-bottom: 2px;" onclick="addLevelReward()">Add</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Current Rewards</h3>
+          <table>
+            <thead>
+              <tr><th>Level</th><th>Role Name</th><th>Color</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="levels-tbody">
+              <tr><td colspan="4">Loading...</td></tr>
+            </tbody>
+          </table>
+          <br>
+          <button class="btn btn-primary" onclick="saveLevelRewards()">Save Level Changes</button>
+          <span class="toast" id="toast-levels">✓ Saved</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    let currentGuildId = null;
+    let shopData = {};
+    let levelData = {};
+
+    // Check login
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('loggedin') === 'true' || document.cookie.includes('discord_token')) {
+      window.history.replaceState({}, document.title, "/");
+      fetchGuilds();
+    }
+
+    function showView(viewName) {
+      document.getElementById('view-login').classList.remove('active');
+      document.getElementById('view-selector').classList.remove('active');
+      document.getElementById('view-dashboard').classList.remove('active');
+      
+      if (viewName === 'dashboard') {
+        document.getElementById('view-dashboard').classList.add('active');
+      } else {
+        document.getElementById(`view-${viewName}`).classList.add('active');
+      }
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(t => t.classList.remove('active'));
+      
+      document.getElementById(`tab-${tabName}`).classList.add('active');
+      event.currentTarget.classList.add('active');
+      
+      if(tabName === 'members') fetchMembers();
+      if(tabName === 'shop') fetchShop();
+      if(tabName === 'levels') fetchLevels();
+    }
+
+    async function fetchGuilds() {
+      try {
+        const res = await fetch('/api/user/guilds');
+        if (res.status === 401) { showView('login'); return; }
+        
+        const data = await res.json();
+        
+        document.getElementById('user-pill').style.display = 'flex';
+        document.getElementById('nav-username').innerText = data.user.username;
+        if (data.user.avatar) document.getElementById('nav-avatar').src = data.user.avatar;
+
+        const grid = document.getElementById('server-grid');
+        grid.innerHTML = '';
+        if (data.guilds.length === 0) grid.innerHTML = '<p>No manageable servers found.</p>';
+
+        data.guilds.forEach(g => {
+          const card = document.createElement('div');
+          card.className = 'server-card';
+          const iconHtml = g.icon ? `<img src="${g.icon}" />` : `<div class="initials">${g.name.substring(0,2).toUpperCase()}</div>`;
+          card.innerHTML = `${iconHtml}<h3>${g.name}</h3>`;
+          card.onclick = () => loadDashboard(g.id, g.name, g.icon);
+          grid.appendChild(card);
+        });
+
+        showView('selector');
+      } catch (err) { console.error(err); showView('login'); }
+    }
+
+    // --- TAB: SETTINGS ---
+    async function loadDashboard(guildId, name, icon) {
+      currentGuildId = guildId;
+      document.getElementById('dash-name').innerText = name;
+      document.getElementById('dash-icon').src = icon || 'https://cdn.discordapp.com/embed/avatars/0.png';
+      
+      showView('dashboard');
+      switchTab('settings'); // Default tab
+
+      const res = await fetch(`/api/guilds/${guildId}`);
+      if (res.ok) {
+        const data = await res.json();
+        let optionsHtml = '<option value="">-- None --</option>';
+        if (data.channels) data.channels.forEach(c => optionsHtml += `<option value="${c.id}">#${c.name}</option>`);
+        
+        ['select-welcome', 'select-level', 'select-log'].forEach(id => document.getElementById(id).innerHTML = optionsHtml);
+        
+        document.getElementById('select-welcome').value = data.settings.welcomeChannel || '';
+        document.getElementById('select-level').value = data.settings.levelChannel || '';
+        document.getElementById('select-log').value = data.settings.logChannel || '';
+        
+        const mods = data.settings.modules || {};
+        document.getElementById('mod-moderation').checked = !!mods.moderation;
+        document.getElementById('mod-logging').checked = !!mods.logging;
+        document.getElementById('mod-tickets').checked = !!mods.tickets;
+        document.getElementById('mod-economy').checked = !!mods.economy;
+        document.getElementById('mod-giveaways').checked = !!mods.giveaways;
+      }
+    }
+
+    async function saveSettings() {
+      const payload = {
+        welcomeChannel: document.getElementById('select-welcome').value,
+        levelChannel: document.getElementById('select-level').value,
+        logChannel: document.getElementById('select-log').value,
+        modules: {
+          moderation: document.getElementById('mod-moderation').checked,
+          logging: document.getElementById('mod-logging').checked,
+          tickets: document.getElementById('mod-tickets').checked,
+          economy: document.getElementById('mod-economy').checked,
+          giveaways: document.getElementById('mod-giveaways').checked,
+        }
+      };
+      
+      const res = await fetch(`/api/guilds/${currentGuildId}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+      });
+      if (res.ok) showToast('toast-settings');
+    }
+
+    // --- TAB: MEMBERS ---
+    async function fetchMembers() {
+      const tbody = document.getElementById('members-tbody');
+      tbody.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
+      
+      const res = await fetch(`/api/guilds/${currentGuildId}/members`);
+      if(res.ok) {
+        const members = await res.json();
+        tbody.innerHTML = '';
+        if(members.length === 0) return tbody.innerHTML = '<tr><td colspan="6">No member data found.</td></tr>';
+
+        members.forEach(m => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${m.userId}</td>
+            <td><strong>${m.username}</strong></td>
+            <td><input type="number" id="lvl-${m.userId}" value="${m.level}"></td>
+            <td><input type="number" id="xp-${m.userId}" value="${m.xp}"></td>
+            <td><input type="number" id="cns-${m.userId}" value="${m.coins}"></td>
+            <td class="td-actions">
+              <button class="btn btn-primary" onclick="updateMember('${m.userId}')">Save</button>
+              <button class="btn btn-danger" onclick="deleteMember('${m.userId}')">Delete</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+    }
+
+    async function updateMember(userId) {
+      const lvl = document.getElementById(`lvl-${userId}`).value;
+      const xp = document.getElementById(`xp-${userId}`).value;
+      const cns = document.getElementById(`cns-${userId}`).value;
+      
+      await fetch(`/api/guilds/${currentGuildId}/members/${userId}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'update', level: lvl, xp: xp, coins: cns })
+      });
+      alert('Member updated!');
+    }
+
+    async function deleteMember(userId) {
+      if(!confirm('Are you sure you want to delete all data for this user?')) return;
+      await fetch(`/api/guilds/${currentGuildId}/members/${userId}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete' })
+      });
+      fetchMembers();
+    }
+
+    // --- TAB: SHOP ---
+    async function fetchShop() {
+      const res = await fetch(`/api/guilds/${currentGuildId}/shop`);
+      if(res.ok) {
+        shopData = await res.json();
+        renderShop();
+      }
+    }
+
+    function renderShop() {
+      const tbody = document.getElementById('shop-tbody');
+      tbody.innerHTML = '';
+      if(Object.keys(shopData).length === 0) return tbody.innerHTML = '<tr><td colspan="5">Shop is empty.</td></tr>';
+
+      for(const [key, item] of Object.entries(shopData)) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${key}</td>
+          <td><input type="text" id="sh-name-${key}" value="${item.name}"></td>
+          <td><input type="number" id="sh-price-${key}" value="${item.price}"></td>
+          <td><input type="text" id="sh-color-${key}" value="${item.color}"></td>
+          <td class="td-actions">
+            <button class="btn btn-primary" onclick="updateShopItem('${key}')">Update</button>
+            <button class="btn btn-danger" onclick="deleteShopItem('${key}')">Remove</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      }
+    }
+
+    function addShopItem() {
+      const key = document.getElementById('shop-new-id').value.trim().toLowerCase();
+      if(!key) return alert('Key is required');
+      shopData[key] = {
+        name: document.getElementById('shop-new-name').value,
+        price: Number(document.getElementById('shop-new-price').value),
+        color: document.getElementById('shop-new-color').value || '#ffffff'
+      };
+      renderShop();
+    }
+
+    function updateShopItem(key) {
+      shopData[key].name = document.getElementById(`sh-name-${key}`).value;
+      shopData[key].price = Number(document.getElementById(`sh-price-${key}`).value);
+      shopData[key].color = document.getElementById(`sh-color-${key}`).value;
+      alert('Updated locally. Click Save below.');
+    }
+
+    function deleteShopItem(key) {
+      delete shopData[key];
+      renderShop();
+    }
+
+    async function saveShopItems() {
+      const res = await fetch(`/api/guilds/${currentGuildId}/shop`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(shopData)
+      });
+      if(res.ok) showToast('toast-shop');
+    }
+
+    // --- TAB: LEVELS ---
+    async function fetchLevels() {
+      const res = await fetch(`/api/guilds/${currentGuildId}/levels`);
+      if(res.ok) {
+        levelData = await res.json();
+        renderLevels();
+      }
+    }
+
+    function renderLevels() {
+      const tbody = document.getElementById('levels-tbody');
+      tbody.innerHTML = '';
+      if(Object.keys(levelData).length === 0) return tbody.innerHTML = '<tr><td colspan="4">No level rewards set.</td></tr>';
+
+      for(const [lvl, item] of Object.entries(levelData)) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>Level ${lvl}</td>
+          <td><input type="text" id="lv-name-${lvl}" value="${item.roleName}"></td>
+          <td><input type="text" id="lv-color-${lvl}" value="${item.color}"></td>
+          <td class="td-actions">
+            <button class="btn btn-primary" onclick="updateLevelReward('${lvl}')">Update</button>
+            <button class="btn btn-danger" onclick="deleteLevelReward('${lvl}')">Remove</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      }
+    }
+
+    function addLevelReward() {
+      const lvl = document.getElementById('level-new-id').value;
+      if(!lvl) return alert('Level is required');
+      levelData[lvl] = {
+        roleName: document.getElementById('level-new-name').value,
+        color: document.getElementById('level-new-color').value || '#ffffff'
+      };
+      renderLevels();
+    }
+
+    function updateLevelReward(lvl) {
+      levelData[lvl].roleName = document.getElementById(`lv-name-${lvl}`).value;
+      levelData[lvl].color = document.getElementById(`lv-color-${lvl}`).value;
+      alert('Updated locally. Click Save below.');
+    }
+
+    function deleteLevelReward(lvl) {
+      delete levelData[lvl];
+      renderLevels();
+    }
+
+    async function saveLevelRewards() {
+      const res = await fetch(`/api/guilds/${currentGuildId}/levels`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(levelData)
+      });
+      if(res.ok) showToast('toast-levels');
+    }
+
+    function showToast(id) {
+      const toast = document.getElementById(id);
+      toast.style.display = 'inline';
+      setTimeout(() => toast.style.display = 'none', 3000);
+    }
+  </script>
+</body>
+</html>
