@@ -1,6 +1,13 @@
 require('dotenv').config();
 const fs = require('node:fs');
 const path = require('node:path');
+
+// Ensure data directory exists before any managers are loaded
+const dataDir = path.join(__dirname, 'data');
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
+}
+
 const { Client, GatewayIntentBits, Collection, MessageFlags, Partials,
         StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ActionRowBuilder } = require('discord.js');
 const { DisTube } = require('distube');
