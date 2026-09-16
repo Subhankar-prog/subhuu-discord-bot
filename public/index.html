@@ -347,12 +347,12 @@
     let shopData = {};
     let levelData = {};
 
-    // Check login
+    // Check login by attempting to fetch guilds (relies on HttpOnly cookie)
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('loggedin') === 'true' || document.cookie.includes('discord_token')) {
+    if (urlParams.get('loggedin') === 'true') {
       window.history.replaceState({}, document.title, "/");
-      fetchGuilds();
     }
+    fetchGuilds();
 
     function showView(viewName) {
       document.getElementById('view-login').classList.remove('active');

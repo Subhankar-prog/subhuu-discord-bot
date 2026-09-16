@@ -54,7 +54,7 @@ module.exports = function startAdminPanel(client) {
 
       // Set cookie and redirect to dashboard
       res.cookie('discord_token', tokenData.access_token, { 
-        maxAge: 1000 * 60 * 60 * 24 * 7, 
+        maxAge: 1000 * 60 * 60 * 24 * 60, // 60 days
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production' || req.hostname.includes('onrender'),
         sameSite: 'lax'
