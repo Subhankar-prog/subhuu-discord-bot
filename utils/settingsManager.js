@@ -19,9 +19,15 @@ async function updateGuildSettings(guildId, newSettings) {
   if (newSettings.levelChannel !== undefined) settings.levelChannel = newSettings.levelChannel;
   if (newSettings.logChannel !== undefined) settings.logChannel = newSettings.logChannel;
   if (newSettings.prefix !== undefined) settings.prefix = newSettings.prefix;
+  if (newSettings.nickname !== undefined) settings.nickname = newSettings.nickname;
+  if (newSettings.timezone !== undefined) settings.timezone = newSettings.timezone;
+  if (newSettings.managerRoles !== undefined) settings.managerRoles = newSettings.managerRoles;
   
-  if (newSettings.modules) {
-    settings.modules = { ...settings.modules, ...newSettings.modules };
+  const mergeObjects = ['modules', 'xpSettings', 'automodSettings', 'welcomeSettings', 'leaveSettings', 'autoRoles'];
+  for (const obj of mergeObjects) {
+    if (newSettings[obj]) {
+      settings[obj] = { ...(settings[obj] || {}), ...newSettings[obj] };
+    }
   }
 
   await settings.save();
