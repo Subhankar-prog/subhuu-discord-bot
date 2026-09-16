@@ -195,7 +195,18 @@ module.exports = function startAdminPanel(client) {
   // Update guild settings
   app.post('/api/guilds/:id', requireDiscordAuth, async (req, res) => {
     const guildId = req.params.id;
-    if (!client.guilds.cache.has(guildId)) return res.status(404).json({ error: 'Bot not in guild' });
+    const discordGuild = client.guilds.cache.get(guildId);
+    if (!discordGuild) return res.status(404).json({ error: 'Bot not in guild' });
+    
+    // Apply nickname to discord if provided
+    if (req.body.nickname !== undefined) {
+      try {
+        await discordGuild.members.me.setNickname(req.body.nickname || '');
+      } catch (err) {
+        console.error('[Nickname Update Failed]', err.message);
+      }
+    }
+
     const updated = await settingsManager.updateGuildSettings(guildId, req.body);
     res.json({ success: true, settings: updated });
   });

@@ -349,7 +349,7 @@
 
     <!-- LEFT SIDEBAR (hidden until server selected) -->
     <div class="sidebar" id="sidebar" style="display:none;">
-      <div class="back-to-account" onclick="showPage('selector')">
+      <div class="back-to-account" onclick="goToSelector()">
         <span class="back-arrow">←</span> Back to Account
       </div>
 
@@ -930,6 +930,13 @@
     function showPage(name) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.getElementById(`page-${name}`).classList.add('active');
+    }
+
+    function goToSelector() {
+      document.getElementById('sidebar').style.display = 'none';
+      document.getElementById('topbar-server').style.display = 'none';
+      document.getElementById('dash-server-name').innerText = 'Select a Server';
+      showPage('selector');
     }
 
     function navClick(el, pageName) {
