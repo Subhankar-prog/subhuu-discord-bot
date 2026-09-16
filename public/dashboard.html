@@ -720,6 +720,16 @@
           <button class="btn btn-accent" onclick="saveSettings()">Save Changes</button>
           <span class="toast-msg" id="toast-settings">✓ Saved</span>
         </div>
+        <!-- GENERIC / FALLBACK -->
+        <div class="settings-card mod-settings" id="mod-settings-Generic" style="display: none;">
+          <h3>Module Configuration</h3>
+          <p style="color: var(--text-muted); font-size: 14px;">No specific settings available for this module yet.</p>
+        </div>
+
+        <div style="margin-bottom: 40px; padding-left: 2px;">
+          <button class="btn btn-accent" onclick="saveSettings()">Save Changes</button>
+          <span class="toast-msg" id="toast-settings">✓ Saved</span>
+        </div>
       </div>
 
       <!-- COMMANDS (PERMISSIONS) PAGE -->
@@ -732,6 +742,7 @@
             <button class="btn btn-accent btn-sm" onclick="filterDashCommands('Economy')">Economy</button>
             <button class="btn btn-gray btn-sm" onclick="filterDashCommands('Moderation')">Moderation</button>
             <button class="btn btn-gray btn-sm" onclick="filterDashCommands('Music')">Music</button>
+            <button class="btn btn-gray btn-sm" onclick="filterDashCommands('Playlists')">Playlists</button>
             <button class="btn btn-gray btn-sm" onclick="filterDashCommands('Fun')">Fun</button>
           </div>
           <div style="display: flex; gap: 12px; margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 24px;">
@@ -1259,12 +1270,57 @@
     let guildRoles = [];
     let guildChannels = [];
 
-    // Temporary static list until we link it to the real bot's command list
     const DASH_COMMANDS = {
-      Economy: ['/balance', '/daily', '/slots', '/blackjack', '/shop', '/pay', '/rob', '/work'],
-        Moderation: ['/ban', '/kick', '/mute', '/unmute', '/clear', '/warn', '/lock', '/unlock', '/slowmode'],
-        Music: ['/play', '/stop', '/skip', '/queue', '/volume', '/pause', '/resume', '/loop', '/nowplaying', '/shuffle', '/playlist'],
-        Fun: ['/meme', '/8ball', '/coinflip', '/joke', '/rps', '/tictactoe', '/trivia']
+      Economy: [
+        { name: '/balance', desc: 'Check your current coin balance' },
+        { name: '/daily', desc: 'Claim your daily free coins (every 24h)' },
+        { name: '/work', desc: 'Work a shift to earn some coins' },
+        { name: '/pay', desc: 'Transfer coins to another member' },
+        { name: '/rob', desc: 'Attempt to steal coins from someone' },
+        { name: '/shop', desc: 'View and buy custom roles from the shop' },
+        { name: '/slots', desc: 'Gamble coins on the slot machine' },
+        { name: '/blackjack', desc: 'Play blackjack against the bot' }
+      ],
+      Moderation: [
+        { name: '/ban', desc: 'Permanently ban a member' },
+        { name: '/kick', desc: 'Kick a member from the server' },
+        { name: '/mute', desc: 'Timeout/mute a member temporarily' },
+        { name: '/unmute', desc: 'Remove a timeout from a member' },
+        { name: '/warn', desc: 'Issue a formal warning to a member' },
+        { name: '/clear', desc: 'Bulk delete recent messages' },
+        { name: '/lock', desc: 'Lock the current channel' },
+        { name: '/unlock', desc: 'Unlock a previously locked channel' },
+        { name: '/slowmode', desc: 'Set channel slowmode delay' }
+      ],
+      Music: [
+        { name: '/play', desc: 'Play a song from YouTube/Spotify' },
+        { name: '/stop', desc: 'Stop the music and clear queue' },
+        { name: '/skip', desc: 'Skip the currently playing song' },
+        { name: '/queue', desc: 'View the upcoming songs list' },
+        { name: '/volume', desc: 'Change the music volume' },
+        { name: '/pause', desc: 'Pause the music player' },
+        { name: '/resume', desc: 'Resume paused music' },
+        { name: '/nowplaying', desc: 'See what song is currently playing' },
+        { name: '/shuffle', desc: 'Shuffle the music queue' }
+      ],
+      Playlists: [
+        { name: '/playlist create', desc: 'Create a new empty personal playlist' },
+        { name: '/playlist add', desc: 'Add a song to one of your playlists' },
+        { name: '/playlist play', desc: 'Queue an entire playlist to play' },
+        { name: '/playlist remove', desc: 'Remove a specific song from a playlist' },
+        { name: '/playlist list', desc: 'View all your saved playlists' },
+        { name: '/playlist view', desc: 'See all songs inside a playlist' },
+        { name: '/playlist delete', desc: 'Permanently delete a playlist' }
+      ],
+      Fun: [
+        { name: '/meme', desc: 'Get a random meme from Reddit' },
+        { name: '/8ball', desc: 'Ask the magic 8-ball a question' },
+        { name: '/coinflip', desc: 'Flip a coin (heads or tails)' },
+        { name: '/joke', desc: 'Get a random dad joke' },
+        { name: '/rps', desc: 'Play Rock Paper Scissors' },
+        { name: '/tictactoe', desc: 'Play Tic-Tac-Toe' },
+        { name: '/trivia', desc: 'Answer a trivia question' }
+      ]
     };
 
     async function loadDashCommands() {
@@ -1282,43 +1338,6 @@
     }
 
     function filterDashCommands(category) {
-        currentCmdCategory = category;
-        document.querySelectorAll('#cmd-category-tabs button').forEach(b => {
-          if (b.innerText === category) {
-            b.classList.remove('btn-gray');
-            b.classList.add('btn-accent');
-          } else {
-            b.classList.add('btn-gray');
-            b.classList.remove('btn-accent');
-          }
-        });
-      const grid = document.getElementById('dash-commands-grid');
-      grid.innerHTML = '';
-      
-      const cmds = DASH_COMMANDS[category] || [];
-      
-      cmds.forEach(cmdName => {
-        const perms = allCommandPermissions[cmdName] || { enabled: true };
-        
-        const card = document.createElement('div');
-        card.className = 'module-card';
-        card.style.cssText = 'padding: 20px; gap: 12px; cursor: default;';
-        
-        card.innerHTML = `
-          <div class="module-card-header">
-            <h3 style="color: var(--cyan); font-family: monospace;">${cmdName}</h3>
-            <label class="toggle">
-              <input type="checkbox" onchange="toggleCommand('${cmdName}', this.checked)" ${perms.enabled ? 'checked' : ''}>
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <button class="btn btn-gray btn-sm" style="width: 100%; justify-content: center; margin-top: auto;" onclick="openPermModal('${cmdName}')">⚙️ Edit Permissions</button>
-        `;
-        grid.appendChild(card);
-      });
-    }
-
-    async function toggleCommand(cmdName, enabled) {
       if (!allCommandPermissions[cmdName]) allCommandPermissions[cmdName] = {};
       allCommandPermissions[cmdName].enabled = enabled;
       await fetch(`/api/guilds/${currentGuildId}/command-permissions`, {
