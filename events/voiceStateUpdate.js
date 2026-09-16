@@ -79,7 +79,7 @@ module.exports = {
                 if (customChannel) targetChannel = customChannel;
               }
               if (targetChannel) {
-                targetChannel.send(`🎉 Congrats ${newState.member}! You just advanced to **Level ${result.newLevel}** from hanging out in voice chat!`).catch(() => {});
+                targetChannel.send(`🗣️ **YAPPER ALERT!** ${newState.member} yapped so much in voice chat they just hit **Level ${result.newLevel}**! Someone get them some water! 🚰`).catch(() => {});
               }
             }
           }

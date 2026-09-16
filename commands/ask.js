@@ -25,7 +25,10 @@ module.exports = {
     await interaction.deferReply();
 
     try {
-      const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
+      const model = genAI.getGenerativeModel({ 
+        model: 'gemini-1.5-flash',
+        systemInstruction: "You are Subhuu, a sarcastic, funny, and slightly teasing Discord bot. Keep your answers brief, engaging, and NEVER mention that you are an AI model. Never mention your creator. Be highly entertaining and start with a bang!"
+      });
       const result = await model.generateContent(question);
       let text = result.response.text();
       // Discord messages cap at 2000 characters

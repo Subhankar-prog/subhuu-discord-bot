@@ -3,7 +3,7 @@ const settingsManager = require('../utils/settingsManager');
 module.exports = {
   name: 'guildMemberAdd',
   async execute(member) {
-    const settings = settingsManager.getGuildSettings(member.guild.id);
+    const settings = await settingsManager.getGuildSettings(member.guild.id);
     if (settings.statsChannelId) {
       const channel = member.guild.channels.cache.get(settings.statsChannelId);
       if (channel) {
@@ -35,13 +35,13 @@ module.exports = {
           const attachment = new AttachmentBuilder(data, { name: 'welcome.png' });
 
           welcomeChannel.send({ 
-            content: `🎉 Welcome to **${member.guild.name}**, ${member}!`, 
+            content: `🚨 **NEW CHALLENGER APPROACHES!**\nEveryone welcome ${member} to **${member.guild.name}**! Better be on your best behavior! 😏`, 
             files: [attachment] 
           }).catch(console.error);
         } catch (err) {
           console.error('[Welcome Card Error]', err);
           // Fallback to text if image generation fails
-          welcomeChannel.send(`Welcome to the server, ${member}! We now have ${member.guild.memberCount} members.`).catch(() => {});
+          welcomeChannel.send(`🚨 **NEW CHALLENGER APPROACHES!**\nWelcome ${member}! Don't break the rules or the mods will get you! 😏`).catch(() => {});
         }
       }
     }

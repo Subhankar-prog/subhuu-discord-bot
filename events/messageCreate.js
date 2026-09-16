@@ -69,7 +69,7 @@ module.exports = {
         const customChannel = message.guild.channels.cache.get(settings.levelChannel);
         if (customChannel) targetChannel = customChannel;
       }
-      targetChannel.send(`🎉 Congrats ${message.author}! You just advanced to **Level ${result.newLevel}**!`).catch(() => {});
+      targetChannel.send(`💥 **BOOM!** Look who just stopped touching grass long enough to hit **Level ${result.newLevel}**! Congrats ${message.author}, keep up the grind! 🔥`).catch(() => {});
 
       // Auto-Role logic
       const configManager = require('../utils/configManager');
@@ -80,7 +80,7 @@ module.exports = {
         const role = message.guild.roles.cache.get(reward.roleId);
         if (role) {
           await message.member.roles.add(role).catch(() => {});
-          targetChannel.send(`🎖️ ${message.author} earned the **${role.name}** role for reaching Level ${result.newLevel}!`).catch(() => {});
+          targetChannel.send(`👑 **SHEESH!** ${message.author} just leveled up and snatched the **${role.name}** role! Don't let the power go to your head! 😎`).catch(() => {});
         }
       }
     }
