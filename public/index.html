@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Subhuu Bot Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Feather Icons -->
+  <script src="https://unpkg.com/feather-icons"></script>
   <style>
     :root {
       --bg: #09090b;
@@ -17,7 +19,9 @@
       --success: #10b981;
       --text: #f8fafc;
       --text-muted: #a1a1aa;
+      --sidebar-bg: #111113;
       --sidebar-width: 280px;
+      --topbar-height: 70px;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -28,15 +32,13 @@
       color: var(--text);
       min-height: 100vh;
       display: flex;
-      flex-direction: column;
-      position: relative;
-      overflow-x: hidden;
+      overflow: hidden;
     }
 
     /* Animated Glowing Background Orbs */
     body::before, body::after {
-      content: ''; position: fixed; border-radius: 50%; filter: blur(120px); z-index: -1; opacity: 0.5;
-      animation: float 20s infinite alternate;
+      content: ''; position: fixed; border-radius: 50%; filter: blur(120px); z-index: -1; opacity: 0.3;
+      animation: float 20s infinite alternate; pointer-events: none;
     }
     body::before {
       width: 500px; height: 500px; background: rgba(139, 92, 246, 0.3);
@@ -51,32 +53,16 @@
       100% { transform: translate(100px, 50px); }
     }
 
-    /* ---- Navbar ---- */
-    nav {
-      padding: 15px 40px; display: flex; justify-content: space-between; align-items: center;
-      background: rgba(9, 9, 11, 0.6); backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--card-border); z-index: 10;
+    /* ---- Login & Selector Views ---- */
+    .view-fullscreen {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: var(--bg); z-index: 100;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s;
     }
-    .brand { display: flex; align-items: center; gap: 16px; }
-    .brand img { width: 44px; height: 44px; border-radius: 50%; box-shadow: 0 0 20px rgba(139, 92, 246, 0.4); }
-    .brand h1 { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; background: linear-gradient(to right, #a78bfa, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    
-    .user-pill {
-      display: none; align-items: center; gap: 12px;
-      background: rgba(255,255,255,0.05); padding: 6px 16px 6px 6px;
-      border-radius: 30px; border: 1px solid var(--card-border); backdrop-filter: blur(10px);
-    }
-    .user-pill img { width: 28px; height: 28px; border-radius: 50%; }
-    .logout-btn { color: #fca5a5; text-decoration: none; font-size: 13px; margin-left: 10px; }
+    .view-fullscreen.active { opacity: 1; pointer-events: auto; }
 
-    /* ---- Views ---- */
-    .view { display: none; }
-    .view.active { display: block; }
-    .view-dash-wrapper { display: none; flex: 1; overflow: hidden; }
-    .view-dash-wrapper.active { display: flex; }
-
-    /* ---- Login & Selector ---- */
-    .center-container { max-width: 1000px; margin: 60px auto; padding: 20px; text-align: center; }
+    .center-container { max-width: 1000px; text-align: center; padding: 20px; }
     .center-container h2 { font-size: 40px; font-weight: 800; margin-bottom: 16px; background: linear-gradient(to right, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     .center-container p { color: var(--text-muted); font-size: 16px; margin-bottom: 40px; }
     
@@ -86,51 +72,128 @@
       padding: 14px 28px; border-radius: 12px; font-size: 16px; font-weight: 600;
       transition: all 0.2s;
     }
-    .discord-btn:hover { background: var(--primary-hover); transform: translateY(-3px); }
+    .discord-btn:hover { background: var(--primary-hover); transform: translateY(-3px); box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3); }
 
-    .server-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
-    .server-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; cursor: pointer; transition: all 0.2s; text-align: left;}
+    .server-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; text-align: left;}
+    .server-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; cursor: pointer; transition: all 0.2s; }
     .server-card:hover { background: var(--card-hover); border-color: var(--primary); transform: translateY(-2px); }
     .server-card img, .server-card .initials { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
     .server-card .initials { background: #334155; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 600; }
-    .server-card h3 { font-size: 16px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .server-card h3 { font-size: 16px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+    .server-card p { font-size: 13px; color: var(--text-muted); margin: 0; }
 
-    /* ---- Dashboard Sidebar Layout ---- */
-    .sidebar { width: var(--sidebar-width); background: #1e293b; border-right: 1px solid var(--card-border); padding: 20px 0; display: flex; flex-direction: column; }
-    .sidebar-header { padding: 0 20px 20px; border-bottom: 1px solid var(--card-border); margin-bottom: 10px; display: flex; align-items: center; gap: 12px;}
-    .sidebar-header img { width: 40px; height: 40px; border-radius: 12px; }
-    .sidebar-header h3 { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
-    
-    .nav-item { padding: 12px 20px; cursor: pointer; color: var(--text-muted); font-weight: 500; font-size: 14px; transition: 0.2s; display: flex; align-items: center; gap: 10px;}
+    /* ---- Main App Layout ---- */
+    .app-layout { display: none; width: 100%; height: 100%; }
+    .app-layout.active { display: flex; }
+
+    /* ---- Sidebar ---- */
+    .sidebar {
+      width: var(--sidebar-width); background: var(--sidebar-bg);
+      border-right: 1px solid var(--card-border);
+      display: flex; flex-direction: column;
+    }
+    .sidebar-brand {
+      height: var(--topbar-height); display: flex; align-items: center; gap: 12px; padding: 0 24px;
+      border-bottom: 1px solid var(--card-border); cursor: pointer;
+    }
+    .sidebar-brand img { width: 32px; height: 32px; border-radius: 50%; }
+    .sidebar-brand h1 { font-size: 20px; font-weight: 800; color: white; }
+
+    .sidebar-nav { flex: 1; padding: 24px 12px; display: flex; flex-direction: column; gap: 4px; overflow-y: auto;}
+    .nav-item {
+      display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+      color: var(--text-muted); font-size: 15px; font-weight: 500;
+      border-radius: 8px; cursor: pointer; transition: all 0.2s;
+    }
+    .nav-item i { width: 20px; height: 20px; }
     .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
-    .nav-item.active { background: rgba(88, 101, 242, 0.15); color: var(--primary); border-right: 3px solid var(--primary); }
+    .nav-item.active { background: rgba(139, 92, 246, 0.15); color: var(--primary); }
     
-    .back-btn { margin-top: auto; padding: 12px 20px; color: #fca5a5; font-size: 13px; cursor: pointer; font-weight: 500; }
-    .back-btn:hover { background: rgba(239, 68, 68, 0.1); }
+    .sidebar-user {
+      padding: 16px; border-top: 1px solid var(--card-border);
+      display: flex; align-items: center; gap: 12px;
+    }
+    .sidebar-user img { width: 40px; height: 40px; border-radius: 50%; }
+    .sidebar-user-info { flex: 1; overflow: hidden; }
+    .sidebar-user-info h4 { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sidebar-user-info p { font-size: 12px; color: var(--text-muted); cursor: pointer; transition: 0.2s;}
+    .sidebar-user-info p:hover { color: var(--danger); }
 
-    .content-area { flex: 1; padding: 40px; overflow-y: auto; background: var(--bg); }
+    /* ---- Main Content ---- */
+    .main-content { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden;}
     
-    /* ---- Tabs ---- */
-    .tab-content { display: none; animation: fadeUp 0.3s ease; }
-    .tab-content.active { display: block; }
+    /* ---- Topbar ---- */
+    .topbar {
+      height: var(--topbar-height); display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px; border-bottom: 1px solid var(--card-border);
+      background: rgba(9, 9, 11, 0.6); backdrop-filter: blur(16px); z-index: 10;
+    }
+    .breadcrumbs { display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 500; color: var(--text-muted); }
+    .breadcrumbs img { width: 24px; height: 24px; border-radius: 50%; }
+    .breadcrumbs span.current { color: white; font-weight: 600; }
+    
+    .topbar-actions { display: flex; align-items: center; gap: 16px; }
+    .server-switch-btn {
+      background: var(--card-bg); border: 1px solid var(--card-border); padding: 8px 16px;
+      border-radius: 8px; color: white; font-size: 14px; font-weight: 500; cursor: pointer; transition: 0.2s;
+    }
+    .server-switch-btn:hover { background: var(--card-hover); border-color: var(--primary); }
+
+    /* ---- Views Container ---- */
+    .views-container { flex: 1; overflow-y: auto; padding: 40px 32px; position: relative; }
+    
+    /* ---- Route/Page Classes ---- */
+    .page { display: none; animation: fadeUp 0.3s ease; }
+    .page.active { display: block; }
 
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    h2.page-title { font-size: 28px; margin-bottom: 30px; font-weight: 700; }
+    /* ---- Plugin Grid (Home) ---- */
+    .plugin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; margin-top: 30px; }
+    .plugin-card {
+      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px;
+      padding: 24px; display: flex; flex-direction: column; position: relative;
+      transition: all 0.2s; cursor: pointer; overflow: hidden;
+    }
+    .plugin-card:hover { border-color: rgba(139, 92, 246, 0.5); transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
     
-    .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 24px; margin-bottom: 20px; max-width: 800px; }
-    .card h3 { font-size: 18px; margin-bottom: 20px; border-bottom: 1px solid var(--card-border); padding-bottom: 10px; }
+    .plugin-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+    .plugin-icon { 
+      width: 48px; height: 48px; border-radius: 12px; background: rgba(139, 92, 246, 0.1); 
+      display: flex; align-items: center; justify-content: center; color: var(--primary);
+    }
+    
+    .plugin-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .plugin-card p { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
+    
+    /* Massive Toggle Switch */
+    .switch { position: relative; display: inline-block; width: 44px; height: 24px; z-index: 2;}
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .3s; border-radius: 34px; }
+    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--primary); }
+    input:checked + .slider:before { transform: translateX(20px); }
 
-    /* ---- Forms & Tables ---- */
-    .form-group { margin-bottom: 20px; }
-    .form-group label { display: block; color: var(--text-muted); font-size: 13px; margin-bottom: 6px; font-weight: 500; }
-    input, select { width: 100%; padding: 12px; background: #0f172a; border: 1px solid var(--card-border); border-radius: 8px; color: white; outline: none; transition: 0.2s; }
-    input:focus, select:focus { border-color: var(--primary); }
+    /* ---- Dedicated Plugin Settings Page ---- */
+    .plugin-hero { margin-bottom: 40px; }
+    .back-link { display: inline-flex; align-items: center; gap: 8px; color: var(--primary); font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 20px; transition: 0.2s; }
+    .back-link:hover { color: var(--primary-hover); transform: translateX(-4px); }
+    .plugin-hero h2 { font-size: 32px; font-weight: 800; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+    .plugin-hero p { color: var(--text-muted); font-size: 16px; }
+
+    .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 28px; margin-bottom: 24px; max-width: 900px; }
+    .card-header { margin-bottom: 24px; border-bottom: 1px solid var(--card-border); padding-bottom: 16px; }
+    .card-header h3 { font-size: 18px; font-weight: 600; }
     
-    .btn { padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; border: none; font-size: 14px; }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; color: var(--text-muted); font-size: 14px; margin-bottom: 8px; font-weight: 500; }
+    input, select { width: 100%; padding: 14px 16px; background: #0f172a; border: 1px solid var(--card-border); border-radius: 10px; color: white; outline: none; transition: 0.2s; font-family: 'Outfit', sans-serif; font-size: 15px;}
+    input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(139,92,246,0.2); }
+    
+    .btn { padding: 12px 24px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.2s; border: none; font-size: 15px; display: inline-flex; align-items: center; gap: 8px; }
     .btn-primary { background: var(--primary); color: white; }
     .btn-primary:hover { background: var(--primary-hover); }
     .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
@@ -139,253 +202,353 @@
     .toast { display: none; color: var(--success); margin-left: 12px; font-weight: 500; font-size: 14px;}
 
     table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px;}
-    th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--card-border); }
-    th { color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 12px; }
-    td input { width: 80px; padding: 6px; font-size: 13px; }
+    th, td { padding: 16px; text-align: left; border-bottom: 1px solid var(--card-border); }
+    th { color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;}
+    td input { padding: 10px; font-size: 14px; width: 100%;}
     .td-actions { display: flex; gap: 8px; }
     
-    /* ---- Toggles ---- */
-    .module-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--card-border); }
-    .module-item:last-child { border-bottom: none; }
-    .module-info strong { font-size: 15px; display: block; margin-bottom: 4px; }
-    .module-info span { font-size: 12px; color: var(--text-muted); }
-    
-    .switch { position: relative; display: inline-block; width: 40px; height: 22px; }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .4s; border-radius: 34px; }
-    .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-    input:checked + .slider { background-color: var(--primary); }
-    input:checked + .slider:before { transform: translateX(18px); }
-
-    /* Flex row for forms */
-    .inline-form { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 20px;}
-    .inline-form .form-group { margin-bottom: 0; flex: 1; }
+    .inline-form { display: grid; grid-template-columns: 1fr 1.5fr 1fr 1fr auto; gap: 12px; align-items: flex-end; margin-bottom: 24px;}
+    .inline-form .form-group { margin-bottom: 0; }
   </style>
 </head>
 <body>
 
-  <nav>
-    <div class="brand">
-      <img src="logo.jpg" alt="Subhuu Logo" />
-      <h1>Subhuu Bot</h1>
-    </div>
-    <div class="user-pill" id="user-pill">
-      <img id="nav-avatar" src="" alt="Avatar" />
-      <span id="nav-username">User</span>
-      <a href="/api/auth/logout" class="logout-btn">Logout</a>
-    </div>
-  </nav>
-
   <!-- LOGIN VIEW -->
-  <div id="view-login" class="view active center-container">
-    <h2>Admin Dashboard</h2>
-    <p>Ultimate control over your server.</p>
-    <a href="/api/auth/login" class="discord-btn">Login with Discord</a>
-  </div>
-
-  <!-- SELECTOR VIEW -->
-  <div id="view-selector" class="view center-container">
-    <h2 style="font-size:30px; text-align:left;">Select a Server</h2>
-    <div class="server-grid" id="server-grid"></div>
-  </div>
-
-  <!-- DASHBOARD WRAPPER (SIDEBAR + CONTENT) -->
-  <div id="view-dashboard" class="view-dash-wrapper">
-    <div class="sidebar">
-      <div class="sidebar-header">
-        <img id="dash-icon" src="" alt="Icon" />
-        <h3 id="dash-name">Server Name</h3>
-      </div>
-      
-      <div class="nav-item active" onclick="switchTab('settings')">⚙️ Modules & Config</div>
-      <div class="nav-item" onclick="switchTab('members')">👥 Member Database</div>
-      <div class="nav-item" onclick="switchTab('shop')">🛒 Economy Shop</div>
-      <div class="nav-item" onclick="switchTab('levels')">🎖️ Level Rewards</div>
-      
-      <div class="back-btn" onclick="showView('selector')">← Back to Server List</div>
+  <div id="view-login" class="view-fullscreen">
+    <div class="center-container">
+      <img src="logo.jpg" alt="Logo" style="width: 80px; border-radius: 50%; margin-bottom: 20px; box-shadow: 0 0 30px rgba(139,92,246,0.4);" />
+      <h2>Admin Dashboard</h2>
+      <p>The ultimate professional control panel for your Discord server.</p>
+      <a href="/api/auth/login" class="discord-btn"><i data-feather="log-in"></i> Login with Discord</a>
     </div>
+  </div>
+
+  <!-- SERVER SELECTOR VIEW -->
+  <div id="view-selector" class="view-fullscreen">
+    <div class="center-container" style="max-width: 1200px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+        <h2 style="margin: 0;">Select a Server</h2>
+        <a href="/api/auth/logout" style="color: var(--text-muted); text-decoration: none; font-weight: 500;"><i data-feather="log-out"></i> Logout</a>
+      </div>
+      <div class="server-grid" id="server-grid"></div>
+    </div>
+  </div>
+
+  <!-- MAIN APP LAYOUT -->
+  <div id="app-layout" class="app-layout">
     
-    <div class="content-area">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-brand" onclick="openSelector()">
+        <img src="logo.jpg" alt="Logo" />
+        <h1>Subhuu</h1>
+      </div>
       
-      <!-- TAB: SETTINGS -->
-      <div id="tab-settings" class="tab-content active">
-        <h2 class="page-title">Modules & Config</h2>
-        
-        <div class="card">
-          <h3>Channel Routing</h3>
-          <div class="form-group">
-            <label>Welcome Channel</label>
-            <select id="select-welcome"><option value="">Loading...</option></select>
-          </div>
-          <div class="form-group">
-            <label>Level-up Channel</label>
-            <select id="select-level"><option value="">Loading...</option></select>
-          </div>
-          <div class="form-group">
-            <label>Mod Log Channel (For audit logs)</label>
-            <select id="select-log"><option value="">Loading...</option></select>
-          </div>
-        </div>
-
-        <div class="card">
-          <h3>Server Modules</h3>
-          <div class="module-item">
-            <div class="module-info"><strong>Moderation</strong><span>Ban, kick, clear, and auto-mod filters.</span></div>
-            <label class="switch"><input type="checkbox" id="mod-moderation"><span class="slider"></span></label>
-          </div>
-          <div class="module-item">
-            <div class="module-info"><strong>Logging</strong><span>Tracks deleted/edited messages.</span></div>
-            <label class="switch"><input type="checkbox" id="mod-logging"><span class="slider"></span></label>
-          </div>
-          <div class="module-item">
-            <div class="module-info"><strong>Support Tickets</strong><span>/ticketpanel command</span></div>
-            <label class="switch"><input type="checkbox" id="mod-tickets"><span class="slider"></span></label>
-          </div>
-          <div class="module-item">
-            <div class="module-info"><strong>Economy & Fun</strong><span>Coins, daily, slots, blackjack, /imagine</span></div>
-            <label class="switch"><input type="checkbox" id="mod-economy"><span class="slider"></span></label>
-          </div>
-          <div class="module-item">
-            <div class="module-info"><strong>Giveaways</strong><span>/giveaway command</span></div>
-            <label class="switch"><input type="checkbox" id="mod-giveaways"><span class="slider"></span></label>
-          </div>
-        </div>
-        
-        <button class="btn btn-primary" onclick="saveSettings()">Save Configuration</button>
-        <span class="toast" id="toast-settings">✓ Saved</span>
+      <div class="sidebar-nav">
+        <div class="nav-item active" onclick="routeTo('plugins')"><i data-feather="grid"></i> Plugins</div>
+        <div class="nav-item" onclick="routeTo('members')"><i data-feather="users"></i> Member Database</div>
+        <div class="nav-item"><i data-feather="bar-chart-2"></i> Leaderboard <i data-feather="external-link" style="width: 14px; margin-left: auto; opacity: 0.5;"></i></div>
+        <div class="nav-item"><i data-feather="star"></i> Premium</div>
+        <div class="nav-item"><i data-feather="help-circle"></i> Support</div>
       </div>
 
-      <!-- TAB: MEMBERS -->
-      <div id="tab-members" class="tab-content">
-        <h2 class="page-title">Member Database</h2>
-        <div class="card" style="max-width: 1000px;">
-          <h3>All Members (XP & Coins)</h3>
-          <table>
-            <thead>
-              <tr>
-                <th>User ID</th>
-                <th>Username</th>
-                <th>Level</th>
-                <th>XP</th>
-                <th>Coins</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="members-tbody">
-              <tr><td colspan="6">Loading...</td></tr>
-            </tbody>
-          </table>
+      <div class="sidebar-user">
+        <img id="nav-avatar" src="" alt="Avatar" />
+        <div class="sidebar-user-info">
+          <h4 id="nav-username">User</h4>
+          <p onclick="window.location.href='/api/auth/logout'">Logout</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      
+      <!-- Topbar -->
+      <div class="topbar">
+        <div class="breadcrumbs">
+          <img id="dash-icon" src="" alt="Server Icon" />
+          <span id="dash-name">Server Name</span>
+          <i data-feather="chevron-right" style="width: 16px; opacity: 0.5;"></i>
+          <span class="current" id="breadcrumb-current">Plugins</span>
+        </div>
+        <div class="topbar-actions">
+          <button class="server-switch-btn" onclick="openSelector()">Switch Server</button>
         </div>
       </div>
 
-      <!-- TAB: SHOP -->
-      <div id="tab-shop" class="tab-content">
-        <h2 class="page-title">Economy Shop Config</h2>
+      <!-- Views Container -->
+      <div class="views-container">
         
-        <div class="card">
-          <h3>Add New Item</h3>
-          <div class="inline-form">
-            <div class="form-group"><label>Key (ID)</label><input type="text" id="shop-new-id" placeholder="e.g. mvp"></div>
-            <div class="form-group"><label>Role Name</label><input type="text" id="shop-new-name" placeholder="e.g. MVP"></div>
-            <div class="form-group"><label>Price (Coins)</label><input type="number" id="shop-new-price" placeholder="5000"></div>
-            <div class="form-group"><label>Color (Hex)</label><input type="text" id="shop-new-color" placeholder="#ff0000"></div>
-            <button class="btn btn-primary" style="margin-bottom: 2px;" onclick="addShopItem()">Add</button>
+        <!-- PAGE: PLUGINS GRID -->
+        <div id="page-plugins" class="page active">
+          <h2 style="font-size: 28px; font-weight: 800; margin-bottom: 8px;">Plugins</h2>
+          <p style="color: var(--text-muted);">Enable and configure modules for your server.</p>
+          
+          <div class="plugin-grid">
+            
+            <!-- Economy Plugin -->
+            <div class="plugin-card" onclick="routeTo('economy')">
+              <div class="plugin-header">
+                <div class="plugin-icon"><i data-feather="shopping-cart"></i></div>
+                <label class="switch" onclick="event.stopPropagation()">
+                  <input type="checkbox" id="mod-economy" onchange="toggleModule('economy', this.checked)">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <h3>Economy & Shop</h3>
+              <p>Coins, dailies, gambling, and a customizable role shop for members to spend their earnings.</p>
+            </div>
+
+            <!-- Leveling Plugin -->
+            <div class="plugin-card" onclick="routeTo('levels')">
+              <div class="plugin-header">
+                <div class="plugin-icon"><i data-feather="trending-up"></i></div>
+                <label class="switch" onclick="event.stopPropagation()">
+                  <input type="checkbox" checked disabled>
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <h3>Leveling & Rewards</h3>
+              <p>Reward active members with XP and automatically grant roles when they reach certain levels.</p>
+            </div>
+
+            <!-- Moderation Plugin -->
+            <div class="plugin-card" onclick="routeTo('settings')">
+              <div class="plugin-header">
+                <div class="plugin-icon"><i data-feather="shield"></i></div>
+                <label class="switch" onclick="event.stopPropagation()">
+                  <input type="checkbox" id="mod-moderation" onchange="toggleModule('moderation', this.checked)">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <h3>Moderation</h3>
+              <p>Keep your server safe with automated scam-link blocking, anti-spam, and timeout commands.</p>
+            </div>
+
+            <!-- Welcome Plugin -->
+            <div class="plugin-card" onclick="routeTo('settings')">
+              <div class="plugin-header">
+                <div class="plugin-icon"><i data-feather="user-plus"></i></div>
+                <label class="switch" onclick="event.stopPropagation()">
+                  <input type="checkbox" checked disabled>
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <h3>Welcome & Goodbye</h3>
+              <p>Send beautiful, customized image cards when new users join your server.</p>
+            </div>
+            
+            <!-- Logging Plugin -->
+            <div class="plugin-card" onclick="routeTo('settings')">
+              <div class="plugin-header">
+                <div class="plugin-icon"><i data-feather="file-text"></i></div>
+                <label class="switch" onclick="event.stopPropagation()">
+                  <input type="checkbox" id="mod-logging" onchange="toggleModule('logging', this.checked)">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <h3>Audit Logging</h3>
+              <p>Track deleted messages, voice channel joins, and member updates in a dedicated channel.</p>
+            </div>
+
+            <!-- Music (Placeholder) -->
+            <div class="plugin-card">
+              <div class="plugin-header">
+                <div class="plugin-icon"><i data-feather="music"></i></div>
+                <label class="switch" onclick="event.stopPropagation()">
+                  <input type="checkbox" checked disabled>
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <h3>Music Player</h3>
+              <p>High quality music streaming from YouTube, Spotify, and SoundCloud right into your voice channels.</p>
+            </div>
+
           </div>
         </div>
 
-        <div class="card">
-          <h3>Current Shop Items</h3>
-          <table>
-            <thead>
-              <tr><th>Key ID</th><th>Role Name</th><th>Price</th><th>Color</th><th>Actions</th></tr>
-            </thead>
-            <tbody id="shop-tbody">
-              <tr><td colspan="5">Loading...</td></tr>
-            </tbody>
-          </table>
-          <br>
-          <button class="btn btn-primary" onclick="saveShopItems()">Save Shop Changes</button>
-          <span class="toast" id="toast-shop">✓ Saved</span>
-        </div>
-      </div>
+        <!-- PAGE: ECONOMY & SHOP SETTINGS -->
+        <div id="page-economy" class="page">
+          <div class="back-link" onclick="routeTo('plugins')"><i data-feather="arrow-left"></i> Back to Plugins</div>
+          <div class="plugin-hero">
+            <h2><i data-feather="shopping-cart"></i> Economy & Shop</h2>
+            <p>Configure the virtual economy and items available for purchase.</p>
+          </div>
+          
+          <div class="card">
+            <div class="card-header"><h3>Add New Shop Item (Role)</h3></div>
+            <div class="inline-form">
+              <div class="form-group"><label>Key (ID)</label><input type="text" id="shop-new-id" placeholder="e.g. mvp"></div>
+              <div class="form-group"><label>Role Name</label><input type="text" id="shop-new-name" placeholder="e.g. MVP"></div>
+              <div class="form-group"><label>Price (Coins)</label><input type="number" id="shop-new-price" placeholder="5000"></div>
+              <div class="form-group"><label>Color (Hex)</label><input type="text" id="shop-new-color" placeholder="#ff0000"></div>
+              <button class="btn btn-primary" onclick="addShopItem()">Add</button>
+            </div>
+          </div>
 
-      <!-- TAB: LEVELS -->
-      <div id="tab-levels" class="tab-content">
-        <h2 class="page-title">Auto-Role Level Rewards</h2>
-        
-        <div class="card">
-          <h3>Add New Level Reward</h3>
-          <div class="inline-form">
-            <div class="form-group"><label>Level Required</label><input type="number" id="level-new-id" placeholder="e.g. 10"></div>
-            <div class="form-group"><label>Role Name</label><input type="text" id="level-new-name" placeholder="e.g. Veteran"></div>
-            <div class="form-group"><label>Color (Hex)</label><input type="text" id="level-new-color" placeholder="#3498db"></div>
-            <button class="btn btn-primary" style="margin-bottom: 2px;" onclick="addLevelReward()">Add</button>
+          <div class="card" style="max-width: 1000px;">
+            <div class="card-header"><h3>Current Shop Items</h3></div>
+            <table style="margin-bottom: 20px;">
+              <thead>
+                <tr><th>Key ID</th><th>Role Name</th><th>Price</th><th>Color</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="shop-tbody">
+                <tr><td colspan="5">Loading...</td></tr>
+              </tbody>
+            </table>
+            <button class="btn btn-primary" onclick="saveShopItems()"><i data-feather="save"></i> Save Shop Changes</button>
+            <span class="toast" id="toast-shop">✓ Saved Successfully</span>
           </div>
         </div>
 
-        <div class="card">
-          <h3>Current Rewards</h3>
-          <table>
-            <thead>
-              <tr><th>Level</th><th>Role Name</th><th>Color</th><th>Actions</th></tr>
-            </thead>
-            <tbody id="levels-tbody">
-              <tr><td colspan="4">Loading...</td></tr>
-            </tbody>
-          </table>
-          <br>
-          <button class="btn btn-primary" onclick="saveLevelRewards()">Save Level Changes</button>
-          <span class="toast" id="toast-levels">✓ Saved</span>
-        </div>
-      </div>
+        <!-- PAGE: LEVEL REWARDS SETTINGS -->
+        <div id="page-levels" class="page">
+          <div class="back-link" onclick="routeTo('plugins')"><i data-feather="arrow-left"></i> Back to Plugins</div>
+          <div class="plugin-hero">
+            <h2><i data-feather="trending-up"></i> Leveling & Rewards</h2>
+            <p>Automatically grant roles when members reach specific XP levels.</p>
+          </div>
+          
+          <div class="card">
+            <div class="card-header"><h3>Add New Level Reward</h3></div>
+            <div class="inline-form" style="grid-template-columns: 1fr 2fr 1fr auto;">
+              <div class="form-group"><label>Level Required</label><input type="number" id="level-new-id" placeholder="e.g. 10"></div>
+              <div class="form-group"><label>Role Name</label><input type="text" id="level-new-name" placeholder="e.g. Veteran"></div>
+              <div class="form-group"><label>Color (Hex)</label><input type="text" id="level-new-color" placeholder="#3498db"></div>
+              <button class="btn btn-primary" onclick="addLevelReward()">Add</button>
+            </div>
+          </div>
 
+          <div class="card" style="max-width: 1000px;">
+            <div class="card-header"><h3>Current Rewards</h3></div>
+            <table style="margin-bottom: 20px;">
+              <thead>
+                <tr><th>Level</th><th>Role Name</th><th>Color</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="levels-tbody">
+                <tr><td colspan="4">Loading...</td></tr>
+              </tbody>
+            </table>
+            <button class="btn btn-primary" onclick="saveLevelRewards()"><i data-feather="save"></i> Save Level Changes</button>
+            <span class="toast" id="toast-levels">✓ Saved Successfully</span>
+          </div>
+        </div>
+
+        <!-- PAGE: GENERAL SETTINGS (Channels) -->
+        <div id="page-settings" class="page">
+          <div class="back-link" onclick="routeTo('plugins')"><i data-feather="arrow-left"></i> Back to Plugins</div>
+          <div class="plugin-hero">
+            <h2><i data-feather="settings"></i> Server Configuration</h2>
+            <p>Set up the core channels required by the active plugins.</p>
+          </div>
+          
+          <div class="card">
+            <div class="card-header"><h3>Channel Routing</h3></div>
+            <div class="form-group">
+              <label>Welcome Channel (For image welcome cards)</label>
+              <select id="select-welcome"><option value="">Loading...</option></select>
+            </div>
+            <div class="form-group">
+              <label>Level-up Channel (Where XP milestones are announced)</label>
+              <select id="select-level"><option value="">Loading...</option></select>
+            </div>
+            <div class="form-group">
+              <label>Mod Log Channel (For audit logs and moderation alerts)</label>
+              <select id="select-log"><option value="">Loading...</option></select>
+            </div>
+            <div style="margin-top: 30px;">
+              <button class="btn btn-primary" onclick="saveSettings()"><i data-feather="save"></i> Save Configuration</button>
+              <span class="toast" id="toast-settings">✓ Saved Successfully</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAGE: MEMBERS DATABASE -->
+        <div id="page-members" class="page">
+          <div class="plugin-hero">
+            <h2><i data-feather="users"></i> Member Database</h2>
+            <p>Directly modify the XP, levels, and coins of users in your server.</p>
+          </div>
+          
+          <div class="card" style="max-width: 1000px; padding: 0; overflow: hidden;">
+            <table style="margin-top: 0;">
+              <thead style="background: rgba(255,255,255,0.02);">
+                <tr>
+                  <th style="padding-left: 28px;">User ID</th>
+                  <th>Username</th>
+                  <th>Level</th>
+                  <th>XP</th>
+                  <th>Coins</th>
+                  <th style="padding-right: 28px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="members-tbody">
+                <tr><td colspan="6" style="padding-left: 28px;">Loading database...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
     </div>
   </div>
 
   <script>
+    // Initialize icons
+    feather.replace();
+
     let currentGuildId = null;
     let shopData = {};
     let levelData = {};
+    let guildSettings = {};
 
-    // Check login by attempting to fetch guilds (relies on HttpOnly cookie)
+    // Check login by attempting to fetch guilds
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('loggedin') === 'true') {
       window.history.replaceState({}, document.title, "/");
     }
     fetchGuilds();
 
-    function showView(viewName) {
-      document.getElementById('view-login').classList.remove('active');
-      document.getElementById('view-selector').classList.remove('active');
-      document.getElementById('view-dashboard').classList.remove('active');
+    function showFullscreenView(viewId) {
+      document.querySelectorAll('.view-fullscreen').forEach(v => v.classList.remove('active'));
+      document.getElementById('app-layout').classList.remove('active');
+      if(viewId) document.getElementById(viewId).classList.add('active');
+    }
+
+    function openSelector() {
+      showFullscreenView('view-selector');
+    }
+
+    // Dynamic Router
+    function routeTo(pageName) {
+      // Update UI state
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(`page-${pageName}`).classList.add('active');
       
-      if (viewName === 'dashboard') {
-        document.getElementById('view-dashboard').classList.add('active');
-      } else {
-        document.getElementById(`view-${viewName}`).classList.add('active');
+      // Update Sidebar state
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      if(pageName === 'plugins' || pageName === 'economy' || pageName === 'levels' || pageName === 'settings') {
+        document.querySelectorAll('.nav-item')[0].classList.add('active');
+        document.getElementById('breadcrumb-current').innerText = pageName === 'plugins' ? 'Plugins' : pageName.charAt(0).toUpperCase() + pageName.slice(1);
+      } else if (pageName === 'members') {
+        document.querySelectorAll('.nav-item')[1].classList.add('active');
+        document.getElementById('breadcrumb-current').innerText = 'Members';
+        fetchMembers();
       }
+
+      // Re-initialize icons inside new views
+      feather.replace();
     }
 
-    function switchTab(tabName) {
-      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(t => t.classList.remove('active'));
-      
-      document.getElementById(`tab-${tabName}`).classList.add('active');
-      event.currentTarget.classList.add('active');
-      
-      if(tabName === 'members') fetchMembers();
-      if(tabName === 'shop') fetchShop();
-      if(tabName === 'levels') fetchLevels();
-    }
-
+    // Data Fetching
     async function fetchGuilds() {
       try {
         const res = await fetch('/api/user/guilds');
-        if (res.status === 401) { showView('login'); return; }
+        if (res.status === 401) { showFullscreenView('view-login'); return; }
         
         const data = await res.json();
         
-        document.getElementById('user-pill').style.display = 'flex';
         document.getElementById('nav-username').innerText = data.user.username;
         if (data.user.avatar) document.getElementById('nav-avatar').src = data.user.avatar;
 
@@ -397,124 +560,74 @@
           const card = document.createElement('div');
           card.className = 'server-card';
           const iconHtml = g.icon ? `<img src="${g.icon}" />` : `<div class="initials">${g.name.substring(0,2).toUpperCase()}</div>`;
-          card.innerHTML = `${iconHtml}<h3>${g.name}</h3>`;
-          card.onclick = () => loadDashboard(g.id, g.name, g.icon);
+          card.innerHTML = `${iconHtml}<div><h3>${g.name}</h3><p>Setup Subhuu</p></div>`;
+          card.onclick = () => initDashboard(g.id, g.name, g.icon);
           grid.appendChild(card);
         });
 
-        showView('selector');
-      } catch (err) { console.error(err); showView('login'); }
+        showFullscreenView('view-selector');
+      } catch (err) { console.error(err); showFullscreenView('view-login'); }
     }
 
-    // --- TAB: SETTINGS ---
-    async function loadDashboard(guildId, name, icon) {
+    async function initDashboard(guildId, name, icon) {
       currentGuildId = guildId;
       document.getElementById('dash-name').innerText = name;
       document.getElementById('dash-icon').src = icon || 'https://cdn.discordapp.com/embed/avatars/0.png';
       
-      showView('dashboard');
-      switchTab('settings'); // Default tab
+      showFullscreenView(null); // hide fullscreens
+      document.getElementById('app-layout').classList.add('active');
+      routeTo('plugins'); // default route
 
+      // Pre-fetch settings to hydrate toggles & dropdowns
       const res = await fetch(`/api/guilds/${guildId}`);
       if (res.ok) {
         const data = await res.json();
+        guildSettings = data.settings || {};
+        
         let optionsHtml = '<option value="">-- None --</option>';
         if (data.channels) data.channels.forEach(c => optionsHtml += `<option value="${c.id}">#${c.name}</option>`);
         
         ['select-welcome', 'select-level', 'select-log'].forEach(id => document.getElementById(id).innerHTML = optionsHtml);
+        document.getElementById('select-welcome').value = guildSettings.welcomeChannel || '';
+        document.getElementById('select-level').value = guildSettings.levelChannel || '';
+        document.getElementById('select-log').value = guildSettings.logChannel || '';
         
-        document.getElementById('select-welcome').value = data.settings.welcomeChannel || '';
-        document.getElementById('select-level').value = data.settings.levelChannel || '';
-        document.getElementById('select-log').value = data.settings.logChannel || '';
-        
-        const mods = data.settings.modules || {};
+        const mods = guildSettings.modules || {};
         document.getElementById('mod-moderation').checked = !!mods.moderation;
-        document.getElementById('mod-logging').checked = !!mods.logging;
-        document.getElementById('mod-tickets').checked = !!mods.tickets;
         document.getElementById('mod-economy').checked = !!mods.economy;
-        document.getElementById('mod-giveaways').checked = !!mods.giveaways;
+        document.getElementById('mod-logging').checked = !!mods.logging;
+
+        // Prefetch plugin data
+        fetchShop();
+        fetchLevels();
       }
+    }
+
+    async function toggleModule(moduleName, isEnabled) {
+      if(!guildSettings.modules) guildSettings.modules = {};
+      guildSettings.modules[moduleName] = isEnabled;
+      
+      await fetch(`/api/guilds/${currentGuildId}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(guildSettings)
+      });
     }
 
     async function saveSettings() {
-      const payload = {
-        welcomeChannel: document.getElementById('select-welcome').value,
-        levelChannel: document.getElementById('select-level').value,
-        logChannel: document.getElementById('select-log').value,
-        modules: {
-          moderation: document.getElementById('mod-moderation').checked,
-          logging: document.getElementById('mod-logging').checked,
-          tickets: document.getElementById('mod-tickets').checked,
-          economy: document.getElementById('mod-economy').checked,
-          giveaways: document.getElementById('mod-giveaways').checked,
-        }
-      };
+      guildSettings.welcomeChannel = document.getElementById('select-welcome').value;
+      guildSettings.levelChannel = document.getElementById('select-level').value;
+      guildSettings.logChannel = document.getElementById('select-log').value;
       
       const res = await fetch(`/api/guilds/${currentGuildId}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(guildSettings)
       });
       if (res.ok) showToast('toast-settings');
-    }
-
-    // --- TAB: MEMBERS ---
-    async function fetchMembers() {
-      const tbody = document.getElementById('members-tbody');
-      tbody.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
-      
-      const res = await fetch(`/api/guilds/${currentGuildId}/members`);
-      if(res.ok) {
-        const members = await res.json();
-        tbody.innerHTML = '';
-        if(members.length === 0) return tbody.innerHTML = '<tr><td colspan="6">No member data found.</td></tr>';
-
-        members.forEach(m => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${m.userId}</td>
-            <td><strong>${m.username}</strong></td>
-            <td><input type="number" id="lvl-${m.userId}" value="${m.level}"></td>
-            <td><input type="number" id="xp-${m.userId}" value="${m.xp}"></td>
-            <td><input type="number" id="cns-${m.userId}" value="${m.coins}"></td>
-            <td class="td-actions">
-              <button class="btn btn-primary" onclick="updateMember('${m.userId}')">Save</button>
-              <button class="btn btn-danger" onclick="deleteMember('${m.userId}')">Delete</button>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
-      }
-    }
-
-    async function updateMember(userId) {
-      const lvl = document.getElementById(`lvl-${userId}`).value;
-      const xp = document.getElementById(`xp-${userId}`).value;
-      const cns = document.getElementById(`cns-${userId}`).value;
-      
-      await fetch(`/api/guilds/${currentGuildId}/members/${userId}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'update', level: lvl, xp: xp, coins: cns })
-      });
-      alert('Member updated!');
-    }
-
-    async function deleteMember(userId) {
-      if(!confirm('Are you sure you want to delete all data for this user?')) return;
-      await fetch(`/api/guilds/${currentGuildId}/members/${userId}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'delete' })
-      });
-      fetchMembers();
     }
 
     // --- TAB: SHOP ---
     async function fetchShop() {
       const res = await fetch(`/api/guilds/${currentGuildId}/shop`);
-      if(res.ok) {
-        shopData = await res.json();
-        renderShop();
-      }
+      if(res.ok) { shopData = await res.json(); renderShop(); }
     }
-
     function renderShop() {
       const tbody = document.getElementById('shop-tbody');
       tbody.innerHTML = '';
@@ -523,19 +636,18 @@
       for(const [key, item] of Object.entries(shopData)) {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${key}</td>
+          <td><strong>${key}</strong></td>
           <td><input type="text" id="sh-name-${key}" value="${item.name}"></td>
           <td><input type="number" id="sh-price-${key}" value="${item.price}"></td>
           <td><input type="text" id="sh-color-${key}" value="${item.color}"></td>
           <td class="td-actions">
-            <button class="btn btn-primary" onclick="updateShopItem('${key}')">Update</button>
-            <button class="btn btn-danger" onclick="deleteShopItem('${key}')">Remove</button>
+            <button class="btn btn-danger" onclick="deleteShopItem('${key}')"><i data-feather="trash-2"></i></button>
           </td>
         `;
         tbody.appendChild(tr);
       }
+      feather.replace();
     }
-
     function addShopItem() {
       const key = document.getElementById('shop-new-id').value.trim().toLowerCase();
       if(!key) return alert('Key is required');
@@ -546,20 +658,14 @@
       };
       renderShop();
     }
-
-    function updateShopItem(key) {
-      shopData[key].name = document.getElementById(`sh-name-${key}`).value;
-      shopData[key].price = Number(document.getElementById(`sh-price-${key}`).value);
-      shopData[key].color = document.getElementById(`sh-color-${key}`).value;
-      alert('Updated locally. Click Save below.');
-    }
-
-    function deleteShopItem(key) {
-      delete shopData[key];
-      renderShop();
-    }
-
+    function deleteShopItem(key) { delete shopData[key]; renderShop(); }
     async function saveShopItems() {
+      // Sync local edits
+      for(const key of Object.keys(shopData)) {
+        shopData[key].name = document.getElementById(`sh-name-${key}`).value;
+        shopData[key].price = Number(document.getElementById(`sh-price-${key}`).value);
+        shopData[key].color = document.getElementById(`sh-color-${key}`).value;
+      }
       const res = await fetch(`/api/guilds/${currentGuildId}/shop`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(shopData)
       });
@@ -569,12 +675,8 @@
     // --- TAB: LEVELS ---
     async function fetchLevels() {
       const res = await fetch(`/api/guilds/${currentGuildId}/levels`);
-      if(res.ok) {
-        levelData = await res.json();
-        renderLevels();
-      }
+      if(res.ok) { levelData = await res.json(); renderLevels(); }
     }
-
     function renderLevels() {
       const tbody = document.getElementById('levels-tbody');
       tbody.innerHTML = '';
@@ -583,18 +685,17 @@
       for(const [lvl, item] of Object.entries(levelData)) {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>Level ${lvl}</td>
+          <td><strong>Level ${lvl}</strong></td>
           <td><input type="text" id="lv-name-${lvl}" value="${item.roleName}"></td>
           <td><input type="text" id="lv-color-${lvl}" value="${item.color}"></td>
           <td class="td-actions">
-            <button class="btn btn-primary" onclick="updateLevelReward('${lvl}')">Update</button>
-            <button class="btn btn-danger" onclick="deleteLevelReward('${lvl}')">Remove</button>
+            <button class="btn btn-danger" onclick="deleteLevelReward('${lvl}')"><i data-feather="trash-2"></i></button>
           </td>
         `;
         tbody.appendChild(tr);
       }
+      feather.replace();
     }
-
     function addLevelReward() {
       const lvl = document.getElementById('level-new-id').value;
       if(!lvl) return alert('Level is required');
@@ -604,23 +705,66 @@
       };
       renderLevels();
     }
-
-    function updateLevelReward(lvl) {
-      levelData[lvl].roleName = document.getElementById(`lv-name-${lvl}`).value;
-      levelData[lvl].color = document.getElementById(`lv-color-${lvl}`).value;
-      alert('Updated locally. Click Save below.');
-    }
-
-    function deleteLevelReward(lvl) {
-      delete levelData[lvl];
-      renderLevels();
-    }
-
+    function deleteLevelReward(lvl) { delete levelData[lvl]; renderLevels(); }
     async function saveLevelRewards() {
+      // Sync local edits
+      for(const lvl of Object.keys(levelData)) {
+        levelData[lvl].roleName = document.getElementById(`lv-name-${lvl}`).value;
+        levelData[lvl].color = document.getElementById(`lv-color-${lvl}`).value;
+      }
       const res = await fetch(`/api/guilds/${currentGuildId}/levels`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(levelData)
       });
       if(res.ok) showToast('toast-levels');
+    }
+
+    // --- TAB: MEMBERS ---
+    async function fetchMembers() {
+      const tbody = document.getElementById('members-tbody');
+      tbody.innerHTML = '<tr><td colspan="6" style="padding-left: 28px;">Loading...</td></tr>';
+      
+      const res = await fetch(`/api/guilds/${currentGuildId}/members`);
+      if(res.ok) {
+        const members = await res.json();
+        tbody.innerHTML = '';
+        if(members.length === 0) return tbody.innerHTML = '<tr><td colspan="6" style="padding-left: 28px;">No member data found.</td></tr>';
+
+        members.forEach(m => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td style="padding-left: 28px; color: var(--text-muted);">${m.userId}</td>
+            <td><strong>${m.username}</strong></td>
+            <td><input type="number" id="lvl-${m.userId}" value="${m.level}"></td>
+            <td><input type="number" id="xp-${m.userId}" value="${m.xp}"></td>
+            <td><input type="number" id="cns-${m.userId}" value="${m.coins}"></td>
+            <td class="td-actions" style="padding-right: 28px;">
+              <button class="btn btn-primary" onclick="updateMember('${m.userId}')">Save</button>
+              <button class="btn btn-danger" onclick="deleteMember('${m.userId}')"><i data-feather="trash-2"></i></button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+        feather.replace();
+      }
+    }
+    async function updateMember(userId) {
+      const lvl = document.getElementById(`lvl-${userId}`).value;
+      const xp = document.getElementById(`xp-${userId}`).value;
+      const cns = document.getElementById(`cns-${userId}`).value;
+      
+      const res = await fetch(`/api/guilds/${currentGuildId}/members/${userId}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'update', level: lvl, xp: xp, coins: cns })
+      });
+      if(res.ok) alert('Member updated successfully!');
+    }
+    async function deleteMember(userId) {
+      if(!confirm('Are you sure you want to delete all data for this user?')) return;
+      await fetch(`/api/guilds/${currentGuildId}/members/${userId}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete' })
+      });
+      fetchMembers();
     }
 
     function showToast(id) {
