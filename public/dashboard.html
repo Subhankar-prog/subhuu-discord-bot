@@ -864,6 +864,14 @@
 
     async function initDashboard(guildId, name, icon) {
       currentGuildId = guildId;
+      document.getElementById('dash-server-name').innerText = `Loading...`;
+      
+      const res = await fetch(`/api/guilds/${guildId}`);
+      if (!res.ok) {
+        alert('Subhuu has not been added to this server yet! Please click "Add To Server" first.');
+        return;
+      }
+      
       document.getElementById('sidebar').style.display = 'flex';
       document.getElementById('topbar-server').style.display = 'flex';
       document.getElementById('topbar-server-name').innerText = name;
@@ -873,9 +881,7 @@
       showPage('home');
       navClick(document.querySelector('.sidebar-nav-item'), 'home');
 
-      const res = await fetch(`/api/guilds/${guildId}`);
-      if (res.ok) {
-        const data = await res.json();
+      const data = await res.json();
         guildSettings = data.settings || {};
         document.getElementById('stat-members').innerText = data.memberCount || '—';
         document.getElementById('stat-channels').innerText = data.channels?.length || '—';
