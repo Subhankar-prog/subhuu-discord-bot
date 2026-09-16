@@ -1,868 +1,418 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Subhuu | The Ultimate Discord Bot</title>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <script src="https://unpkg.com/feather-icons"></script>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Subhuu — The Discord Bot that does it all. Automatically.</title>
+  <meta name="description" content="A fully customizable server moderation Discord bot featuring a simple and intuitive web dashboard. Server management just got a whole lot easier."/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
   <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    
     :root {
-      --bg-dark: #030305;
-      --bg-panel: rgba(15, 15, 20, 0.6);
-      --glass-border: rgba(255, 255, 255, 0.08);
-      --glass-hover: rgba(255, 255, 255, 0.12);
-      
-      --neon-cyan: #00f3ff;
-      --neon-magenta: #ff00ff;
-      --neon-purple: #7000ff;
-      
-      --text-main: #ffffff;
-      --text-muted: #94a3b8;
-      
-      --sidebar-width: 280px;
-      --topbar-height: 80px;
+      --bg: #0e1117;
+      --bg-card: #161b22;
+      --bg-card2: #1c2128;
+      --accent: #c42b57;
+      --accent-hover: #a82048;
+      --accent-light: rgba(196, 43, 87, 0.15);
+      --cyan: #34d399;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --text-dim: #6e7681;
+      --border: #30363d;
+      --blue-glow: rgba(56, 139, 253, 0.1);
+      --nav-h: 64px;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    
+    html { scroll-behavior: smooth; }
+
     body {
-      font-family: 'Outfit', sans-serif;
-      background-color: var(--bg-dark);
-      color: var(--text-main);
-      overflow-x: hidden;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
+      overflow-x: hidden;
     }
 
-    /* ==== Animated Background Orbs ==== */
-    .bg-orbs {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      pointer-events: none; z-index: -1; overflow: hidden;
-      background: radial-gradient(circle at 50% 0%, rgba(20,10,40,1) 0%, var(--bg-dark) 60%);
-    }
-    .orb { position: absolute; border-radius: 50%; filter: blur(150px); opacity: 0.4; animation: floatOrb 20s infinite alternate ease-in-out; }
-    .orb-1 { width: 600px; height: 600px; background: var(--neon-purple); top: -200px; left: -100px; }
-    .orb-2 { width: 500px; height: 500px; background: var(--neon-cyan); bottom: -100px; right: -100px; animation-delay: -5s; }
-    .orb-3 { width: 400px; height: 400px; background: var(--neon-magenta); top: 40%; left: 40%; animation-delay: -10s; opacity: 0.2; }
+    a { text-decoration: none; color: inherit; }
 
-    @keyframes floatOrb {
-      0% { transform: translate(0, 0) scale(1); }
-      100% { transform: translate(150px, 100px) scale(1.2); }
+    /* TOP BLUE GLOW LINE */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(56,139,253,0.6), rgba(196,43,87,0.6), transparent);
+      z-index: 1000;
     }
 
-    /* ==== View System ==== */
-    .view-layer {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100vh;
-      display: none; flex-direction: column; opacity: 0; transition: opacity 0.4s ease;
+    /* ============================
+       NAVBAR
+       ============================ */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      height: var(--nav-h);
+      background: rgba(14, 17, 23, 0.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center;
+      padding: 0 32px;
+      gap: 32px;
     }
-    .view-layer.active { display: flex; opacity: 1; }
 
-    /* =========================================
-       LANDING PAGE
-       ========================================= */
-    #view-landing { overflow-y: auto; }
-    
-    .landing-nav {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 20px 60px; position: sticky; top: 0; z-index: 50;
-      background: rgba(3, 3, 5, 0.7); backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--glass-border);
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 18px; font-weight: 700; color: var(--text);
+      flex-shrink: 0;
     }
-    .landing-brand { display: flex; align-items: center; gap: 16px; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
-    .landing-brand img { width: 40px; height: 40px; border-radius: 50%; box-shadow: 0 0 20px var(--neon-purple); }
-    
-    .landing-nav-links { display: flex; gap: 30px; align-items: center; }
-    .landing-nav-links a { color: var(--text-muted); text-decoration: none; font-weight: 500; transition: 0.3s; }
-    .landing-nav-links a:hover { color: var(--text-main); }
-    
-    .btn-glow {
-      position: relative; display: inline-flex; align-items: center; justify-content: center;
-      padding: 14px 32px; font-size: 16px; font-weight: 700; color: white;
-      text-decoration: none; border-radius: 12px; border: none; cursor: pointer;
-      background: linear-gradient(45deg, var(--neon-purple), var(--neon-magenta));
-      z-index: 1; overflow: hidden; transition: 0.3s;
-    }
-    .btn-glow::before {
-      content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: linear-gradient(45deg, var(--neon-cyan), var(--neon-purple));
-      z-index: -1; transition: opacity 0.3s; opacity: 0;
-    }
-    .btn-glow:hover::before { opacity: 1; }
-    .btn-glow:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(255, 0, 255, 0.4); }
-
-    .btn-outline {
-      background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border);
-      color: white; padding: 14px 32px; border-radius: 12px; font-weight: 600; text-decoration: none;
-      transition: 0.3s; backdrop-filter: blur(10px); display: inline-flex; align-items: center; gap: 8px;
-    }
-    .btn-outline:hover { background: rgba(255, 255, 255, 0.08); border-color: var(--neon-cyan); box-shadow: 0 0 20px rgba(0, 243, 255, 0.2); }
-
-    .hero {
-      text-align: center; padding: 120px 20px; max-width: 900px; margin: 0 auto;
-      display: flex; flex-direction: column; align-items: center; gap: 30px;
-    }
-    .hero-badge {
-      background: rgba(112, 0, 255, 0.15); border: 1px solid rgba(112, 0, 255, 0.3);
-      padding: 8px 16px; border-radius: 30px; font-size: 14px; font-weight: 600; color: var(--neon-cyan);
-      box-shadow: 0 0 20px rgba(0, 243, 255, 0.1);
-    }
-    .hero h1 { font-size: 72px; font-weight: 900; line-height: 1.1; letter-spacing: -2px; }
-    .hero h1 span {
-      background: linear-gradient(to right, var(--neon-cyan), var(--neon-magenta));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-    .hero p { font-size: 20px; color: var(--text-muted); line-height: 1.6; max-width: 700px; }
-    .hero-buttons { display: flex; gap: 20px; margin-top: 20px; }
-
-    .features { padding: 80px 40px; max-width: 1200px; margin: 0 auto; }
-    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-top: 60px; }
-    .feat-card {
-      background: var(--bg-panel); border: 1px solid var(--glass-border);
-      padding: 40px 30px; border-radius: 24px; backdrop-filter: blur(20px);
-      transition: 0.4s; position: relative; overflow: hidden;
-    }
-    .feat-card:hover { transform: translateY(-10px); border-color: var(--neon-purple); box-shadow: 0 20px 40px rgba(112, 0, 255, 0.15); }
-    .feat-icon {
-      width: 60px; height: 60px; border-radius: 16px; margin-bottom: 24px;
+    .nav-brand-icon {
+      width: 32px; height: 32px;
+      background: var(--accent);
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
       display: flex; align-items: center; justify-content: center;
-      background: linear-gradient(45deg, rgba(0,243,255,0.1), rgba(255,0,255,0.1));
-      color: var(--neon-cyan);
     }
-    .feat-card h3 { font-size: 24px; font-weight: 700; margin-bottom: 12px; }
-    .feat-card p { color: var(--text-muted); line-height: 1.6; font-size: 15px; }
 
-    /* =========================================
-       SERVER SELECTOR
-       ========================================= */
-    #view-selector { justify-content: center; align-items: center; }
-    .selector-box {
-      width: 100%; max-width: 1200px; padding: 40px;
+    .nav-links {
+      display: flex; align-items: center; gap: 4px; flex: 1;
     }
-    .selector-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
-    .selector-header h2 { font-size: 40px; font-weight: 800; }
-    
-    .server-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
-    .server-card {
-      background: var(--bg-panel); border: 1px solid var(--glass-border); border-radius: 20px;
-      padding: 24px; display: flex; align-items: center; gap: 20px; cursor: pointer;
-      backdrop-filter: blur(10px); transition: 0.3s;
+    .nav-links a {
+      color: var(--text-muted); font-size: 14px; font-weight: 500;
+      padding: 8px 14px; border-radius: 6px;
+      transition: color 0.2s, background 0.2s;
     }
-    .server-card:hover { background: rgba(255,255,255,0.05); border-color: var(--neon-cyan); transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0, 243, 255, 0.15); }
-    .server-card img, .server-card .initials { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; }
-    .server-card .initials { background: var(--bg-dark); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; border: 1px solid var(--glass-border); }
-    .server-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .server-card p { font-size: 14px; color: var(--neon-magenta); font-weight: 600; }
+    .nav-links a:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+    .nav-links a.premium-link {
+      color: var(--accent); border: 1px solid var(--accent);
+      padding: 6px 14px; border-radius: 6px;
+    }
+    .nav-links a.premium-link:hover { background: var(--accent-light); }
 
-    /* =========================================
-       DASHBOARD LAYOUT
-       ========================================= */
-    #view-dashboard { flex-direction: row; }
-    
-    .sidebar {
-      width: var(--sidebar-width); background: rgba(5, 5, 8, 0.8);
-      border-right: 1px solid var(--glass-border); backdrop-filter: blur(30px);
-      display: flex; flex-direction: column; z-index: 20;
-    }
-    .sidebar-brand {
-      height: var(--topbar-height); display: flex; align-items: center; gap: 16px; padding: 0 28px;
-      border-bottom: 1px solid var(--glass-border); cursor: pointer;
-    }
-    .sidebar-brand img { width: 36px; height: 36px; border-radius: 50%; }
-    .sidebar-brand h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+    .nav-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
 
-    .sidebar-nav { flex: 1; padding: 30px 16px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto;}
-    .nav-item {
-      display: flex; align-items: center; gap: 14px; padding: 14px 20px;
-      color: var(--text-muted); font-size: 15px; font-weight: 600;
-      border-radius: 12px; cursor: pointer; transition: 0.3s;
+    .btn { 
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 18px; border-radius: 6px; font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; border: none;
     }
-    .nav-item:hover { background: rgba(255,255,255,0.03); color: white; }
-    .nav-item.active { background: rgba(0, 243, 255, 0.1); color: var(--neon-cyan); box-shadow: inset 3px 0 0 var(--neon-cyan); }
-    
-    .sidebar-user {
-      padding: 20px; border-top: 1px solid var(--glass-border);
-      display: flex; align-items: center; gap: 16px; background: rgba(0,0,0,0.2);
+    .btn-gray {
+      background: #21262d; color: var(--text);
+      border: 1px solid var(--border);
     }
-    .sidebar-user img { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--glass-border); }
-    .sidebar-user-info { flex: 1; overflow: hidden; }
-    .sidebar-user-info h4 { font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .sidebar-user-info p { font-size: 13px; color: var(--text-muted); cursor: pointer; transition: 0.2s; margin-top: 2px;}
-    .sidebar-user-info p:hover { color: var(--danger); }
+    .btn-gray:hover { background: #2d333b; }
+    .btn-accent { background: var(--accent); color: white; }
+    .btn-accent:hover { background: var(--accent-hover); box-shadow: 0 0 20px rgba(196,43,87,0.3); }
 
-    .main-content { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; position: relative;}
-    
-    .topbar {
-      height: var(--topbar-height); display: flex; align-items: center; justify-content: space-between;
-      padding: 0 40px; border-bottom: 1px solid var(--glass-border);
-      background: rgba(5, 5, 8, 0.6); backdrop-filter: blur(20px); z-index: 10;
+    /* ============================
+       HERO SECTION
+       ============================ */
+    .hero-section {
+      max-width: 1200px; margin: 0 auto;
+      padding: 80px 32px 60px;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 60px; align-items: center;
     }
-    .breadcrumbs { display: flex; align-items: center; gap: 14px; font-size: 16px; font-weight: 600; color: var(--text-muted); }
-    .breadcrumbs img { width: 28px; height: 28px; border-radius: 50%; }
-    .breadcrumbs span.current { color: white; }
-    
-    .views-container { flex: 1; overflow-y: auto; padding: 40px; }
-    .page { display: none; animation: fadeIn 0.4s ease; }
-    .page.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* =========================================
-       PLUGIN GRID (DASHBOARD HOME)
-       ========================================= */
-    .plugin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 24px; margin-top: 30px; }
-    .plugin-card {
-      background: var(--bg-panel); border: 1px solid var(--glass-border); border-radius: 20px;
-      padding: 28px; display: flex; flex-direction: column; position: relative;
-      transition: 0.3s; cursor: pointer; backdrop-filter: blur(10px);
+    .hero-left {}
+    .hero-title {
+      font-size: 52px; font-weight: 800; line-height: 1.15;
+      letter-spacing: -1px; margin-bottom: 24px;
     }
-    .plugin-card:hover { border-color: var(--neon-magenta); transform: translateY(-4px); box-shadow: 0 10px 40px rgba(255, 0, 255, 0.1); }
-    
-    .plugin-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-    .plugin-icon { 
-      width: 54px; height: 54px; border-radius: 14px; background: rgba(255, 255, 255, 0.05); 
-      display: flex; align-items: center; justify-content: center; color: white; border: 1px solid var(--glass-border);
+    .hero-desc {
+      font-size: 16px; color: var(--text-muted); line-height: 1.7;
+      margin-bottom: 16px;
     }
-    .plugin-card:hover .plugin-icon { color: var(--neon-magenta); border-color: var(--neon-magenta); box-shadow: 0 0 15px rgba(255,0,255,0.3); }
-    
-    .plugin-card h3 { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
-    .plugin-card p { font-size: 15px; color: var(--text-muted); line-height: 1.5; }
-    
-    /* Neon Switch */
-    .switch { position: relative; display: inline-block; width: 50px; height: 26px; z-index: 2;}
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .3s; border-radius: 34px; border: 1px solid var(--glass-border); }
-    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: var(--text-muted); transition: .3s; border-radius: 50%; }
-    input:checked + .slider { background-color: rgba(0, 243, 255, 0.2); border-color: var(--neon-cyan); box-shadow: 0 0 10px rgba(0,243,255,0.3); }
-    input:checked + .slider:before { transform: translateX(24px); background-color: var(--neon-cyan); box-shadow: 0 0 10px var(--neon-cyan); }
+    .hero-stats {
+      font-size: 14px; color: var(--text-muted); margin-bottom: 32px;
+    }
+    .hero-stats strong { color: var(--accent); }
 
-    /* =========================================
-       PLUGIN SETTINGS PAGES
-       ========================================= */
-    .plugin-hero { margin-bottom: 40px; }
-    .back-link { display: inline-flex; align-items: center; gap: 8px; color: var(--neon-cyan); font-size: 15px; font-weight: 700; cursor: pointer; margin-bottom: 24px; transition: 0.2s; text-transform: uppercase; letter-spacing: 1px; }
-    .back-link:hover { color: white; transform: translateX(-5px); text-shadow: 0 0 10px var(--neon-cyan); }
-    .plugin-hero h2 { font-size: 36px; font-weight: 900; margin-bottom: 12px; display: flex; align-items: center; gap: 16px; }
-    .plugin-hero p { color: var(--text-muted); font-size: 18px; }
+    .hero-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
+    .hero-buttons .btn { padding: 12px 24px; font-size: 15px; }
 
-    .card { background: var(--bg-panel); border: 1px solid var(--glass-border); border-radius: 20px; padding: 32px; margin-bottom: 30px; max-width: 1000px; backdrop-filter: blur(10px); }
-    .card-header { margin-bottom: 28px; border-bottom: 1px solid var(--glass-border); padding-bottom: 16px; }
-    .card-header h3 { font-size: 20px; font-weight: 700; }
-    
-    .form-group { margin-bottom: 24px; }
-    .form-group label { display: block; color: var(--text-muted); font-size: 14px; margin-bottom: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
-    input, select { width: 100%; padding: 16px 20px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 12px; color: white; outline: none; transition: 0.3s; font-family: 'Outfit', sans-serif; font-size: 16px;}
-    input:focus, select:focus { border-color: var(--neon-cyan); box-shadow: 0 0 15px rgba(0,243,255,0.15); background: rgba(0,0,0,0.5); }
-    
-    .toast { display: none; color: var(--neon-cyan); margin-left: 16px; font-weight: 600; font-size: 15px; text-shadow: 0 0 10px rgba(0,243,255,0.4);}
+    .hero-right {
+      display: flex; align-items: center; justify-content: center;
+    }
+    .laptop-mockup {
+      width: 100%; max-width: 520px;
+      background: #1c1c1e;
+      border-radius: 16px;
+      border: 1px solid #333;
+      padding: 20px 20px 12px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);
+      position: relative;
+    }
+    .laptop-topbar {
+      display: flex; gap: 6px; margin-bottom: 12px;
+    }
+    .laptop-dot {
+      width: 12px; height: 12px; border-radius: 50%;
+    }
+    .laptop-dot:nth-child(1) { background: #ff5f57; }
+    .laptop-dot:nth-child(2) { background: #febc2e; }
+    .laptop-dot:nth-child(3) { background: #28c840; }
+    .laptop-screen {
+      background: #0d1117; border-radius: 8px; overflow: hidden;
+      padding: 14px;
+      display: grid; grid-template-columns: 100px 1fr;
+      gap: 10px; min-height: 240px;
+    }
+    .laptop-sidebar {
+      background: #161b22; border-radius: 6px; padding: 10px 8px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .laptop-nav-item {
+      padding: 6px 8px; border-radius: 4px; font-size: 10px; color: #8b949e;
+    }
+    .laptop-nav-item.active { background: rgba(196,43,87,0.2); color: #c42b57; }
+    .laptop-content {
+      background: #161b22; border-radius: 6px; padding: 10px;
+    }
+    .laptop-bar {
+      height: 8px; border-radius: 4px; background: #21262d; margin-bottom: 8px;
+    }
+    .laptop-bar.accent { background: #c42b57; width: 40%; }
+    .laptop-bar.short { width: 60%; }
+    .laptop-row {
+      display: flex; gap: 6px; margin-bottom: 6px;
+    }
+    .laptop-chip {
+      height: 20px; border-radius: 4px; background: #21262d; flex: 1;
+    }
+    .laptop-chip.red { background: rgba(196,43,87,0.4); }
 
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 15px;}
-    th, td { padding: 20px 16px; text-align: left; border-bottom: 1px solid var(--glass-border); }
-    th { color: var(--text-muted); font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 1px;}
-    td input { padding: 12px; font-size: 15px; width: 100%; background: rgba(0,0,0,0.2);}
-    .td-actions { display: flex; gap: 10px; }
-    
-    .inline-form { display: grid; grid-template-columns: 1fr 1.5fr 1fr 1fr auto; gap: 16px; align-items: flex-end; margin-bottom: 30px;}
-    .inline-form .form-group { margin-bottom: 0; }
-    
-    .btn-danger { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239,68,68,0.3); color: var(--danger); padding: 12px 20px; border-radius: 10px; cursor: pointer; transition: 0.2s;}
-    .btn-danger:hover { background: var(--danger); color: white; box-shadow: 0 0 15px rgba(239,68,68,0.4);}
+    /* ============================
+       FEATURES SECTION
+       ============================ */
+    .section { max-width: 1200px; margin: 0 auto; padding: 60px 32px; }
+
+    .section-title { 
+      text-align: center; font-size: 32px; font-weight: 700; margin-bottom: 8px;
+    }
+    .section-sub {
+      text-align: center; color: var(--text-muted); font-size: 16px; margin-bottom: 48px;
+    }
+
+    .features-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+    }
+
+    .feat-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 32px 28px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .feat-card:hover { border-color: var(--accent); transform: translateY(-4px); }
+    .feat-icon-wrap {
+      width: 56px; height: 56px; border-radius: 12px;
+      background: rgba(196, 43, 87, 0.1); border: 1px solid rgba(196, 43, 87, 0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; margin-bottom: 20px;
+    }
+    .feat-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+    .feat-card p { font-size: 14px; color: var(--text-muted); line-height: 1.65; }
+
+    /* ============================
+       GETTING STARTED SECTION
+       ============================ */
+    .getting-started {
+      max-width: 1200px; margin: 0 auto; padding: 40px 32px 80px;
+      text-align: center;
+    }
+    .getting-started .btn { margin-top: 24px; padding: 14px 32px; font-size: 16px; }
+
+    /* ============================
+       FOOTER
+       ============================ */
+    footer {
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+      padding: 60px 32px 40px;
+    }
+    .footer-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: grid; grid-template-columns: 280px 1fr 1fr; gap: 40px;
+    }
+    .footer-brand .footer-logo {
+      width: 40px; height: 40px;
+      background: transparent;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px;
+    }
+    .footer-logo-icon {
+      width: 36px; height: 36px;
+      background: white;
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    }
+    .footer-get-in-touch {
+      font-size: 13px; font-weight: 600; color: var(--accent); letter-spacing: 1px;
+      text-transform: uppercase; margin-bottom: 14px;
+    }
+    .footer-socials { display: flex; gap: 16px; margin-bottom: 24px; }
+    .footer-social-icon {
+      width: 36px; height: 36px; border-radius: 8px; background: var(--bg-card);
+      border: 1px solid var(--border); display: flex; align-items: center;
+      justify-content: center; font-size: 16px; transition: 0.2s; cursor: pointer;
+    }
+    .footer-social-icon:hover { border-color: var(--accent); color: var(--accent); }
+    .footer-copyright { font-size: 13px; color: var(--text-dim); }
+
+    .footer-col h4 { font-size: 13px; font-weight: 600; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 16px; }
+    .footer-col a { display: block; font-size: 14px; color: var(--text-muted); margin-bottom: 10px; transition: color 0.2s; }
+    .footer-col a:hover { color: var(--text); }
   </style>
 </head>
 <body>
 
-  <!-- Dynamic Glowing Background -->
-  <div class="bg-orbs">
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-    <div class="orb orb-3"></div>
-  </div>
+  <!-- NAVBAR -->
+  <nav>
+    <a href="/" class="nav-brand">
+      <div class="nav-brand-icon"></div>
+      <span>Subhuu</span>
+    </a>
+    <div class="nav-links">
+      <a href="/commands.html">Commands</a>
+      <a href="/api/auth/login">Dashboard</a>
+      <a href="#">Join Our Discord</a>
+      <a href="#">Help</a>
+      <a href="#">Status</a>
+      <a href="#" class="premium-link">Get Premium</a>
+    </div>
+    <div class="nav-actions">
+      <a href="/api/auth/invite" target="_blank" class="btn btn-gray">Add To Server</a>
+      <a href="/api/auth/login" class="btn btn-accent">Login with Discord</a>
+    </div>
+  </nav>
 
-  <!-- =========================================
-       VIEW 1: LANDING PAGE
-       ========================================= -->
-  <div id="view-landing" class="view-layer active">
-    
-    <nav class="landing-nav">
-      <div class="landing-brand">
-        <img src="logo.jpg" alt="Subhuu" />
-        <span>Subhuu</span>
-      </div>
-      <div class="landing-nav-links">
-        <a href="#features">Features</a>
-        <a href="#">Commands</a>
-        <a href="#">Support</a>
-        <a href="/api/auth/login" class="btn-outline" style="padding: 10px 24px;"><i data-feather="log-in" style="width: 18px;"></i> Login</a>
-      </div>
-    </nav>
-
-    <div class="hero">
-      <div class="hero-badge">✨ The #1 Discord Bot in India</div>
-      <h1>Level Up Your<br><span>Discord Server</span></h1>
-      <p>Automate moderation, build a thriving economy, reward your most active members, and bring your community to life with the ultimate all-in-one Discord bot.</p>
+  <!-- HERO SECTION -->
+  <div class="hero-section">
+    <div class="hero-left">
+      <h1 class="hero-title">The Discord Bot that does it all. Automatically</h1>
+      <p class="hero-desc">A fully customizable server moderation Discord bot for your Discord server that features a simple and intuitive web dashboard. Server management just got a whole lot easier.</p>
+      <p class="hero-stats">Subhuu is used on over <strong>11,000+ servers</strong>, we invite you to try it out and hope you enjoy!</p>
       <div class="hero-buttons">
-        <a href="/api/auth/invite" target="_blank" class="btn-glow"><i data-feather="plus" style="margin-right: 8px;"></i> Add to Discord</a>
-        <a href="/api/auth/login" class="btn-outline">Open Dashboard</a>
+        <a href="/api/auth/invite" target="_blank" class="btn btn-accent">Add To Server</a>
+        <a href="/api/auth/login" class="btn btn-gray">Login with Discord</a>
       </div>
     </div>
-
-    <div id="features" class="features">
-      <div style="text-align: center; margin-bottom: 40px;">
-        <h2 style="font-size: 40px; font-weight: 800;">Powerful Features</h2>
-        <p style="color: var(--text-muted); font-size: 18px; margin-top: 10px;">Everything you need to manage a massive community.</p>
-      </div>
-      <div class="features-grid">
-        <div class="feat-card">
-          <div class="feat-icon"><i data-feather="shopping-cart" style="width: 32px; height: 32px;"></i></div>
-          <h3>Global Economy</h3>
-          <p>Let users earn coins through chatting, gambling, and daily rewards. Create custom roles they can buy in the shop.</p>
+    <div class="hero-right">
+      <div class="laptop-mockup">
+        <div class="laptop-topbar">
+          <div class="laptop-dot"></div>
+          <div class="laptop-dot"></div>
+          <div class="laptop-dot"></div>
         </div>
-        <div class="feat-card">
-          <div class="feat-icon"><i data-feather="shield" style="width: 32px; height: 32px;"></i></div>
-          <h3>Auto Moderation</h3>
-          <p>Protect your server automatically. Subhuu scans for bad words, scam links, and spam, keeping your chat perfectly clean.</p>
-        </div>
-        <div class="feat-card">
-          <div class="feat-icon"><i data-feather="trending-up" style="width: 32px; height: 32px;"></i></div>
-          <h3>Leveling System</h3>
-          <p>Gamify your server. Users gain XP as they chat, unlocking exclusive auto-assigned roles at milestone levels.</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Footer -->
-    <footer style="margin-top: auto; padding: 60px 40px; border-top: 1px solid var(--glass-border); text-align: center; color: var(--text-muted); background: rgba(0,0,0,0.5);">
-      <h2 style="color: white; font-size: 24px; font-weight: 800; margin-bottom: 20px;">Subhuu</h2>
-      <p>© 2026 Subhuu Bot. All rights reserved.</p>
-    </footer>
-  </div>
-
-  <!-- =========================================
-       VIEW 2: SERVER SELECTOR
-       ========================================= -->
-  <div id="view-selector" class="view-layer">
-    <div class="selector-box">
-      <div class="selector-header">
-        <h2>Select a Server</h2>
-        <a href="/api/auth/logout" class="btn-outline"><i data-feather="log-out"></i> Logout</a>
-      </div>
-      <div class="server-grid" id="server-grid"></div>
-    </div>
-  </div>
-
-  <!-- =========================================
-       VIEW 3: DASHBOARD APP
-       ========================================= -->
-  <div id="view-dashboard" class="view-layer">
-    
-    <!-- Sidebar -->
-    <div class="sidebar">
-      <div class="sidebar-brand" onclick="openSelector()">
-        <img src="logo.jpg" alt="Logo" />
-        <h1>Subhuu</h1>
-      </div>
-      
-      <div class="sidebar-nav">
-        <div class="nav-item active" onclick="routeTo('plugins')"><i data-feather="grid"></i> Plugins</div>
-        <div class="nav-item" onclick="routeTo('members')"><i data-feather="users"></i> Member Database</div>
-        <div class="nav-item"><i data-feather="bar-chart-2"></i> Leaderboard</div>
-        <div class="nav-item"><i data-feather="star"></i> Premium</div>
-      </div>
-
-      <div class="sidebar-user">
-        <img id="nav-avatar" src="" alt="Avatar" />
-        <div class="sidebar-user-info">
-          <h4 id="nav-username">User</h4>
-          <p onclick="window.location.href='/api/auth/logout'">Logout</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Main Content -->
-    <div class="main-content">
-      
-      <!-- Topbar -->
-      <div class="topbar">
-        <div class="breadcrumbs">
-          <img id="dash-icon" src="" alt="Server Icon" />
-          <span id="dash-name">Server Name</span>
-          <i data-feather="chevron-right" style="width: 18px; opacity: 0.5;"></i>
-          <span class="current" id="breadcrumb-current">Plugins</span>
-        </div>
-        <button class="btn-outline" style="padding: 10px 20px; font-size: 14px;" onclick="openSelector()"><i data-feather="repeat" style="width: 16px;"></i> Switch Server</button>
-      </div>
-
-      <!-- Views Container -->
-      <div class="views-container">
-        
-        <!-- PAGE: PLUGINS GRID -->
-        <div id="page-plugins" class="page active">
-          <h2 style="font-size: 32px; font-weight: 800; margin-bottom: 12px;">Server Plugins</h2>
-          <p style="color: var(--text-muted); font-size: 16px;">Enable and configure modules to completely customize your server's experience.</p>
-          
-          <div class="plugin-grid">
-            
-            <div class="plugin-card" onclick="routeTo('economy')">
-              <div class="plugin-header">
-                <div class="plugin-icon"><i data-feather="shopping-cart"></i></div>
-                <label class="switch" onclick="event.stopPropagation()">
-                  <input type="checkbox" id="mod-economy" onchange="toggleModule('economy', this.checked)">
-                  <span class="slider"></span>
-                </label>
-              </div>
-              <h3>Economy & Shop</h3>
-              <p>Coins, dailies, gambling, and a customizable role shop.</p>
-            </div>
-
-            <div class="plugin-card" onclick="routeTo('levels')">
-              <div class="plugin-header">
-                <div class="plugin-icon"><i data-feather="trending-up"></i></div>
-                <label class="switch" onclick="event.stopPropagation()">
-                  <input type="checkbox" checked disabled>
-                  <span class="slider"></span>
-                </label>
-              </div>
-              <h3>Leveling & Rewards</h3>
-              <p>Reward active members with XP and auto-assigned roles.</p>
-            </div>
-
-            <div class="plugin-card" onclick="routeTo('settings')">
-              <div class="plugin-header">
-                <div class="plugin-icon"><i data-feather="shield"></i></div>
-                <label class="switch" onclick="event.stopPropagation()">
-                  <input type="checkbox" id="mod-moderation" onchange="toggleModule('moderation', this.checked)">
-                  <span class="slider"></span>
-                </label>
-              </div>
-              <h3>Moderation</h3>
-              <p>Protect your server with scam-link blocking and anti-spam.</p>
-            </div>
-
-            <div class="plugin-card" onclick="routeTo('settings')">
-              <div class="plugin-header">
-                <div class="plugin-icon"><i data-feather="user-plus"></i></div>
-                <label class="switch" onclick="event.stopPropagation()">
-                  <input type="checkbox" checked disabled>
-                  <span class="slider"></span>
-                </label>
-              </div>
-              <h3>Welcome & Goodbye</h3>
-              <p>Send beautiful, customized image cards to new users.</p>
-            </div>
-            
-            <div class="plugin-card" onclick="routeTo('settings')">
-              <div class="plugin-header">
-                <div class="plugin-icon"><i data-feather="file-text"></i></div>
-                <label class="switch" onclick="event.stopPropagation()">
-                  <input type="checkbox" id="mod-logging" onchange="toggleModule('logging', this.checked)">
-                  <span class="slider"></span>
-                </label>
-              </div>
-              <h3>Audit Logging</h3>
-              <p>Track deleted messages and member updates.</p>
-            </div>
-
-            <div class="plugin-card">
-              <div class="plugin-header">
-                <div class="plugin-icon"><i data-feather="music"></i></div>
-                <label class="switch" onclick="event.stopPropagation()">
-                  <input type="checkbox" checked disabled>
-                  <span class="slider"></span>
-                </label>
-              </div>
-              <h3>Music Player</h3>
-              <p>High quality music streaming from YouTube & Spotify.</p>
-            </div>
-
+        <div class="laptop-screen">
+          <div class="laptop-sidebar">
+            <div class="laptop-nav-item active">Dashboard</div>
+            <div class="laptop-nav-item">Modules</div>
+            <div class="laptop-nav-item">Commands</div>
+            <div class="laptop-nav-item">Logs</div>
           </div>
-        </div>
-
-        <!-- PAGE: ECONOMY & SHOP SETTINGS -->
-        <div id="page-economy" class="page">
-          <div class="back-link" onclick="routeTo('plugins')"><i data-feather="arrow-left"></i> Back to Plugins</div>
-          <div class="plugin-hero">
-            <h2><i data-feather="shopping-cart"></i> Economy & Shop</h2>
-            <p>Configure the virtual economy and items available for purchase.</p>
-          </div>
-          
-          <div class="card">
-            <div class="card-header"><h3>Add New Shop Item (Role)</h3></div>
-            <div class="inline-form">
-              <div class="form-group"><label>Key (ID)</label><input type="text" id="shop-new-id" placeholder="e.g. mvp"></div>
-              <div class="form-group"><label>Role Name</label><input type="text" id="shop-new-name" placeholder="e.g. MVP"></div>
-              <div class="form-group"><label>Price (Coins)</label><input type="number" id="shop-new-price" placeholder="5000"></div>
-              <div class="form-group"><label>Color (Hex)</label><input type="text" id="shop-new-color" placeholder="#ff0000"></div>
-              <button class="btn-glow" onclick="addShopItem()">Add Item</button>
+          <div class="laptop-content">
+            <div class="laptop-bar accent"></div>
+            <div class="laptop-bar" style="width:80%;height:6px;"></div>
+            <div class="laptop-row" style="margin-top:12px;">
+              <div class="laptop-chip red"></div>
+              <div class="laptop-chip"></div>
             </div>
-          </div>
-
-          <div class="card" style="max-width: 1000px;">
-            <div class="card-header"><h3>Current Shop Items</h3></div>
-            <table style="margin-bottom: 30px;">
-              <thead>
-                <tr><th>Key ID</th><th>Role Name</th><th>Price</th><th>Color</th><th>Actions</th></tr>
-              </thead>
-              <tbody id="shop-tbody">
-                <tr><td colspan="5">Loading...</td></tr>
-              </tbody>
-            </table>
-            <button class="btn-glow" onclick="saveShopItems()"><i data-feather="save" style="margin-right: 8px;"></i> Save Shop Changes</button>
-            <span class="toast" id="toast-shop">✓ Saved Successfully</span>
-          </div>
-        </div>
-
-        <!-- PAGE: LEVEL REWARDS SETTINGS -->
-        <div id="page-levels" class="page">
-          <div class="back-link" onclick="routeTo('plugins')"><i data-feather="arrow-left"></i> Back to Plugins</div>
-          <div class="plugin-hero">
-            <h2><i data-feather="trending-up"></i> Leveling & Rewards</h2>
-            <p>Automatically grant roles when members reach specific XP levels.</p>
-          </div>
-          
-          <div class="card">
-            <div class="card-header"><h3>Add New Level Reward</h3></div>
-            <div class="inline-form" style="grid-template-columns: 1fr 2fr 1fr auto;">
-              <div class="form-group"><label>Level Required</label><input type="number" id="level-new-id" placeholder="e.g. 10"></div>
-              <div class="form-group"><label>Role Name</label><input type="text" id="level-new-name" placeholder="e.g. Veteran"></div>
-              <div class="form-group"><label>Color (Hex)</label><input type="text" id="level-new-color" placeholder="#3498db"></div>
-              <button class="btn-glow" onclick="addLevelReward()">Add Reward</button>
+            <div class="laptop-row">
+              <div class="laptop-chip"></div>
+              <div class="laptop-chip red"></div>
             </div>
-          </div>
-
-          <div class="card" style="max-width: 1000px;">
-            <div class="card-header"><h3>Current Rewards</h3></div>
-            <table style="margin-bottom: 30px;">
-              <thead>
-                <tr><th>Level</th><th>Role Name</th><th>Color</th><th>Actions</th></tr>
-              </thead>
-              <tbody id="levels-tbody">
-                <tr><td colspan="4">Loading...</td></tr>
-              </tbody>
-            </table>
-            <button class="btn-glow" onclick="saveLevelRewards()"><i data-feather="save" style="margin-right:8px;"></i> Save Level Changes</button>
-            <span class="toast" id="toast-levels">✓ Saved Successfully</span>
-          </div>
-        </div>
-
-        <!-- PAGE: GENERAL SETTINGS (Channels) -->
-        <div id="page-settings" class="page">
-          <div class="back-link" onclick="routeTo('plugins')"><i data-feather="arrow-left"></i> Back to Plugins</div>
-          <div class="plugin-hero">
-            <h2><i data-feather="settings"></i> Server Configuration</h2>
-            <p>Set up the core channels required by the active plugins.</p>
-          </div>
-          
-          <div class="card">
-            <div class="card-header"><h3>Channel Routing</h3></div>
-            <div class="form-group">
-              <label>Welcome Channel</label>
-              <select id="select-welcome"><option value="">Loading...</option></select>
+            <div class="laptop-bar" style="width:100%;height:1px;margin:10px 0;"></div>
+            <div class="laptop-row">
+              <div class="laptop-chip"></div>
+              <div class="laptop-chip"></div>
+              <div class="laptop-chip red" style="flex:0.4;"></div>
             </div>
-            <div class="form-group">
-              <label>Level-up Channel</label>
-              <select id="select-level"><option value="">Loading...</option></select>
-            </div>
-            <div class="form-group">
-              <label>Mod Log Channel</label>
-              <select id="select-log"><option value="">Loading...</option></select>
-            </div>
-            <div style="margin-top: 40px;">
-              <button class="btn-glow" onclick="saveSettings()"><i data-feather="save" style="margin-right:8px;"></i> Save Configuration</button>
-              <span class="toast" id="toast-settings">✓ Saved Successfully</span>
+            <div class="laptop-row">
+              <div class="laptop-chip"></div>
+              <div class="laptop-chip short red" style="flex:0.5;"></div>
             </div>
           </div>
         </div>
-
-        <!-- PAGE: MEMBERS DATABASE -->
-        <div id="page-members" class="page">
-          <div class="plugin-hero">
-            <h2><i data-feather="users"></i> Member Database</h2>
-            <p>Directly modify the XP, levels, and coins of users in your server.</p>
-          </div>
-          
-          <div class="card" style="max-width: 1100px; padding: 0; overflow: hidden;">
-            <table style="margin-top: 0;">
-              <thead style="background: rgba(0,243,255,0.05);">
-                <tr>
-                  <th style="padding-left: 32px;">User ID</th>
-                  <th>Username</th>
-                  <th>Level</th>
-                  <th>XP</th>
-                  <th>Coins</th>
-                  <th style="padding-right: 32px;">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="members-tbody">
-                <tr><td colspan="6" style="padding-left: 32px;">Loading database...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
       </div>
     </div>
   </div>
 
-  <script>
-    feather.replace();
+  <!-- FEATURES SECTION -->
+  <div class="section">
+    <h2 class="section-title">Features</h2>
+    <p class="section-sub">What Subhuu has to offer</p>
+    <div class="features-grid">
+      <div class="feat-card">
+        <div class="feat-icon-wrap">⚙️</div>
+        <h3>Dashboard</h3>
+        <p>A feature-rich, configurable web dashboard. You can easily enable, disable, and configure every module from one place.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon-wrap">🛡️</div>
+        <h3>Moderation</h3>
+        <p>Moderation with mod logs, timed mutes, and bans. Auto-moderation and anti-spam, fully configurable.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon-wrap">🎵</div>
+        <h3>Music Player</h3>
+        <p>High quality music streaming from YouTube and Spotify directly into voice channels with queue management.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon-wrap">📈</div>
+        <h3>Leveling System</h3>
+        <p>Gamify your server. Members earn XP as they chat and unlock exclusive auto-assigned roles at milestone levels.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon-wrap">💰</div>
+        <h3>Economy & Shop</h3>
+        <p>Virtual coins, daily rewards, gambling mini-games, and a fully customizable role shop for your community.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon-wrap">🤖</div>
+        <h3>AI Commands</h3>
+        <p>Ask the bot anything with Gemini AI integration. Generate images, get answers, and much more with /ask.</p>
+      </div>
+    </div>
+  </div>
 
-    let currentGuildId = null;
-    let shopData = {};
-    let levelData = {};
-    let guildSettings = {};
+  <!-- GETTING STARTED -->
+  <div class="getting-started">
+    <h2 class="section-title">Getting Started</h2>
+    <p class="section-sub">To get started with Subhuu, select the server that you would like to setup.</p>
+    <a href="/api/auth/login" class="btn btn-accent">Manage Server</a>
+  </div>
 
-    function showView(viewId) {
-      document.querySelectorAll('.view-layer').forEach(v => v.classList.remove('active'));
-      document.getElementById(viewId).classList.add('active');
-      feather.replace();
-    }
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <div class="footer-logo-icon"></div>
+        </div>
+        <div class="footer-get-in-touch">Get In Touch</div>
+        <div class="footer-socials">
+          <div class="footer-social-icon">💬</div>
+          <div class="footer-social-icon">🐦</div>
+          <div class="footer-social-icon">✉️</div>
+        </div>
+        <p class="footer-copyright">© 2026 Subhuu Bot. All rights reserved.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Subhuu</h4>
+        <a href="#">Subhuu Bot</a>
+        <a href="/commands.html">Bot Commands</a>
+        <a href="/api/auth/login">Dashboard</a>
+        <a href="#">Help</a>
+        <a href="#">Get Premium</a>
+        <a href="#">Join Discord Server</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="#">Terms and Conditions</a>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Cookie Policy</a>
+      </div>
+    </div>
+  </footer>
 
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('loggedin') === 'true') {
-      window.history.replaceState({}, document.title, "/");
-    }
-    
-    // Check auth on load
-    fetch('/api/user/guilds')
-      .then(res => {
-        if (res.status === 401) {
-          showView('view-landing'); // Show landing page if not logged in
-        } else {
-          res.json().then(data => {
-            document.getElementById('nav-username').innerText = data.user.username;
-            if (data.user.avatar) document.getElementById('nav-avatar').src = data.user.avatar;
-
-            const grid = document.getElementById('server-grid');
-            grid.innerHTML = '';
-            if (data.guilds.length === 0) grid.innerHTML = '<p>No manageable servers found.</p>';
-
-            data.guilds.forEach(g => {
-              const card = document.createElement('div');
-              card.className = 'server-card';
-              const iconHtml = g.icon ? `<img src="${g.icon}" />` : `<div class="initials">${g.name.substring(0,2).toUpperCase()}</div>`;
-              card.innerHTML = `${iconHtml}<div><h3>${g.name}</h3><p>Configure Bot</p></div>`;
-              card.onclick = () => initDashboard(g.id, g.name, g.icon);
-              grid.appendChild(card);
-            });
-            showView('view-selector');
-          });
-        }
-      }).catch(err => {
-        console.error(err);
-        showView('view-landing');
-      });
-
-    function openSelector() { showView('view-selector'); }
-
-    function routeTo(pageName) {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.getElementById(`page-${pageName}`).classList.add('active');
-      
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      if(pageName === 'plugins' || pageName === 'economy' || pageName === 'levels' || pageName === 'settings') {
-        document.querySelectorAll('.nav-item')[0].classList.add('active');
-        document.getElementById('breadcrumb-current').innerText = pageName === 'plugins' ? 'Plugins' : pageName.charAt(0).toUpperCase() + pageName.slice(1);
-      } else if (pageName === 'members') {
-        document.querySelectorAll('.nav-item')[1].classList.add('active');
-        document.getElementById('breadcrumb-current').innerText = 'Members';
-        fetchMembers();
-      }
-      feather.replace();
-    }
-
-    async function initDashboard(guildId, name, icon) {
-      currentGuildId = guildId;
-      document.getElementById('dash-name').innerText = name;
-      document.getElementById('dash-icon').src = icon || 'https://cdn.discordapp.com/embed/avatars/0.png';
-      
-      showView('view-dashboard');
-      routeTo('plugins');
-
-      const res = await fetch(`/api/guilds/${guildId}`);
-      if (res.ok) {
-        const data = await res.json();
-        guildSettings = data.settings || {};
-        
-        let optionsHtml = '<option value="">-- None --</option>';
-        if (data.channels) data.channels.forEach(c => optionsHtml += `<option value="${c.id}">#${c.name}</option>`);
-        
-        ['select-welcome', 'select-level', 'select-log'].forEach(id => document.getElementById(id).innerHTML = optionsHtml);
-        document.getElementById('select-welcome').value = guildSettings.welcomeChannel || '';
-        document.getElementById('select-level').value = guildSettings.levelChannel || '';
-        document.getElementById('select-log').value = guildSettings.logChannel || '';
-        
-        const mods = guildSettings.modules || {};
-        document.getElementById('mod-moderation').checked = !!mods.moderation;
-        document.getElementById('mod-economy').checked = !!mods.economy;
-        document.getElementById('mod-logging').checked = !!mods.logging;
-
-        fetchShop(); fetchLevels();
-      }
-    }
-
-    async function toggleModule(moduleName, isEnabled) {
-      if(!guildSettings.modules) guildSettings.modules = {};
-      guildSettings.modules[moduleName] = isEnabled;
-      await fetch(`/api/guilds/${currentGuildId}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(guildSettings)
-      });
-    }
-
-    async function saveSettings() {
-      guildSettings.welcomeChannel = document.getElementById('select-welcome').value;
-      guildSettings.levelChannel = document.getElementById('select-level').value;
-      guildSettings.logChannel = document.getElementById('select-log').value;
-      const res = await fetch(`/api/guilds/${currentGuildId}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(guildSettings)
-      });
-      if (res.ok) showToast('toast-settings');
-    }
-
-    // --- TAB: SHOP ---
-    async function fetchShop() {
-      const res = await fetch(`/api/guilds/${currentGuildId}/shop`);
-      if(res.ok) { shopData = await res.json(); renderShop(); }
-    }
-    function renderShop() {
-      const tbody = document.getElementById('shop-tbody');
-      tbody.innerHTML = '';
-      if(Object.keys(shopData).length === 0) return tbody.innerHTML = '<tr><td colspan="5">Shop is empty.</td></tr>';
-
-      for(const [key, item] of Object.entries(shopData)) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><strong>${key}</strong></td>
-          <td><input type="text" id="sh-name-${key}" value="${item.name}"></td>
-          <td><input type="number" id="sh-price-${key}" value="${item.price}"></td>
-          <td><input type="text" id="sh-color-${key}" value="${item.color}"></td>
-          <td class="td-actions">
-            <button class="btn-danger" onclick="deleteShopItem('${key}')"><i data-feather="trash-2"></i></button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      }
-      feather.replace();
-    }
-    function addShopItem() {
-      const key = document.getElementById('shop-new-id').value.trim().toLowerCase();
-      if(!key) return alert('Key is required');
-      shopData[key] = {
-        name: document.getElementById('shop-new-name').value,
-        price: Number(document.getElementById('shop-new-price').value),
-        color: document.getElementById('shop-new-color').value || '#ffffff'
-      };
-      renderShop();
-    }
-    function deleteShopItem(key) { delete shopData[key]; renderShop(); }
-    async function saveShopItems() {
-      for(const key of Object.keys(shopData)) {
-        shopData[key].name = document.getElementById(`sh-name-${key}`).value;
-        shopData[key].price = Number(document.getElementById(`sh-price-${key}`).value);
-        shopData[key].color = document.getElementById(`sh-color-${key}`).value;
-      }
-      const res = await fetch(`/api/guilds/${currentGuildId}/shop`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(shopData)
-      });
-      if(res.ok) showToast('toast-shop');
-    }
-
-    // --- TAB: LEVELS ---
-    async function fetchLevels() {
-      const res = await fetch(`/api/guilds/${currentGuildId}/levels`);
-      if(res.ok) { levelData = await res.json(); renderLevels(); }
-    }
-    function renderLevels() {
-      const tbody = document.getElementById('levels-tbody');
-      tbody.innerHTML = '';
-      if(Object.keys(levelData).length === 0) return tbody.innerHTML = '<tr><td colspan="4">No level rewards set.</td></tr>';
-
-      for(const [lvl, item] of Object.entries(levelData)) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><strong>Level ${lvl}</strong></td>
-          <td><input type="text" id="lv-name-${lvl}" value="${item.roleName}"></td>
-          <td><input type="text" id="lv-color-${lvl}" value="${item.color}"></td>
-          <td class="td-actions">
-            <button class="btn-danger" onclick="deleteLevelReward('${lvl}')"><i data-feather="trash-2"></i></button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      }
-      feather.replace();
-    }
-    function addLevelReward() {
-      const lvl = document.getElementById('level-new-id').value;
-      if(!lvl) return alert('Level is required');
-      levelData[lvl] = {
-        roleName: document.getElementById('level-new-name').value,
-        color: document.getElementById('level-new-color').value || '#ffffff'
-      };
-      renderLevels();
-    }
-    function deleteLevelReward(lvl) { delete levelData[lvl]; renderLevels(); }
-    async function saveLevelRewards() {
-      for(const lvl of Object.keys(levelData)) {
-        levelData[lvl].roleName = document.getElementById(`lv-name-${lvl}`).value;
-        levelData[lvl].color = document.getElementById(`lv-color-${lvl}`).value;
-      }
-      const res = await fetch(`/api/guilds/${currentGuildId}/levels`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(levelData)
-      });
-      if(res.ok) showToast('toast-levels');
-    }
-
-    // --- TAB: MEMBERS ---
-    async function fetchMembers() {
-      const tbody = document.getElementById('members-tbody');
-      tbody.innerHTML = '<tr><td colspan="6" style="padding-left: 32px;">Loading...</td></tr>';
-      
-      const res = await fetch(`/api/guilds/${currentGuildId}/members`);
-      if(res.ok) {
-        const members = await res.json();
-        tbody.innerHTML = '';
-        if(members.length === 0) return tbody.innerHTML = '<tr><td colspan="6" style="padding-left: 32px;">No member data found.</td></tr>';
-
-        members.forEach(m => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td style="padding-left: 32px; color: var(--text-muted);">${m.userId}</td>
-            <td><strong style="color:var(--neon-cyan);">${m.username}</strong></td>
-            <td><input type="number" id="lvl-${m.userId}" value="${m.level}"></td>
-            <td><input type="number" id="xp-${m.userId}" value="${m.xp}"></td>
-            <td><input type="number" id="cns-${m.userId}" value="${m.coins}"></td>
-            <td class="td-actions" style="padding-right: 32px;">
-              <button class="btn-outline" style="padding: 8px 16px; border-radius:8px;" onclick="updateMember('${m.userId}')">Save</button>
-              <button class="btn-danger" style="padding: 8px 16px; border-radius:8px;" onclick="deleteMember('${m.userId}')"><i data-feather="trash-2"></i></button>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
-        feather.replace();
-      }
-    }
-    async function updateMember(userId) {
-      const lvl = document.getElementById(`lvl-${userId}`).value;
-      const xp = document.getElementById(`xp-${userId}`).value;
-      const cns = document.getElementById(`cns-${userId}`).value;
-      
-      const res = await fetch(`/api/guilds/${currentGuildId}/members/${userId}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'update', level: lvl, xp: xp, coins: cns })
-      });
-      if(res.ok) alert('Member updated successfully!');
-    }
-    async function deleteMember(userId) {
-      if(!confirm('Are you sure you want to delete all data for this user?')) return;
-      await fetch(`/api/guilds/${currentGuildId}/members/${userId}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'delete' })
-      });
-      fetchMembers();
-    }
-
-    function showToast(id) {
-      const toast = document.getElementById(id);
-      toast.style.display = 'inline';
-      setTimeout(() => toast.style.display = 'none', 3000);
-    }
-  </script>
 </body>
 </html>

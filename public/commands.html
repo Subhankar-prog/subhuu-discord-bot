@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Commands — Subhuu Bot</title>
+  <meta name="description" content="List of all Subhuu bot commands."/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0e1117;
+      --bg-card: #161b22;
+      --bg-card2: #1c2128;
+      --accent: #c42b57;
+      --accent-hover: #a82048;
+      --accent-light: rgba(196, 43, 87, 0.15);
+      --cyan: #34d399;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --text-dim: #6e7681;
+      --border: #30363d;
+      --nav-h: 64px;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    a { text-decoration: none; color: inherit; }
+
+    body::before {
+      content: ''; position: fixed; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(56,139,253,0.6), rgba(196,43,87,0.6), transparent);
+      z-index: 1000;
+    }
+
+    nav {
+      position: sticky; top: 0; z-index: 100; height: var(--nav-h);
+      background: rgba(14, 17, 23, 0.92); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; padding: 0 32px; gap: 32px;
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; flex-shrink: 0; }
+    .nav-brand-icon { width: 32px; height: 32px; background: var(--accent); clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); }
+    .nav-links { display: flex; align-items: center; gap: 4px; flex: 1; }
+    .nav-links a { color: var(--text-muted); font-size: 14px; font-weight: 500; padding: 8px 14px; border-radius: 6px; transition: 0.2s; }
+    .nav-links a:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+    .nav-links a.active { color: var(--text); }
+    .nav-links a.premium-link { color: var(--accent); border: 1px solid var(--accent); padding: 6px 14px; border-radius: 6px; }
+    .nav-links a.premium-link:hover { background: var(--accent-light); }
+    .nav-actions { display: flex; gap: 10px; margin-left: auto; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; }
+    .btn-gray { background: #21262d; color: var(--text); border: 1px solid var(--border); }
+    .btn-gray:hover { background: #2d333b; }
+    .btn-accent { background: var(--accent); color: white; }
+    .btn-accent:hover { background: var(--accent-hover); box-shadow: 0 0 20px rgba(196,43,87,0.3); }
+
+    /* ====== COMMANDS PAGE ====== */
+    .page-header { padding: 48px 32px 32px; max-width: 1200px; margin: 0 auto; }
+    .page-header h1 { font-size: 36px; font-weight: 800; margin-bottom: 6px; }
+    .page-header p { font-size: 15px; color: var(--text-muted); }
+
+    .commands-layout {
+      max-width: 1200px; margin: 0 auto; padding: 0 32px 80px;
+      display: grid; grid-template-columns: 240px 1fr; gap: 24px;
+    }
+
+    /* SIDEBAR */
+    .commands-sidebar {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 8px; overflow: hidden; align-self: start;
+    }
+    .sidebar-item {
+      padding: 12px 16px; font-size: 14px; font-weight: 500;
+      color: var(--text-muted); cursor: pointer; transition: 0.2s;
+      border-left: 3px solid transparent;
+    }
+    .sidebar-item:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+    .sidebar-item.active { background: rgba(196,43,87,0.15); color: var(--accent); border-left-color: var(--accent); font-weight: 700; }
+
+    /* TABLE */
+    .commands-table-wrap {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+    }
+    .commands-table { width: 100%; border-collapse: collapse; }
+    .commands-table th {
+      padding: 14px 20px; text-align: left; font-size: 13px; font-weight: 600;
+      color: var(--text-muted); border-bottom: 1px solid var(--border);
+      background: var(--bg-card2);
+    }
+    .commands-table td {
+      padding: 16px 20px; font-size: 14px;
+      border-bottom: 1px solid rgba(48, 54, 61, 0.6);
+      vertical-align: top;
+    }
+    .commands-table tr:last-child td { border-bottom: none; }
+    .commands-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .cmd-name { color: var(--cyan); font-weight: 600; font-family: 'Courier New', monospace; font-size: 14px; }
+    .cmd-desc { color: var(--text); line-height: 1.5; }
+    .cmd-usage { color: var(--text-muted); font-family: 'Courier New', monospace; font-size: 13px; }
+
+    /* Footer */
+    footer { border-top: 1px solid var(--border); background: var(--bg); padding: 60px 32px 40px; }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 280px 1fr 1fr; gap: 40px; }
+    .footer-logo-icon { width: 36px; height: 36px; background: white; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); margin-bottom: 20px; }
+    .footer-get-in-touch { font-size: 13px; font-weight: 600; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 14px; }
+    .footer-socials { display: flex; gap: 16px; margin-bottom: 24px; }
+    .footer-social-icon { width: 36px; height: 36px; border-radius: 8px; background: var(--bg-card); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 16px; transition: 0.2s; cursor: pointer; }
+    .footer-social-icon:hover { border-color: var(--accent); color: var(--accent); }
+    .footer-copyright { font-size: 13px; color: var(--text-dim); }
+    .footer-col h4 { font-size: 13px; font-weight: 600; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 16px; }
+    .footer-col a { display: block; font-size: 14px; color: var(--text-muted); margin-bottom: 10px; transition: color 0.2s; }
+    .footer-col a:hover { color: var(--text); }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="/" class="nav-brand">
+      <div class="nav-brand-icon"></div>
+      <span>Subhuu</span>
+    </a>
+    <div class="nav-links">
+      <a href="/commands.html" class="active">Commands</a>
+      <a href="/api/auth/login">Dashboard</a>
+      <a href="#">Join Our Discord</a>
+      <a href="#">Help</a>
+      <a href="#">Status</a>
+      <a href="#" class="premium-link">Get Premium</a>
+    </div>
+    <div class="nav-actions">
+      <a href="/api/auth/invite" target="_blank" class="btn btn-gray">Add To Server</a>
+      <a href="/api/auth/login" class="btn btn-accent">Login with Discord</a>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <h1>Commands</h1>
+    <p>List of bot commands</p>
+  </div>
+
+  <div class="commands-layout">
+    <div class="commands-sidebar" id="sidebar">
+      <div class="sidebar-item active" onclick="filterCategory(this, 'Economy')">Economy</div>
+      <div class="sidebar-item" onclick="filterCategory(this, 'Fun')">Fun</div>
+      <div class="sidebar-item" onclick="filterCategory(this, 'Info')">Info</div>
+      <div class="sidebar-item" onclick="filterCategory(this, 'Levels')">Levels</div>
+      <div class="sidebar-item" onclick="filterCategory(this, 'Moderation')">Moderation</div>
+      <div class="sidebar-item" onclick="filterCategory(this, 'Music')">Music</div>
+      <div class="sidebar-item" onclick="filterCategory(this, 'Roles')">Roles</div>
+      <div class="sidebar-item" onclick="filterCategory(this, 'Utility')">Utility</div>
+    </div>
+
+    <div class="commands-table-wrap">
+      <table class="commands-table" id="commands-table">
+        <thead>
+          <tr>
+            <th>Command</th>
+            <th>Description</th>
+            <th>Usage</th>
+          </tr>
+        </thead>
+        <tbody id="commands-body">
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-inner">
+      <div>
+        <div class="footer-logo-icon"></div>
+        <div class="footer-get-in-touch">Get In Touch</div>
+        <div class="footer-socials">
+          <div class="footer-social-icon">💬</div>
+          <div class="footer-social-icon">🐦</div>
+          <div class="footer-social-icon">✉️</div>
+        </div>
+        <p class="footer-copyright">© 2026 Subhuu Bot. All rights reserved.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Subhuu</h4>
+        <a href="/">Subhuu Bot</a>
+        <a href="/commands.html">Bot Commands</a>
+        <a href="/api/auth/login">Dashboard</a>
+        <a href="#">Help</a>
+        <a href="#">Get Premium</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="#">Terms and Conditions</a>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Cookie Policy</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const COMMANDS = {
+      Economy: [
+        { name: '/balance', desc: 'Check your or another user\'s coin balance.', usage: '/balance [user]' },
+        { name: '/daily', desc: 'Claim your daily coin reward. Can be claimed once every 24 hours.', usage: '/daily' },
+        { name: '/slots', desc: 'Gamble your coins on the slot machine for a chance to win big.', usage: '/slots <amount>' },
+        { name: '/blackjack', desc: 'Play a game of blackjack against the dealer.', usage: '/blackjack <amount>' },
+        { name: '/shop', desc: 'View the server shop and purchase exclusive roles with your coins.', usage: '/shop' },
+        { name: '/buy', desc: 'Purchase an item from the server shop.', usage: '/buy <item>' },
+        { name: '/leaderboard', desc: 'View the server economy leaderboard.', usage: '/leaderboard coins' },
+      ],
+      Fun: [
+        { name: '/joke', desc: 'Get a random joke to brighten up the chat.', usage: '/joke' },
+        { name: '/meme', desc: 'Get a random meme from Reddit.', usage: '/meme' },
+        { name: '/8ball', desc: 'Ask the magic 8-ball a question.', usage: '/8ball <question>' },
+        { name: '/coinflip', desc: 'Flip a coin and see if it lands heads or tails.', usage: '/coinflip' },
+        { name: '/rps', desc: 'Play Rock, Paper, Scissors against the bot.', usage: '/rps <choice>' },
+      ],
+      Info: [
+        { name: '/userinfo', desc: 'Get detailed information about a user.', usage: '/userinfo [user]' },
+        { name: '/serverinfo', desc: 'Get detailed information about this server.', usage: '/serverinfo' },
+        { name: '/botinfo', desc: 'Get information about Subhuu Bot.', usage: '/botinfo' },
+        { name: '/ping', desc: 'Check the bot\'s response latency.', usage: '/ping' },
+        { name: '/avatar', desc: 'Get the avatar of a user.', usage: '/avatar [user]' },
+      ],
+      Levels: [
+        { name: '/profile', desc: 'View your or another user\'s XP profile and rank card.', usage: '/profile [user]' },
+        { name: '/rank', desc: 'View the server XP leaderboard and rankings.', usage: '/rank' },
+        { name: '/rewards', desc: 'See all level-up rewards and role milestones.', usage: '/rewards' },
+        { name: '/setlevel', desc: 'Set a user\'s level. (Admin only)', usage: '/setlevel <user> <level>' },
+      ],
+      Moderation: [
+        { name: '/ban', desc: 'Ban a member from the server with an optional reason.', usage: '/ban <user> [reason]' },
+        { name: '/kick', desc: 'Kick a member from the server.', usage: '/kick <user> [reason]' },
+        { name: '/mute', desc: 'Timeout a member for a specified duration.', usage: '/mute <user> <duration>' },
+        { name: '/unmute', desc: 'Remove the timeout from a member.', usage: '/unmute <user>' },
+        { name: '/clear', desc: 'Delete a number of messages from a channel.', usage: '/clear <amount>' },
+        { name: '/warn', desc: 'Issue a formal warning to a member.', usage: '/warn <user> <reason>' },
+      ],
+      Music: [
+        { name: '/play', desc: 'Play a song from YouTube by URL or search query.', usage: '/play <query>' },
+        { name: '/skip', desc: 'Skip the currently playing song.', usage: '/skip' },
+        { name: '/stop', desc: 'Stop music and clear the queue.', usage: '/stop' },
+        { name: '/queue', desc: 'View the current music queue.', usage: '/queue' },
+        { name: '/pause', desc: 'Pause the currently playing song.', usage: '/pause' },
+        { name: '/resume', desc: 'Resume a paused song.', usage: '/resume' },
+        { name: '/nowplaying', desc: 'Show information about the currently playing song.', usage: '/nowplaying' },
+        { name: '/volume', desc: 'Change the playback volume.', usage: '/volume <0-100>' },
+      ],
+      Roles: [
+        { name: '/giverole', desc: 'Give a role to a member. (Admin only)', usage: '/giverole <user> <role>' },
+        { name: '/removerole', desc: 'Remove a role from a member. (Admin only)', usage: '/removerole <user> <role>' },
+        { name: '/autorole', desc: 'Set the role automatically given to new members.', usage: '/autorole <role>' },
+      ],
+      Utility: [
+        { name: '/ask', desc: 'Ask Subhuu AI anything using Gemini AI.', usage: '/ask <question>' },
+        { name: '/remind', desc: 'Set a reminder for a future time.', usage: '/remind <time> <message>' },
+        { name: '/poll', desc: 'Create a quick yes/no poll in the channel.', usage: '/poll <question>' },
+        { name: '/announce', desc: 'Send an announcement embed to a channel.', usage: '/announce <channel> <message>' },
+      ],
+    };
+
+    let currentCategory = 'Economy';
+
+    function filterCategory(el, category) {
+      document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+      el.classList.add('active');
+      currentCategory = category;
+      renderCommands(category);
+    }
+
+    function renderCommands(category) {
+      const tbody = document.getElementById('commands-body');
+      const cmds = COMMANDS[category] || [];
+      tbody.innerHTML = cmds.map(c => `
+        <tr>
+          <td><span class="cmd-name">${c.name}</span></td>
+          <td class="cmd-desc">${c.desc}</td>
+          <td><span class="cmd-usage">${c.usage}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    renderCommands(currentCategory);
+  </script>
+
+</body>
+</html>

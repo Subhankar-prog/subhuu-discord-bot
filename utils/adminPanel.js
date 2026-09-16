@@ -64,7 +64,7 @@ module.exports = function startAdminPanel(client) {
         secure: process.env.NODE_ENV === 'production' || req.hostname.includes('onrender'),
         sameSite: 'lax'
       });
-      res.redirect('/?loggedin=true');
+      res.redirect('/dashboard.html?loggedin=true');
     } catch (err) {
       console.error('[OAuth2 Error]', err);
       res.status(500).send('Failed to authenticate with Discord.');

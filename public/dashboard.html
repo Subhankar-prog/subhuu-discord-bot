@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — Subhuu Bot</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0e1117;
+      --bg-panel: #161b22;
+      --bg-panel2: #1c2128;
+      --accent: #c42b57;
+      --accent-hover: #a82048;
+      --accent-light: rgba(196, 43, 87, 0.15);
+      --cyan: #34d399;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --text-dim: #6e7681;
+      --border: #30363d;
+      --success: #3fb950;
+      --sidebar-w: 220px;
+      --topbar-h: 64px;
+    }
+    html, body { height: 100%; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; display: flex; flex-direction: column; }
+    a { text-decoration: none; color: inherit; }
+
+    /* ====== GLOBAL TOP BAR ====== */
+    .global-topbar {
+      height: var(--topbar-h); background: rgba(14,17,23,0.96); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border); display: flex; align-items: center;
+      padding: 0 24px; gap: 16px; flex-shrink: 0; z-index: 50;
+    }
+    .topbar-brand { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 700; margin-right: 16px; }
+    .topbar-brand-icon { width: 28px; height: 28px; background: var(--accent); clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); }
+    .topbar-server { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 700; }
+    .topbar-server img { width: 32px; height: 32px; border-radius: 50%; }
+    .topbar-actions { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    .topbar-user { display: flex; align-items: center; gap: 8px; }
+    .topbar-user img { width: 32px; height: 32px; border-radius: 50%; }
+    .topbar-user span { font-size: 14px; font-weight: 600; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+    .btn-accent { background: var(--accent); color: white; }
+    .btn-accent:hover { background: var(--accent-hover); }
+    .btn-gray { background: #21262d; color: var(--text); border: 1px solid var(--border); }
+    .btn-gray:hover { background: #2d333b; }
+    .btn-danger { background: rgba(248,81,73,0.1); color: #f85149; border: 1px solid rgba(248,81,73,0.2); }
+    .btn-danger:hover { background: rgba(248,81,73,0.2); }
+    .btn-success { background: rgba(63,185,80,0.1); color: var(--success); border: 1px solid rgba(63,185,80,0.2); }
+    .btn-success:hover { background: rgba(63,185,80,0.2); }
+
+    /* ====== APP BODY ====== */
+    .app-body { display: flex; flex: 1; overflow: hidden; }
+
+    /* ====== LEFT SIDEBAR ====== */
+    .sidebar {
+      width: var(--sidebar-w); background: var(--bg-panel);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto;
+    }
+    .back-to-account {
+      display: flex; align-items: center; gap: 8px; padding: 14px 16px;
+      font-size: 13px; color: var(--text-muted); border-bottom: 1px solid var(--border);
+      cursor: pointer; transition: 0.2s;
+    }
+    .back-to-account:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+    .back-arrow { font-size: 11px; }
+
+    .sidebar-section-label {
+      padding: 20px 16px 8px;
+      font-size: 11px; font-weight: 700; color: var(--text-dim);
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+
+    .sidebar-nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px; font-size: 14px; font-weight: 500;
+      color: var(--text-muted); cursor: pointer; transition: 0.2s;
+      border-left: 3px solid transparent;
+    }
+    .sidebar-nav-item:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+    .sidebar-nav-item.active { background: var(--accent-light); color: var(--accent); border-left-color: var(--accent); font-weight: 600; }
+    .sidebar-icon { font-size: 16px; width: 20px; text-align: center; }
+
+    .sidebar-nav-item .chevron { margin-left: auto; font-size: 11px; opacity: 0.5; transition: 0.2s; }
+    .sidebar-nav-item.open .chevron { transform: rotate(90deg); }
+
+    .sidebar-sub-item {
+      padding: 8px 16px 8px 46px; font-size: 13px; color: var(--text-muted);
+      cursor: pointer; transition: 0.2s;
+    }
+    .sidebar-sub-item:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+    .sidebar-sub-item.active { color: var(--text); font-weight: 600; }
+
+    /* ====== MAIN CONTENT ====== */
+    .main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+
+    /* ====== PAGES ====== */
+    .page { display: none; flex: 1; flex-direction: column; }
+    .page.active { display: flex; }
+
+    /* ====== SERVER SELECTOR ====== */
+    #page-selector {
+      align-items: flex-start; padding: 48px;
+    }
+    #page-selector h1 { font-size: 28px; font-weight: 800; margin-bottom: 6px; }
+    #page-selector p { color: var(--text-muted); margin-bottom: 32px; }
+    .server-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; width: 100%; }
+    .server-card {
+      background: var(--bg-panel); border: 1px solid var(--border);
+      border-radius: 10px; padding: 20px; display: flex; align-items: center;
+      gap: 14px; cursor: pointer; transition: 0.2s;
+    }
+    .server-card:hover { background: var(--bg-panel2); border-color: var(--accent); }
+    .server-card img, .server-card .initials { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; }
+    .server-card .initials { background: var(--bg); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; }
+    .server-card-info h3 { font-size: 15px; font-weight: 700; }
+    .server-card-info p { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    /* ====== DASHBOARD HOME ====== */
+    #page-home { flex-direction: column; }
+    .server-header {
+      padding: 24px 32px; background: var(--bg-panel2);
+      border-bottom: 1px solid var(--border);
+    }
+    .server-header h2 { font-size: 22px; font-weight: 800; margin-bottom: 16px; }
+    .server-stats {
+      display: flex; gap: 40px;
+    }
+    .server-stat { }
+    .server-stat-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; font-weight: 500; }
+    .server-stat-value { font-size: 22px; font-weight: 700; color: var(--text); }
+    .server-status { margin-top: 12px; }
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(63,185,80,0.1); border: 1px solid rgba(63,185,80,0.3);
+      color: var(--success); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); }
+
+    .dashboard-content { padding: 32px; flex: 1; }
+    .updates-title { font-size: 20px; font-weight: 700; margin-bottom: 24px; }
+    .update-list { display: flex; flex-direction: column; gap: 0; }
+    .update-item {
+      display: flex; gap: 16px; padding: 20px 0;
+      border-bottom: 1px solid var(--border); align-items: flex-start;
+    }
+    .update-item:last-child { border-bottom: none; }
+    .update-icon {
+      width: 40px; height: 40px; border-radius: 8px; flex-shrink: 0;
+      background: var(--accent); clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    }
+    .update-info h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .update-info p { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+    .update-date { font-size: 12px; color: var(--text-dim); margin-top: 6px; }
+
+    /* ====== MODULES PAGE ====== */
+    #page-modules { padding: 32px; }
+    .modules-header { margin-bottom: 32px; }
+    .modules-header h1 { font-size: 28px; font-weight: 800; margin-bottom: 6px; }
+    .modules-header p { color: var(--text-muted); }
+    .modules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+    .module-card {
+      background: var(--bg-panel); border: 1px solid var(--border);
+      border-radius: 10px; padding: 20px;
+      display: flex; flex-direction: column; gap: 12px;
+      transition: 0.2s; cursor: pointer;
+    }
+    .module-card:hover { border-color: var(--accent); background: var(--bg-panel2); }
+    .module-card-header { display: flex; align-items: center; justify-content: space-between; }
+    .module-card-title { display: flex; align-items: center; gap: 12px; }
+    .module-icon { font-size: 20px; }
+    .module-card h3 { font-size: 15px; font-weight: 700; }
+    .module-card p { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+    .toggle { position: relative; display: inline-block; width: 38px; height: 20px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #30363d; transition: .3s; border-radius: 20px; }
+    .toggle-slider::before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background: white; transition: .3s; border-radius: 50%; }
+    .toggle input:checked + .toggle-slider { background: var(--accent); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+    /* ====== GENERIC SETTINGS FORM ====== */
+    #page-settings { padding: 32px; }
+    .plugin-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-muted); margin-bottom: 24px; cursor: pointer; }
+    .plugin-breadcrumb:hover { color: var(--text); }
+    .settings-title { font-size: 28px; font-weight: 800; margin-bottom: 6px; display: flex; align-items: center; gap: 12px; }
+    .settings-subtitle { color: var(--text-muted); margin-bottom: 32px; }
+    .settings-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 10px; padding: 24px; margin-bottom: 20px; max-width: 780px; }
+    .settings-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-control { width: 100%; padding: 10px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; outline: none; transition: 0.2s; }
+    .form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(196,43,87,0.1); }
+    .toast-msg { display: none; font-size: 13px; font-weight: 600; color: var(--success); margin-left: 12px; }
+
+    /* ====== MEMBER DATABASE TABLE ====== */
+    #page-members { padding: 32px; }
+    .page-title { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+    .page-sub { color: var(--text-muted); margin-bottom: 28px; }
+    .data-table-wrap { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .data-table th { padding: 12px 18px; text-align: left; font-size: 12px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.8px; text-transform: uppercase; background: var(--bg-panel2); border-bottom: 1px solid var(--border); }
+    .data-table td { padding: 14px 18px; border-bottom: 1px solid rgba(48,54,61,0.6); vertical-align: middle; }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .data-table td input { width: 80px; padding: 6px 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; outline: none; }
+    .data-table td input:focus { border-color: var(--accent); }
+    .td-actions { display: flex; gap: 6px; }
+
+    /* ====== LOGS PAGE ====== */
+    #page-logs { padding: 32px; }
+    .log-list { display: flex; flex-direction: column; gap: 0; }
+    .log-item { display: flex; align-items: flex-start; gap: 14px; padding: 16px 0; border-bottom: 1px solid var(--border); }
+    .log-item:last-child { border-bottom: none; }
+    .log-icon { width: 36px; height: 36px; border-radius: 8px; background: rgba(196,43,87,0.1); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .log-info h4 { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+    .log-info p { font-size: 13px; color: var(--text-muted); }
+    .log-date { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+  </style>
+</head>
+<body>
+
+  <!-- GLOBAL TOP BAR -->
+  <div class="global-topbar">
+    <a href="/" class="topbar-brand">
+      <div class="topbar-brand-icon"></div>
+      <span>Subhuu</span>
+    </a>
+    <span style="color: var(--text-muted); font-size: 14px; margin-right: 8px;">|</span>
+    <div class="topbar-server" id="topbar-server" style="display:none;">
+      <img id="topbar-server-icon" src="" alt=""/>
+      <span id="topbar-server-name">Server</span>
+    </div>
+    <div class="topbar-actions">
+      <a href="/api/auth/invite" target="_blank" class="btn btn-gray">Add To Server</a>
+      <div class="topbar-user" id="topbar-user" style="display:none;">
+        <img id="user-avatar" src="" alt=""/>
+        <span id="user-name"></span>
+        <a href="/api/auth/logout" class="btn btn-gray btn-sm" style="margin-left:8px;">↪</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP BODY -->
+  <div class="app-body">
+
+    <!-- LEFT SIDEBAR (hidden until server selected) -->
+    <div class="sidebar" id="sidebar" style="display:none;">
+      <div class="back-to-account" onclick="showPage('selector')">
+        <span class="back-arrow">←</span> Back to Account
+      </div>
+
+      <div class="sidebar-section-label">Server</div>
+      <div class="sidebar-nav-item active" onclick="navClick(this, 'home')">
+        <span class="sidebar-icon">🏠</span> Dashboard
+      </div>
+      <div class="sidebar-nav-item" onclick="navClick(this, 'modules')">
+        <span class="sidebar-icon">🧩</span> Modules
+        <span class="chevron">›</span>
+      </div>
+      <div class="sidebar-nav-item" onclick="navClick(this, 'commands-dash')">
+        <span class="sidebar-icon">⌨️</span> Commands
+      </div>
+      <div class="sidebar-nav-item" onclick="navClick(this, 'members')">
+        <span class="sidebar-icon">👥</span> Member Database
+      </div>
+      <div class="sidebar-nav-item" onclick="navClick(this, 'logs')">
+        <span class="sidebar-icon">📋</span> Logs
+      </div>
+
+      <div class="sidebar-section-label" style="margin-top: 16px;">Bot Settings</div>
+      <div class="sidebar-nav-item" onclick="navClick(this, 'settings')">
+        <span class="sidebar-icon">⚙️</span> General Settings
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main">
+
+      <!-- SERVER SELECTOR PAGE -->
+      <div id="page-selector" class="page active">
+        <h1>Select a Server</h1>
+        <p>Select a server to manage Subhuu settings.</p>
+        <div class="server-grid" id="server-grid">
+          <p style="color: var(--text-muted);">Loading servers...</p>
+        </div>
+      </div>
+
+      <!-- DASHBOARD HOME PAGE -->
+      <div id="page-home" class="page">
+        <div class="server-header">
+          <h2 id="dash-server-name">Server Name</h2>
+          <div class="server-stats">
+            <div class="server-stat">
+              <div class="server-stat-label">Members</div>
+              <div class="server-stat-value" id="stat-members">—</div>
+            </div>
+            <div class="server-stat">
+              <div class="server-stat-label">Text Channels</div>
+              <div class="server-stat-value" id="stat-channels">—</div>
+            </div>
+            <div class="server-stat">
+              <div class="server-stat-label">Roles</div>
+              <div class="server-stat-value" id="stat-roles">—</div>
+            </div>
+          </div>
+          <div class="server-status" style="margin-top: 14px;">
+            <span class="status-badge"><span class="status-dot"></span> Bot is Online</span>
+          </div>
+        </div>
+
+        <div class="dashboard-content">
+          <div class="updates-title">Subhuu Updates</div>
+          <div class="update-list">
+            <div class="update-item">
+              <div class="update-icon"></div>
+              <div class="update-info">
+                <h4>🎵 Music Player Now Live</h4>
+                <p>Stream music directly in your voice channel from YouTube. Use /play to get started.</p>
+                <div class="update-date">Sep 16, 2026</div>
+              </div>
+            </div>
+            <div class="update-item">
+              <div class="update-icon"></div>
+              <div class="update-info">
+                <h4>🗄️ MongoDB Cloud Migration Complete</h4>
+                <p>All user data (XP, coins, settings) is now stored securely in MongoDB Atlas. Zero data loss.</p>
+                <div class="update-date">Sep 15, 2026</div>
+              </div>
+            </div>
+            <div class="update-item">
+              <div class="update-icon"></div>
+              <div class="update-info">
+                <h4>🤖 AI Commands Added</h4>
+                <p>Use /ask to chat with the built-in Gemini AI assistant. Ask anything and get instant answers.</p>
+                <div class="update-date">Sep 14, 2026</div>
+              </div>
+            </div>
+            <div class="update-item">
+              <div class="update-icon"></div>
+              <div class="update-info">
+                <h4>💰 Economy & Shop System Launched</h4>
+                <p>New economy system with coins, daily rewards, gambling, and a customizable role shop.</p>
+                <div class="update-date">Sep 10, 2026</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODULES PAGE -->
+      <div id="page-modules" class="page">
+        <div class="modules-header">
+          <h1>Modules</h1>
+          <p>Enable and configure modules for your server.</p>
+        </div>
+        <div class="modules-grid">
+          <div class="module-card" onclick="openModuleSettings('Economy & Shop', '💰')">
+            <div class="module-card-header">
+              <div class="module-card-title"><span class="module-icon">💰</span><h3>Economy & Shop</h3></div>
+              <label class="toggle" onclick="event.stopPropagation()">
+                <input type="checkbox" id="mod-economy" onchange="toggleModule('economy', this.checked)"><span class="toggle-slider"></span>
+              </label>
+            </div>
+            <p>Virtual coins, daily rewards, gambling mini-games, and a customizable role shop.</p>
+          </div>
+          <div class="module-card" onclick="openModuleSettings('Leveling', '📈')">
+            <div class="module-card-header">
+              <div class="module-card-title"><span class="module-icon">📈</span><h3>Leveling System</h3></div>
+              <label class="toggle" onclick="event.stopPropagation()">
+                <input type="checkbox" checked><span class="toggle-slider"></span>
+              </label>
+            </div>
+            <p>Reward active members with XP and automatically grant roles at milestone levels.</p>
+          </div>
+          <div class="module-card" onclick="openModuleSettings('Moderation', '🛡️')">
+            <div class="module-card-header">
+              <div class="module-card-title"><span class="module-icon">🛡️</span><h3>Moderation</h3></div>
+              <label class="toggle" onclick="event.stopPropagation()">
+                <input type="checkbox" id="mod-moderation" onchange="toggleModule('moderation', this.checked)"><span class="toggle-slider"></span>
+              </label>
+            </div>
+            <p>Mod logs, timed mutes, bans, anti-spam, and scam-link auto-blocking.</p>
+          </div>
+          <div class="module-card" onclick="openModuleSettings('Welcome', '👋')">
+            <div class="module-card-header">
+              <div class="module-card-title"><span class="module-icon">👋</span><h3>Welcome & Goodbye</h3></div>
+              <label class="toggle" onclick="event.stopPropagation()">
+                <input type="checkbox" checked><span class="toggle-slider"></span>
+              </label>
+            </div>
+            <p>Send beautiful image welcome cards when new members join your server.</p>
+          </div>
+          <div class="module-card" onclick="openModuleSettings('Audit Logging', '📋')">
+            <div class="module-card-header">
+              <div class="module-card-title"><span class="module-icon">📋</span><h3>Audit Logging</h3></div>
+              <label class="toggle" onclick="event.stopPropagation()">
+                <input type="checkbox" id="mod-logging" onchange="toggleModule('logging', this.checked)"><span class="toggle-slider"></span>
+              </label>
+            </div>
+            <p>Log deleted messages, edited messages, and voice channel activity.</p>
+          </div>
+          <div class="module-card">
+            <div class="module-card-header">
+              <div class="module-card-title"><span class="module-icon">🎵</span><h3>Music Player</h3></div>
+              <label class="toggle" onclick="event.stopPropagation()">
+                <input type="checkbox" checked><span class="toggle-slider"></span>
+              </label>
+            </div>
+            <p>High quality music streaming from YouTube and Spotify into voice channels.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODULE SETTINGS PAGE -->
+      <div id="page-settings" class="page">
+        <div class="plugin-breadcrumb" onclick="navClick(document.querySelector('.sidebar-nav-item:nth-child(4)'), 'modules')">← Back to Modules</div>
+        <div class="settings-title"><span id="settings-icon">⚙️</span> <span id="settings-title-text">Settings</span></div>
+        <p class="settings-subtitle">Configure channels and module settings for your server.</p>
+
+        <div class="settings-card">
+          <h3>Channel Routing</h3>
+          <div class="form-group">
+            <label>Welcome Channel</label>
+            <select class="form-control" id="select-welcome"><option value="">-- None --</option></select>
+          </div>
+          <div class="form-group">
+            <label>Level-Up Channel</label>
+            <select class="form-control" id="select-level"><option value="">-- None --</option></select>
+          </div>
+          <div class="form-group">
+            <label>Mod Log Channel</label>
+            <select class="form-control" id="select-log"><option value="">-- None --</option></select>
+          </div>
+          <button class="btn btn-accent" onclick="saveSettings()">Save Changes</button>
+          <span class="toast-msg" id="toast-settings">✓ Saved</span>
+        </div>
+      </div>
+
+      <!-- COMMANDS (DASH VIEW) PAGE -->
+      <div id="page-commands-dash" class="page" style="padding: 32px;">
+        <div class="page-title">Commands</div>
+        <p class="page-sub">Manage custom commands for your server. Visit the <a href="/commands.html" style="color: var(--accent);">full command list</a> to see all built-in commands.</p>
+        <div class="settings-card" style="max-width:100%;">
+          <h3>Bot Commands Reference</h3>
+          <p style="color: var(--text-muted); font-size: 14px;">Use the commands page to explore all available slash commands, including Economy, Moderation, Music, Leveling, and more.</p>
+          <br/>
+          <a href="/commands.html" class="btn btn-accent">View All Commands →</a>
+        </div>
+      </div>
+
+      <!-- MEMBER DATABASE PAGE -->
+      <div id="page-members" class="page">
+        <div class="page-title">Member Database</div>
+        <p class="page-sub">View and edit user XP, levels, and coins directly.</p>
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>User ID</th>
+                <th>Username</th>
+                <th>Level</th>
+                <th>XP</th>
+                <th>Coins</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="members-tbody">
+              <tr><td colspan="6" style="color: var(--text-muted);">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- LOGS PAGE -->
+      <div id="page-logs" class="page" style="padding: 32px;">
+        <div class="page-title">Logs</div>
+        <p class="page-sub">Recent activity in your server.</p>
+        <div class="settings-card" style="max-width: 100%; padding: 0; overflow: hidden;">
+          <div class="log-list" id="log-list" style="padding: 0 24px;">
+            <div class="log-item">
+              <div class="log-icon">🛡️</div>
+              <div class="log-info">
+                <h4>Moderation Log</h4>
+                <p>Connect MongoDB to begin capturing live audit logs from your server.</p>
+                <div class="log-date">System Message</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    let currentGuildId = null;
+    let guildSettings = {};
+
+    // ======= AUTH CHECK =======
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('loggedin') === 'true') window.history.replaceState({}, '', '/dashboard.html');
+
+    fetch('/api/user/guilds')
+      .then(res => {
+        if (res.status === 401) { window.location.href = '/api/auth/login'; return; }
+        return res.json();
+      })
+      .then(data => {
+        if (!data) return;
+        document.getElementById('user-avatar').src = data.user.avatar || '';
+        document.getElementById('user-name').innerText = data.user.username;
+        document.getElementById('topbar-user').style.display = 'flex';
+
+        const grid = document.getElementById('server-grid');
+        grid.innerHTML = '';
+        if (!data.guilds.length) {
+          grid.innerHTML = '<p style="color: var(--text-muted);">No manageable servers found. Add Subhuu to a server first.</p>';
+          return;
+        }
+        data.guilds.forEach(g => {
+          const card = document.createElement('div');
+          card.className = 'server-card';
+          const iconHtml = g.icon ? `<img src="${g.icon}" />` : `<div class="initials">${g.name.substring(0,2).toUpperCase()}</div>`;
+          card.innerHTML = `${iconHtml}<div class="server-card-info"><h3>${g.name}</h3><p>Configure Bot</p></div>`;
+          card.onclick = () => initDashboard(g.id, g.name, g.icon);
+          grid.appendChild(card);
+        });
+      })
+      .catch(() => window.location.href = '/');
+
+    async function initDashboard(guildId, name, icon) {
+      currentGuildId = guildId;
+      document.getElementById('sidebar').style.display = 'flex';
+      document.getElementById('topbar-server').style.display = 'flex';
+      document.getElementById('topbar-server-name').innerText = name;
+      if (icon) document.getElementById('topbar-server-icon').src = icon;
+      document.getElementById('dash-server-name').innerText = `Hello, ${name}`;
+
+      showPage('home');
+      navClick(document.querySelector('.sidebar-nav-item'), 'home');
+
+      const res = await fetch(`/api/guilds/${guildId}`);
+      if (res.ok) {
+        const data = await res.json();
+        guildSettings = data.settings || {};
+        document.getElementById('stat-members').innerText = data.memberCount || '—';
+        document.getElementById('stat-channels').innerText = data.channels?.length || '—';
+        document.getElementById('stat-roles').innerText = data.roleCount || '—';
+
+        let optHtml = '<option value="">-- None --</option>';
+        (data.channels || []).forEach(c => optHtml += `<option value="${c.id}">#${c.name}</option>`);
+        ['select-welcome','select-level','select-log'].forEach(id => {
+          document.getElementById(id).innerHTML = optHtml;
+        });
+        document.getElementById('select-welcome').value = guildSettings.welcomeChannel || '';
+        document.getElementById('select-level').value = guildSettings.levelChannel || '';
+        document.getElementById('select-log').value = guildSettings.logChannel || '';
+
+        const mods = guildSettings.modules || {};
+        document.getElementById('mod-moderation').checked = !!mods.moderation;
+        document.getElementById('mod-economy').checked = !!mods.economy;
+        document.getElementById('mod-logging').checked = !!mods.logging;
+      }
+    }
+
+    function showPage(name) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(`page-${name}`).classList.add('active');
+    }
+
+    function navClick(el, pageName) {
+      document.querySelectorAll('.sidebar-nav-item').forEach(n => n.classList.remove('active'));
+      el.classList.add('active');
+      showPage(pageName);
+      if (pageName === 'members') fetchMembers();
+    }
+
+    function openModuleSettings(title, icon) {
+      document.getElementById('settings-title-text').innerText = title;
+      document.getElementById('settings-icon').innerText = icon;
+      showPage('settings');
+    }
+
+    async function toggleModule(name, val) {
+      if (!guildSettings.modules) guildSettings.modules = {};
+      guildSettings.modules[name] = val;
+      await fetch(`/api/guilds/${currentGuildId}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(guildSettings)
+      });
+    }
+
+    async function saveSettings() {
+      guildSettings.welcomeChannel = document.getElementById('select-welcome').value;
+      guildSettings.levelChannel = document.getElementById('select-level').value;
+      guildSettings.logChannel = document.getElementById('select-log').value;
+      const res = await fetch(`/api/guilds/${currentGuildId}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(guildSettings)
+      });
+      if (res.ok) {
+        const t = document.getElementById('toast-settings');
+        t.style.display = 'inline';
+        setTimeout(() => t.style.display = 'none', 3000);
+      }
+    }
+
+    async function fetchMembers() {
+      const tbody = document.getElementById('members-tbody');
+      tbody.innerHTML = '<tr><td colspan="6" style="color: var(--text-muted);">Loading...</td></tr>';
+      const res = await fetch(`/api/guilds/${currentGuildId}/members`);
+      if (!res.ok) return;
+      const members = await res.json();
+      tbody.innerHTML = '';
+      if (!members.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="color: var(--text-muted);">No member data found.</td></tr>';
+        return;
+      }
+      members.forEach(m => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="color: var(--text-dim); font-size: 12px;">${m.userId}</td>
+          <td><strong>${m.username}</strong></td>
+          <td><input type="number" id="lvl-${m.userId}" value="${m.level}"/></td>
+          <td><input type="number" id="xp-${m.userId}" value="${m.xp}"/></td>
+          <td><input type="number" id="cns-${m.userId}" value="${m.coins}"/></td>
+          <td>
+            <div class="td-actions">
+              <button class="btn btn-success btn-sm" onclick="updateMember('${m.userId}')">Save</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteMember('${m.userId}')">Delete</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function updateMember(userId) {
+      await fetch(`/api/guilds/${currentGuildId}/members/${userId}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update',
+          level: document.getElementById(`lvl-${userId}`).value,
+          xp: document.getElementById(`xp-${userId}`).value,
+          coins: document.getElementById(`cns-${userId}`).value
+        })
+      });
+      alert('Updated!');
+    }
+
+    async function deleteMember(userId) {
+      if (!confirm('Delete all data for this user?')) return;
+      await fetch(`/api/guilds/${currentGuildId}/members/${userId}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete' })
+      });
+      fetchMembers();
+    }
+  </script>
+</body>
+</html>
