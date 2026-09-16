@@ -17,6 +17,11 @@ module.exports = function startAdminPanel(client) {
 
   // --- OAUTH2 LOGIN ---
 
+  app.get('/api/auth/invite', (req, res) => {
+    if (!CLIENT_ID) return res.status(500).send('Missing CLIENT_ID in .env');
+    res.redirect(`https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&permissions=8&scope=bot%20applications.commands`);
+  });
+
   app.get('/api/auth/login', (req, res) => {
     if (!CLIENT_ID || !CLIENT_SECRET || !REDIRECT_URI) {
       return res.status(500).send('OAuth2 is not configured in .env (Missing CLIENT_ID, CLIENT_SECRET, or REDIRECT_URI)');
