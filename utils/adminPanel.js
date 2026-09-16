@@ -153,71 +153,142 @@ module.exports = function startAdminPanel(client) {
     res.json({ success: true, settings: updated });
   });
 
-  // --- NEW PHASE 9 API ENDPOINTS ---
+  // --- PHASE 9+ API ENDPOINTS ---
   const configManager = require('./configManager');
-  const { User } = require('./database');
+  const { User, ActionLog, ReactionRole, CustomCommand, CommandPermission } = require('./database');
 
-  // Get all members data (XP + Coins)
-  app.get('/api/guilds/:id/members', requireDiscordAuth, async (req, res) => {
+  // Get guild server info — extended with memberCount and roleCount
+  app.get('/api/guilds/:id', requireDiscordAuth, async (req, res) => {
     const guildId = req.params.id;
-    try {
-      const members = await User.find({ guildId });
-      const formatted = members.map(m => ({
-        userId: m.userId,
-        username: m.username,
-        xp: m.xp,
-        level: m.level,
-        coins: m.coins
-      }));
-      res.json(formatted);
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: 'Failed to load member data' });
-    }
+    const discordGuild = client.guilds.cache.get(guildId);
+    if (!discordGuild) return res.status(404).json({ error: 'Bot not in guild' });
+
+    const settings = await settingsManager.getGuildSettings(guildId);
+    const textChannels = discordGuild.channels.cache.filter(c => c.type === 0).map(c => ({ id: c.id, name: c.name }));
+    const roles = discordGuild.roles.cache.filter(r => !r.managed && r.id !== discordGuild.id).map(r => ({ id: r.id, name: r.name, color: r.hexColor }));
+    const categories = discordGuild.channels.cache.filter(c => c.type === 4).size;
+    const voiceChannels = discordGuild.channels.cache.filter(c => c.type === 2).size;
+
+    res.json({
+      name: discordGuild.name,
+      icon: discordGuild.iconURL(),
+      memberCount: discordGuild.memberCount,
+      roleCount: roles.length,
+      categoryCount: categories,
+      textChannelCount: textChannels.length,
+      voiceChannelCount: voiceChannels,
+      settings,
+      channels: textChannels,
+      roles
+    });
   });
 
-  // Edit or Delete member data
+  // Update guild settings
+  app.post('/api/guilds/:id', requireDiscordAuth, async (req, res) => {
+    const guildId = req.params.id;
+    if (!client.guilds.cache.has(guildId)) return res.status(404).json({ error: 'Bot not in guild' });
+    const updated = await settingsManager.updateGuildSettings(guildId, req.body);
+    res.json({ success: true, settings: updated });
+  });
+
+  // --- MEMBERS ---
+  app.get('/api/guilds/:id/members', requireDiscordAuth, async (req, res) => {
+    try {
+      const members = await User.find({ guildId: req.params.id });
+      res.json(members.map(m => ({ userId: m.userId, username: m.username, xp: m.xp, level: m.level, coins: m.coins })));
+    } catch (err) { res.status(500).json({ error: 'Failed to load members' }); }
+  });
+
   app.post('/api/guilds/:id/members/:userId', requireDiscordAuth, async (req, res) => {
     const { id: guildId, userId } = req.params;
     const { action, xp, level, coins } = req.body;
-
     try {
-      if (action === 'delete') {
-        await User.deleteOne({ guildId, userId });
-      } else if (action === 'update') {
-        await User.updateOne(
-          { guildId, userId },
-          { $set: { xp: Number(xp), level: Number(level), coins: Number(coins) } },
-          { upsert: true }
-        );
-      }
+      if (action === 'delete') await User.deleteOne({ guildId, userId });
+      else if (action === 'update') await User.updateOne({ guildId, userId }, { $set: { xp: Number(xp), level: Number(level), coins: Number(coins) } }, { upsert: true });
       res.json({ success: true });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: 'Failed to update member' });
-    }
+    } catch (err) { res.status(500).json({ error: 'Failed to update member' }); }
   });
 
-  // Get Shop Items
-  app.get('/api/guilds/:id/shop', requireDiscordAuth, async (req, res) => {
-    res.json(await configManager.getShopItems(req.params.id));
+  // --- SHOP ---
+  app.get('/api/guilds/:id/shop', requireDiscordAuth, async (req, res) => { res.json(await configManager.getShopItems(req.params.id)); });
+  app.post('/api/guilds/:id/shop', requireDiscordAuth, async (req, res) => { await configManager.saveShopItems(req.params.id, req.body); res.json({ success: true }); });
+
+  // --- LEVELS ---
+  app.get('/api/guilds/:id/levels', requireDiscordAuth, async (req, res) => { res.json(await configManager.getLevelRewards(req.params.id)); });
+  app.post('/api/guilds/:id/levels', requireDiscordAuth, async (req, res) => { await configManager.saveLevelRewards(req.params.id, req.body); res.json({ success: true }); });
+
+  // --- LOGS (live from DB) ---
+  app.get('/api/guilds/:id/logs', requireDiscordAuth, async (req, res) => {
+    try {
+      const { type } = req.query;
+      const query = { guildId: req.params.id };
+      if (type && type !== 'all') query.type = type;
+      const logs = await ActionLog.find(query).sort({ timestamp: -1 }).limit(100);
+      res.json(logs);
+    } catch (err) { res.status(500).json({ error: 'Failed to load logs' }); }
   });
 
-  // Update Shop Items
-  app.post('/api/guilds/:id/shop', requireDiscordAuth, async (req, res) => {
-    await configManager.saveShopItems(req.params.id, req.body);
-    res.json({ success: true });
+  // --- COMMAND PERMISSIONS ---
+  app.get('/api/guilds/:id/command-permissions', requireDiscordAuth, async (req, res) => {
+    try {
+      const perms = await CommandPermission.find({ guildId: req.params.id });
+      const map = {};
+      perms.forEach(p => { map[p.commandName] = { enabled: p.enabled, allowedChannels: p.allowedChannels, ignoredChannels: p.ignoredChannels, allowedRoles: p.allowedRoles, ignoredRoles: p.ignoredRoles }; });
+      res.json(map);
+    } catch { res.json({}); }
   });
 
-  // Get Level Rewards
-  app.get('/api/guilds/:id/levels', requireDiscordAuth, async (req, res) => {
-    res.json(await configManager.getLevelRewards(req.params.id));
+  app.post('/api/guilds/:id/command-permissions', requireDiscordAuth, async (req, res) => {
+    const { commandName, enabled, allowedChannels, ignoredChannels, allowedRoles, ignoredRoles } = req.body;
+    try {
+      await CommandPermission.findOneAndUpdate(
+        { guildId: req.params.id, commandName },
+        { enabled: enabled !== undefined ? enabled : true, allowedChannels: allowedChannels || [], ignoredChannels: ignoredChannels || [], allowedRoles: allowedRoles || [], ignoredRoles: ignoredRoles || [] },
+        { upsert: true, new: true }
+      );
+      res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: 'Failed to save permissions' }); }
   });
 
-  // Update Level Rewards
-  app.post('/api/guilds/:id/levels', requireDiscordAuth, async (req, res) => {
-    await configManager.saveLevelRewards(req.params.id, req.body);
-    res.json({ success: true });
+  // --- REACTION ROLES ---
+  app.get('/api/guilds/:id/reaction-roles', requireDiscordAuth, async (req, res) => {
+    try { res.json(await ReactionRole.find({ guildId: req.params.id })); }
+    catch { res.json([]); }
+  });
+
+  app.post('/api/guilds/:id/reaction-roles', requireDiscordAuth, async (req, res) => {
+    const { action, messageId, emoji, roleId, roleName, channelId, _id } = req.body;
+    try {
+      if (action === 'delete') await ReactionRole.deleteOne({ _id });
+      else await ReactionRole.create({ guildId: req.params.id, channelId, messageId, emoji, roleId, roleName: roleName || emoji });
+      res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: 'Failed to save reaction role: ' + err.message }); }
+  });
+
+  // --- CUSTOM COMMANDS ---
+  app.get('/api/guilds/:id/custom-commands', requireDiscordAuth, async (req, res) => {
+    try { res.json(await CustomCommand.find({ guildId: req.params.id })); }
+    catch { res.json([]); }
+  });
+
+  app.post('/api/guilds/:id/custom-commands', requireDiscordAuth, async (req, res) => {
+    const { action, trigger, response, _id } = req.body;
+    try {
+      if (action === 'delete') await CustomCommand.deleteOne({ _id });
+      else if (action === 'add') await CustomCommand.create({ guildId: req.params.id, trigger: trigger.toLowerCase().trim(), response });
+      else if (action === 'update') await CustomCommand.updateOne({ _id }, { $set: { trigger: trigger.toLowerCase().trim(), response } });
+      res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: 'Failed: ' + err.message }); }
+  });
+
+  // --- MODULE-SPECIFIC SETTINGS ---
+  app.post('/api/guilds/:id/module-settings', requireDiscordAuth, async (req, res) => {
+    const guildId = req.params.id;
+    if (!client.guilds.cache.has(guildId)) return res.status(404).json({ error: 'Bot not in guild' });
+    try {
+      const updated = await settingsManager.updateGuildSettings(guildId, req.body);
+      res.json({ success: true, settings: updated });
+    } catch (err) { res.status(500).json({ error: 'Failed to save module settings' }); }
   });
 
   // Start the server

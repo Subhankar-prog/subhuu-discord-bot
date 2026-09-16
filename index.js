@@ -35,7 +35,8 @@ const client = new Client({
     GatewayIntentBits.GuildVoiceStates,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
-    GatewayIntentBits.GuildMembers, // needed for welcome messages
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildMessageReactions, // needed for reaction roles
   ],
   partials: [Partials.Message, Partials.Channel, Partials.Reaction],
 });
