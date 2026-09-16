@@ -358,4 +358,11 @@ client.distube
     queue.textChannel?.send('👋 Voice channel is empty, leaving.');
   });
 
+// --- KEEP ALIVE ---
+// Pings the Render URL every 14 minutes to prevent the free tier from sleeping
+const RENDER_URL = 'https://subhuu-discord-bot.onrender.com';
+setInterval(() => {
+  fetch(RENDER_URL).catch(() => {});
+}, 14 * 60 * 1000);
+
 client.login(process.env.DISCORD_TOKEN);
