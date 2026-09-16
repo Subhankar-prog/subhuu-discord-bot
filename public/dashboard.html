@@ -325,6 +325,7 @@
 
   <!-- GLOBAL TOP BAR -->
   <div class="global-topbar">
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
     <a href="/" class="topbar-brand">
       <div class="topbar-brand-icon"></div>
       <span>Subhuu</span>
@@ -933,7 +934,12 @@
         document.getElementById('mod-logging').checked = !!mods.logging;
     }
 
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+    }
+
     function showPage(name) {
+      document.getElementById('sidebar').classList.remove('open');
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.getElementById(`page-${name}`).classList.add('active');
     }

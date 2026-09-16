@@ -290,6 +290,21 @@
     .footer-col h4 { font-size: 13px; font-weight: 600; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 16px; }
     .footer-col a { display: block; font-size: 14px; color: var(--text-muted); margin-bottom: 10px; transition: color 0.2s; }
     .footer-col a:hover { color: var(--text); }
+
+    /* ====== RESPONSIVE LAYOUT ====== */
+    @media (max-width: 768px) {
+      nav { padding: 0 16px; gap: 16px; }
+      .nav-links { display: none; }
+      .nav-brand span { display: none; }
+      .hero-section { grid-template-columns: 1fr; padding: 40px 16px; text-align: center; gap: 40px; }
+      .hero-buttons { justify-content: center; }
+      .hero-title { font-size: 36px; }
+      .features-grid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr; gap: 40px; text-align: center; }
+      .footer-socials { justify-content: center; }
+      .laptop-mockup { max-width: 100%; }
+      .section { padding: 40px 16px; }
+    }
   </style>
 </head>
 <body>
