@@ -22,10 +22,8 @@ const socialAlerts = require('./utils/socialAlerts');
 
 // Connect to MongoDB
 connectDB().then(() => {
-  // Run migration if data folder exists
-  const migrate = require('./scripts/migrateData');
-  migrate().catch(console.error);
-});
+  console.log('MongoDB connection initialized.');
+}).catch(console.error);
 
 // Make the bundled ffmpeg-static binary discoverable by DisTube (which searches PATH)
 const ffmpegStatic = require('ffmpeg-static');
