@@ -694,6 +694,22 @@
           </div>
         </div>
         
+                <!-- ECONOMY SETTINGS -->
+        <div class="settings-card mod-settings" id="mod-settings-Economy" style="display: none;">
+          <h3>Economy & Shop Settings</h3>
+          <div class="form-group">
+            <label>Currency Symbol</label>
+            <input type="text" class="form-control" id="econ-symbol" placeholder="🪙" value="🪙">
+          </div>
+          <div class="form-group">
+            <label>Starting Balance</label>
+            <input type="number" class="form-control" id="econ-start" placeholder="500" value="500">
+          </div>
+          <div class="form-group">
+            <label>Daily Reward Amount</label>
+            <input type="number" class="form-control" id="econ-daily" placeholder="100" value="100">
+          </div>
+        </div>
         <!-- GENERIC / FALLBACK -->
         <div class="settings-card mod-settings" id="mod-settings-Generic" style="display: none;">
           <h3>Module Configuration</h3>
@@ -888,6 +904,10 @@
         document.getElementById('select-welcome').value = guildSettings.welcomeChannel || '';
         document.getElementById('select-level').value = guildSettings.levelChannel || '';
         document.getElementById('select-log').value = guildSettings.logChannel || '';
+        
+        document.getElementById('bot-prefix').value = guildSettings.prefix || '/';
+        document.getElementById('bot-nickname').value = guildSettings.nickname || '';
+        document.getElementById('bot-timezone').value = guildSettings.timezone || 'UTC';
 
         const mods = guildSettings.modules || {};
         document.getElementById('mod-moderation').checked = !!mods.moderation;
@@ -921,6 +941,11 @@
       else document.getElementById('mod-settings-Generic').style.display = 'block';
 
       // Populate values
+            if (currentSettingsModule === 'Economy' && guildSettings.economySettings) {
+        document.getElementById('econ-symbol').value = guildSettings.economySettings.currencySymbol || '🪙';
+        document.getElementById('econ-start').value = guildSettings.economySettings.startingBalance || 500;
+        document.getElementById('econ-daily').value = guildSettings.economySettings.dailyReward || 100;
+      }
       if (currentSettingsModule === 'Leveling' && guildSettings.xpSettings) {
         document.getElementById('xp-min').value = guildSettings.xpSettings.minXp || 15;
         document.getElementById('xp-max').value = guildSettings.xpSettings.maxXp || 25;
@@ -963,6 +988,13 @@
           minXp: parseInt(document.getElementById('xp-min').value) || 15,
           maxXp: parseInt(document.getElementById('xp-max').value) || 25,
           cooldown: parseInt(document.getElementById('xp-cooldown').value) || 60
+        };
+            } else if (currentSettingsModule === 'Economy') {
+        payload.economySettings = {
+          ...guildSettings.economySettings,
+          currencySymbol: document.getElementById('econ-symbol').value || '🪙',
+          startingBalance: parseInt(document.getElementById('econ-start').value) || 500,
+          dailyReward: parseInt(document.getElementById('econ-daily').value) || 100
         };
       } else if (currentSettingsModule === 'Moderation') {
         payload.automodSettings = {
@@ -1053,12 +1085,18 @@
 
     // --- General Settings ---
     async function saveGeneralSettings() {
-      const payload = {
-        prefix: document.getElementById('bot-prefix').value || '/',
-      };
-      const res = await fetch(`/api/guilds/${currentGuildId}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-      });
+        const rolesEl = document.getElementById('bot-manager-roles');
+        const managerRoles = Array.from(rolesEl.querySelectorAll('input:checked')).map(cb => cb.value);
+
+        const payload = {
+          prefix: document.getElementById('bot-prefix').value || '/',
+          nickname: document.getElementById('bot-nickname').value || '',
+          timezone: document.getElementById('bot-timezone').value || 'UTC',
+          managerRoles: managerRoles
+        };
+        const res = await fetch(`/api/guilds/${currentGuildId}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+        });
       if (res.ok) {
         const t = document.getElementById('toast-general');
         t.style.display = 'inline';
@@ -1223,10 +1261,10 @@
 
     // Temporary static list until we link it to the real bot's command list
     const DASH_COMMANDS = {
-      Economy: ['/balance', '/daily', '/slots', '/blackjack', '/shop'],
-      Moderation: ['/ban', '/kick', '/mute', '/unmute', '/clear'],
-      Music: ['/play', '/stop', '/skip', '/queue', '/volume'],
-      Fun: ['/meme', '/8ball', '/coinflip', '/joke']
+      Economy: ['/balance', '/daily', '/slots', '/blackjack', '/shop', '/pay', '/rob', '/work'],
+        Moderation: ['/ban', '/kick', '/mute', '/unmute', '/clear', '/warn', '/lock', '/unlock', '/slowmode'],
+        Music: ['/play', '/stop', '/skip', '/queue', '/volume', '/pause', '/resume', '/loop', '/nowplaying', '/shuffle', '/playlist'],
+        Fun: ['/meme', '/8ball', '/coinflip', '/joke', '/rps', '/tictactoe', '/trivia']
     };
 
     async function loadDashCommands() {
@@ -1244,7 +1282,16 @@
     }
 
     function filterDashCommands(category) {
-      currentCmdCategory = category;
+        currentCmdCategory = category;
+        document.querySelectorAll('#cmd-category-tabs button').forEach(b => {
+          if (b.innerText === category) {
+            b.classList.remove('btn-gray');
+            b.classList.add('btn-accent');
+          } else {
+            b.classList.add('btn-gray');
+            b.classList.remove('btn-accent');
+          }
+        });
       const grid = document.getElementById('dash-commands-grid');
       grid.innerHTML = '';
       
