@@ -136,10 +136,19 @@ module.exports = function startAdminPanel(client) {
       .filter(c => c.type === 0)
       .map(c => ({ id: c.id, name: c.name }));
 
+    // Fetch roles for dropdowns
+    const roles = discordGuild.roles.cache
+      .filter(r => r.name !== '@everyone')
+      .sort((a, b) => b.position - a.position)
+      .map(r => ({ id: r.id, name: r.name, color: r.hexColor }));
+
     res.json({
       name: discordGuild.name,
       settings: settings,
-      channels: textChannels
+      channels: textChannels,
+      roles: roles,
+      memberCount: discordGuild.memberCount,
+      roleCount: discordGuild.roles.cache.size
     });
   });
 

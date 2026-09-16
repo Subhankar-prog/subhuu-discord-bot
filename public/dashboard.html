@@ -1,35 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dashboard — Subhuu Bot</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
   <style>
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       /* Deep space dark mode with neon accents */
       --bg: #050508;
       --bg-panel: rgba(13, 15, 23, 0.7);
       --bg-panel2: rgba(20, 22, 33, 0.8);
-      --accent: #d92662;
-      /* Vibrant Magenta */
+      --accent: #d92662; /* Vibrant Magenta */
       --accent-hover: #f43f7d;
       --accent-light: rgba(217, 38, 98, 0.15);
       --accent-glow: 0 0 20px rgba(217, 38, 98, 0.4);
-      --purple: #8b5cf6;
-      /* Electric Purple */
-      --cyan: #06b6d4;
-      /* Neon Cyan */
+      --purple: #8b5cf6; /* Electric Purple */
+      --cyan: #06b6d4; /* Neon Cyan */
       --text: #f1f5f9;
       --text-muted: #94a3b8;
       --text-dim: #64748b;
@@ -38,845 +26,287 @@
       --success: #10b981;
       --sidebar-w: 240px;
       --topbar-h: 70px;
-
+      
       /* Glassmorphism filters */
       --glass-blur: blur(24px);
     }
-
-    html {
-      height: 100%;
-      overflow: hidden;
-    }
-
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      background-image:
+    html { height: 100%; overflow: hidden; }
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background: var(--bg); 
+      background-image: 
         radial-gradient(circle at 15% 50%, rgba(139, 92, 246, 0.08), transparent 25%),
         radial-gradient(circle at 85% 30%, rgba(217, 38, 98, 0.08), transparent 25%);
-      color: var(--text);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      height: 100%;
+      color: var(--text); 
+      overflow: hidden; 
+      display: flex; 
+      flex-direction: column; 
+      height: 100%; 
     }
-
-    a {
-      text-decoration: none;
-      color: inherit;
-    }
+    a { text-decoration: none; color: inherit; }
 
     /* ====== GLOBAL TOP BAR ====== */
     .global-topbar {
-      height: var(--topbar-h);
-      background: rgba(5, 5, 8, 0.6);
+      height: var(--topbar-h); 
+      background: rgba(5, 5, 8, 0.6); 
       backdrop-filter: var(--glass-blur);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      padding: 0 24px;
-      gap: 16px;
-      flex-shrink: 0;
-      z-index: 50;
+      border-bottom: 1px solid var(--border); 
+      display: flex; align-items: center;
+      padding: 0 24px; gap: 16px; flex-shrink: 0; z-index: 50;
     }
-
-    .topbar-brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 16px;
-      font-weight: 700;
-      margin-right: 16px;
-    }
-
-    .topbar-brand-icon {
-      width: 28px;
-      height: 28px;
-      background: var(--accent);
-      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-    }
-
-    .topbar-server {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 16px;
-      font-weight: 700;
-    }
-
-    .topbar-server img {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-    }
-
-    .topbar-actions {
-      margin-left: auto;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .topbar-user {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .topbar-user img {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-    }
-
-    .topbar-user span {
-      font-size: 14px;
-      font-weight: 600;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 18px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      border: none;
+    .topbar-brand { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 700; margin-right: 16px; }
+    .topbar-brand-icon { width: 28px; height: 28px; background: var(--accent); clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); }
+    .topbar-server { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 700; }
+    .topbar-server img { width: 32px; height: 32px; border-radius: 50%; }
+    .topbar-actions { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    .topbar-user { display: flex; align-items: center; gap: 8px; }
+    .topbar-user img { width: 32px; height: 32px; border-radius: 50%; }
+    .topbar-user span { font-size: 14px; font-weight: 600; }
+    .btn { 
+      display: inline-flex; align-items: center; gap: 6px; 
+      padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; 
+      cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: none; 
       letter-spacing: 0.3px;
     }
-
-    .btn-sm {
-      padding: 6px 14px;
-      font-size: 12px;
-    }
-
-    .btn-accent {
-      background: linear-gradient(135deg, var(--accent), var(--purple));
-      color: white;
+    .btn-sm { padding: 6px 14px; font-size: 12px; }
+    .btn-accent { 
+      background: linear-gradient(135deg, var(--accent), var(--purple)); 
+      color: white; 
       box-shadow: 0 4px 15px rgba(217, 38, 98, 0.2);
     }
-
-    .btn-accent:hover {
-      box-shadow: 0 6px 20px rgba(217, 38, 98, 0.4);
+    .btn-accent:hover { 
+      box-shadow: 0 6px 20px rgba(217, 38, 98, 0.4); 
       transform: translateY(-1px);
     }
-
-    .btn-gray {
-      background: rgba(255, 255, 255, 0.05);
-      color: var(--text);
-      border: 1px solid var(--border);
+    .btn-gray { 
+      background: rgba(255, 255, 255, 0.05); 
+      color: var(--text); 
+      border: 1px solid var(--border); 
       backdrop-filter: var(--glass-blur);
     }
-
-    .btn-gray:hover {
-      background: rgba(255, 255, 255, 0.1);
+    .btn-gray:hover { 
+      background: rgba(255, 255, 255, 0.1); 
       border-color: var(--border-glow);
     }
-
-    .btn-danger {
-      background: rgba(248, 81, 73, 0.1);
-      color: #f85149;
-      border: 1px solid rgba(248, 81, 73, 0.2);
-    }
-
-    .btn-danger:hover {
-      background: rgba(248, 81, 73, 0.2);
-    }
-
-    .btn-success {
-      background: rgba(63, 185, 80, 0.1);
-      color: var(--success);
-      border: 1px solid rgba(63, 185, 80, 0.2);
-    }
-
-    .btn-success:hover {
-      background: rgba(63, 185, 80, 0.2);
-    }
+    .btn-danger { background: rgba(248,81,73,0.1); color: #f85149; border: 1px solid rgba(248,81,73,0.2); }
+    .btn-danger:hover { background: rgba(248,81,73,0.2); }
+    .btn-success { background: rgba(63,185,80,0.1); color: var(--success); border: 1px solid rgba(63,185,80,0.2); }
+    .btn-success:hover { background: rgba(63,185,80,0.2); }
 
     /* ====== APP BODY ====== */
-    .app-body {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
+    .app-body { display: flex; flex: 1; overflow: hidden; }
 
     /* ====== LEFT SIDEBAR ====== */
     .sidebar {
-      width: var(--sidebar-w);
+      width: var(--sidebar-w); 
       background: rgba(10, 11, 16, 0.4);
       backdrop-filter: var(--glass-blur);
       border-right: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      flex-shrink: 0;
-      overflow-y: auto;
+      display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto;
     }
-
     .back-to-account {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 14px 16px;
-      font-size: 13px;
-      color: var(--text-muted);
-      border-bottom: 1px solid var(--border);
-      cursor: pointer;
-      transition: 0.2s;
+      display: flex; align-items: center; gap: 8px; padding: 14px 16px;
+      font-size: 13px; color: var(--text-muted); border-bottom: 1px solid var(--border);
+      cursor: pointer; transition: 0.2s;
     }
-
-    .back-to-account:hover {
-      color: var(--text);
-      background: rgba(255, 255, 255, 0.03);
-    }
-
-    .back-arrow {
-      font-size: 11px;
-    }
+    .back-to-account:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+    .back-arrow { font-size: 11px; }
 
     .sidebar-section-label {
       padding: 20px 16px 8px;
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--text-dim);
-      text-transform: uppercase;
-      letter-spacing: 1px;
+      font-size: 11px; font-weight: 700; color: var(--text-dim);
+      text-transform: uppercase; letter-spacing: 1px;
     }
 
     .sidebar-nav-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 20px;
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: all 0.2s ease;
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 20px; font-size: 14px; font-weight: 500;
+      color: var(--text-muted); cursor: pointer; transition: all 0.2s ease;
       border-left: 3px solid transparent;
       margin: 2px 8px;
       border-radius: 8px;
     }
-
-    .sidebar-nav-item:hover {
-      background: rgba(255, 255, 255, 0.05);
-      color: var(--text);
+    .sidebar-nav-item:hover { 
+      background: rgba(255,255,255,0.05); color: var(--text); 
     }
-
-    .sidebar-nav-item.active {
-      background: var(--accent-light);
-      color: var(--text);
+    .sidebar-nav-item.active { 
+      background: var(--accent-light); 
+      color: var(--text); 
       font-weight: 600;
       box-shadow: inset 3px 0 0 var(--accent);
-      border-left: none;
-      /* overriding the border with box-shadow inset */
+      border-left: none; /* overriding the border with box-shadow inset */
     }
+    .sidebar-icon { font-size: 16px; width: 22px; text-align: center; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
 
-    .sidebar-icon {
-      font-size: 16px;
-      width: 22px;
-      text-align: center;
-      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-    }
-
-    .sidebar-nav-item .chevron {
-      margin-left: auto;
-      font-size: 11px;
-      opacity: 0.5;
-      transition: 0.2s;
-    }
-
-    .sidebar-nav-item.open .chevron {
-      transform: rotate(90deg);
-    }
+    .sidebar-nav-item .chevron { margin-left: auto; font-size: 11px; opacity: 0.5; transition: 0.2s; }
+    .sidebar-nav-item.open .chevron { transform: rotate(90deg); }
 
     .sidebar-sub-item {
-      padding: 8px 16px 8px 46px;
-      font-size: 13px;
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: 0.2s;
+      padding: 8px 16px 8px 46px; font-size: 13px; color: var(--text-muted);
+      cursor: pointer; transition: 0.2s;
     }
-
-    .sidebar-sub-item:hover {
-      color: var(--text);
-      background: rgba(255, 255, 255, 0.03);
-    }
-
-    .sidebar-sub-item.active {
-      color: var(--text);
-      font-weight: 600;
-    }
+    .sidebar-sub-item:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+    .sidebar-sub-item.active { color: var(--text); font-weight: 600; }
 
     /* ====== MAIN CONTENT ====== */
-    .main {
-      flex: 1;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
+    .main { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
 
     /* ====== PAGES ====== */
-    .page {
-      display: none;
-      flex: 1;
-      flex-direction: column;
-      overflow-y: auto;
-    }
-
-    .page.active {
-      display: flex;
-    }
+    .page { display: none; flex: 1; flex-direction: column; overflow-y: auto; }
+    .page.active { display: flex; }
 
     /* ====== SERVER SELECTOR ====== */
     #page-selector {
-      align-items: flex-start;
-      padding: 48px;
-      overflow-y: auto;
+      align-items: flex-start; padding: 48px; overflow-y: auto;
     }
-
-    #page-selector h1 {
-      font-size: 28px;
-      font-weight: 800;
-      margin-bottom: 6px;
-    }
-
-    #page-selector p {
-      color: var(--text-muted);
-      margin-bottom: 32px;
-    }
-
-    .server-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 16px;
-      width: 100%;
-    }
-
+    #page-selector h1 { font-size: 28px; font-weight: 800; margin-bottom: 6px; }
+    #page-selector p { color: var(--text-muted); margin-bottom: 32px; }
+    .server-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; width: 100%; }
     .server-card {
-      background: var(--bg-panel);
+      background: var(--bg-panel); 
       backdrop-filter: var(--glass-blur);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 24px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      cursor: pointer;
-      transition: all 0.3s ease;
+      border-radius: 12px; padding: 24px; display: flex; align-items: center;
+      gap: 16px; cursor: pointer; transition: all 0.3s ease;
     }
-
-    .server-card:hover {
-      background: var(--bg-panel2);
+    .server-card:hover { 
+      background: var(--bg-panel2); 
       border-color: var(--accent);
       transform: translateY(-4px);
       box-shadow: var(--accent-glow);
     }
-
-    .server-card img,
-    .server-card .initials {
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-
-    .server-card .initials {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      font-weight: 700;
-    }
-
-    .server-card-info h3 {
-      font-size: 15px;
-      font-weight: 700;
-    }
-
-    .server-card-info p {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
+    .server-card img, .server-card .initials { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; }
+    .server-card .initials { background: var(--bg); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; }
+    .server-card-info h3 { font-size: 15px; font-weight: 700; }
+    .server-card-info p { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 
     /* ====== DASHBOARD HOME PAGE ====== */
-    #page-home {
-      flex-direction: column;
-      overflow: hidden;
-    }
-
+    #page-home { flex-direction: column; overflow: hidden; }
     .server-header {
-      padding: 24px 32px;
-      background: var(--bg-panel2);
-      border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
+      padding: 24px 32px; background: var(--bg-panel2);
+      border-bottom: 1px solid var(--border); flex-shrink: 0;
     }
-
-    .server-header h2 {
-      font-size: 22px;
-      font-weight: 800;
-      margin-bottom: 16px;
-    }
-
-    .server-stats {
-      display: flex;
-      gap: 40px;
-    }
-
-    .server-stat-label {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-bottom: 4px;
-      font-weight: 500;
-    }
-
-    .server-stat-value {
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--text);
-    }
-
+    .server-header h2 { font-size: 22px; font-weight: 800; margin-bottom: 16px; }
+    .server-stats { display: flex; gap: 40px; }
+    .server-stat-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; font-weight: 500; }
+    .server-stat-value { font-size: 22px; font-weight: 700; color: var(--text); }
     .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(63, 185, 80, 0.1);
-      border: 1px solid rgba(63, 185, 80, 0.3);
-      color: var(--success);
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(63,185,80,0.1); border: 1px solid rgba(63,185,80,0.3);
+      color: var(--success); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;
     }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); }
+    .dashboard-content { padding: 32px; flex: 1; overflow-y: auto; }
 
-    .status-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--success);
-    }
-
-    .dashboard-content {
-      padding: 32px;
-      flex: 1;
-      overflow-y: auto;
-    }
-
-    .updates-title {
-      font-size: 20px;
-      font-weight: 700;
-      margin-bottom: 24px;
-    }
-
-    .update-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-    }
-
+    .updates-title { font-size: 20px; font-weight: 700; margin-bottom: 24px; }
+    .update-list { display: flex; flex-direction: column; gap: 0; }
     .update-item {
-      display: flex;
-      gap: 16px;
-      padding: 20px 0;
-      border-bottom: 1px solid var(--border);
-      align-items: flex-start;
+      display: flex; gap: 16px; padding: 20px 0;
+      border-bottom: 1px solid var(--border); align-items: flex-start;
     }
-
-    .update-item:last-child {
-      border-bottom: none;
-    }
-
+    .update-item:last-child { border-bottom: none; }
     .update-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 8px;
-      flex-shrink: 0;
-      background: var(--accent);
-      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      width: 40px; height: 40px; border-radius: 8px; flex-shrink: 0;
+      background: var(--accent); clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
     }
-
-    .update-info h4 {
-      font-size: 14px;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-
-    .update-info p {
-      font-size: 13px;
-      color: var(--text-muted);
-      line-height: 1.5;
-    }
-
-    .update-date {
-      font-size: 12px;
-      color: var(--text-dim);
-      margin-top: 6px;
-    }
+    .update-info h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .update-info p { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+    .update-date { font-size: 12px; color: var(--text-dim); margin-top: 6px; }
 
     /* ====== MODULES PAGE ====== */
-    #page-modules {
-      padding: 32px;
-      overflow-y: auto;
-    }
-
-    .modules-header {
-      margin-bottom: 32px;
-      flex-shrink: 0;
-    }
-
-    .modules-header h1 {
-      font-size: 28px;
-      font-weight: 800;
-      margin-bottom: 6px;
-    }
-
-    .modules-header p {
-      color: var(--text-muted);
-    }
-
-    .modules-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 16px;
-    }
-
+    #page-modules { padding: 32px; overflow-y: auto; }
+    .modules-header { margin-bottom: 32px; flex-shrink: 0; }
+    .modules-header h1 { font-size: 28px; font-weight: 800; margin-bottom: 6px; }
+    .modules-header p { color: var(--text-muted); }
+    .modules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
     .module-card {
-      background: var(--bg-panel);
+      background: var(--bg-panel); 
       backdrop-filter: var(--glass-blur);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      transition: all 0.3s ease;
-      cursor: pointer;
+      border-radius: 12px; padding: 24px;
+      display: flex; flex-direction: column; gap: 16px;
+      transition: all 0.3s ease; cursor: pointer;
       position: relative;
       overflow: hidden;
     }
-
     .module-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
       background: linear-gradient(90deg, var(--purple), var(--cyan));
-      opacity: 0;
-      transition: opacity 0.3s ease;
+      opacity: 0; transition: opacity 0.3s ease;
     }
-
-    .module-card:hover {
-      border-color: var(--border-glow);
-      background: var(--bg-panel2);
+    .module-card:hover { 
+      border-color: var(--border-glow); 
+      background: var(--bg-panel2); 
       transform: translateY(-2px);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
-
-    .module-card:hover::before {
-      opacity: 1;
-    }
-
-    .module-card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .module-card-title {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .module-icon {
-      font-size: 20px;
-    }
-
-    .module-card h3 {
-      font-size: 15px;
-      font-weight: 700;
-    }
-
-    .module-card p {
-      font-size: 13px;
-      color: var(--text-muted);
-      line-height: 1.5;
-    }
-
-    .toggle {
-      position: relative;
-      display: inline-block;
-      width: 38px;
-      height: 20px;
-      flex-shrink: 0;
-    }
-
-    .toggle input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-
-    .toggle-slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: #30363d;
-      transition: .3s;
-      border-radius: 20px;
-    }
-
-    .toggle-slider::before {
-      position: absolute;
-      content: "";
-      height: 14px;
-      width: 14px;
-      left: 3px;
-      bottom: 3px;
-      background: white;
-      transition: .3s;
-      border-radius: 50%;
-    }
-
-    .toggle input:checked+.toggle-slider {
-      background: var(--accent);
-    }
-
-    .toggle input:checked+.toggle-slider::before {
-      transform: translateX(18px);
-    }
+    .module-card:hover::before { opacity: 1; }
+    .module-card-header { display: flex; align-items: center; justify-content: space-between; }
+    .module-card-title { display: flex; align-items: center; gap: 12px; }
+    .module-icon { font-size: 20px; }
+    .module-card h3 { font-size: 15px; font-weight: 700; }
+    .module-card p { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+    .toggle { position: relative; display: inline-block; width: 38px; height: 20px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #30363d; transition: .3s; border-radius: 20px; }
+    .toggle-slider::before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background: white; transition: .3s; border-radius: 50%; }
+    .toggle input:checked + .toggle-slider { background: var(--accent); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
 
     /* ====== GENERIC SETTINGS FORM ====== */
-    #page-settings {
-      padding: 32px;
-      overflow-y: auto;
-    }
-
-    .plugin-breadcrumb {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 14px;
-      color: var(--text-muted);
-      margin-bottom: 24px;
-      cursor: pointer;
-    }
-
-    .plugin-breadcrumb:hover {
-      color: var(--text);
-    }
-
-    .settings-title {
-      font-size: 28px;
-      font-weight: 800;
-      margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .settings-subtitle {
-      color: var(--text-muted);
-      margin-bottom: 32px;
-    }
-
-    .settings-card {
-      background: var(--bg-panel);
+    #page-settings { padding: 32px; overflow-y: auto; }
+    .plugin-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-muted); margin-bottom: 24px; cursor: pointer; }
+    .plugin-breadcrumb:hover { color: var(--text); }
+    .settings-title { font-size: 28px; font-weight: 800; margin-bottom: 6px; display: flex; align-items: center; gap: 12px; }
+    .settings-subtitle { color: var(--text-muted); margin-bottom: 32px; }
+    .settings-card { 
+      background: var(--bg-panel); 
       backdrop-filter: var(--glass-blur);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 32px;
-      margin-bottom: 24px;
-      max-width: 780px;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border); 
+      border-radius: 12px; padding: 32px; margin-bottom: 24px; max-width: 780px; 
+      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
     }
-
-    .settings-card h3 {
-      font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 24px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--border);
-      color: var(--text);
+    .settings-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); color: var(--text); }
+    .form-group { margin-bottom: 24px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+    .form-control { 
+      width: 100%; padding: 12px 16px; 
+      background: rgba(0,0,0,0.3); 
+      border: 1px solid var(--border); 
+      border-radius: 8px; color: var(--text); 
+      font-family: 'Inter', sans-serif; font-size: 14px; outline: none; transition: all 0.3s ease; 
     }
-
-    .form-group {
-      margin-bottom: 24px;
+    .form-control:focus { 
+      border-color: var(--accent); 
+      background: rgba(0,0,0,0.5);
+      box-shadow: 0 0 0 3px var(--accent-light); 
     }
-
-    .form-group label {
-      display: block;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-muted);
-      margin-bottom: 10px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .form-control {
-      width: 100%;
-      padding: 12px 16px;
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text);
-      font-family: 'Inter', sans-serif;
-      font-size: 14px;
-      outline: none;
-      transition: all 0.3s ease;
-    }
-
-    .form-control:focus {
-      border-color: var(--accent);
-      background: rgba(0, 0, 0, 0.5);
-      box-shadow: 0 0 0 3px var(--accent-light);
-    }
-
-    .toast-msg {
-      display: none;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--success);
-      margin-left: 12px;
-    }
+    .toast-msg { display: none; font-size: 13px; font-weight: 600; color: var(--success); margin-left: 12px; }
 
     /* ====== MEMBER DATABASE TABLE ====== */
-    .page-title {
-      font-size: 28px;
-      font-weight: 800;
-      margin-bottom: 8px;
-    }
-
-    .page-sub {
-      color: var(--text-muted);
-      margin-bottom: 28px;
-    }
-
-    .data-table-wrap {
-      background: var(--bg-panel);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      overflow: hidden;
-    }
-
-    .data-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 14px;
-    }
-
-    .data-table th {
-      padding: 12px 18px;
-      text-align: left;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-muted);
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-      background: var(--bg-panel2);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .data-table td {
-      padding: 14px 18px;
-      border-bottom: 1px solid rgba(48, 54, 61, 0.6);
-      vertical-align: middle;
-    }
-
-    .data-table tr:last-child td {
-      border-bottom: none;
-    }
-
-    .data-table tr:hover td {
-      background: rgba(255, 255, 255, 0.02);
-    }
-
-    .data-table td input {
-      width: 80px;
-      padding: 6px 10px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      color: var(--text);
-      font-family: 'Inter', sans-serif;
-      font-size: 13px;
-      outline: none;
-    }
-
-    .data-table td input:focus {
-      border-color: var(--accent);
-    }
-
-    .td-actions {
-      display: flex;
-      gap: 6px;
-    }
+    .page-title { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+    .page-sub { color: var(--text-muted); margin-bottom: 28px; }
+    .data-table-wrap { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .data-table th { padding: 12px 18px; text-align: left; font-size: 12px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.8px; text-transform: uppercase; background: var(--bg-panel2); border-bottom: 1px solid var(--border); }
+    .data-table td { padding: 14px 18px; border-bottom: 1px solid rgba(48,54,61,0.6); vertical-align: middle; }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .data-table td input { width: 80px; padding: 6px 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; outline: none; }
+    .data-table td input:focus { border-color: var(--accent); }
+    .td-actions { display: flex; gap: 6px; }
 
     /* ====== LOGS PAGE ====== */
-    #page-logs {
-      overflow-y: auto;
-    }
-
-    .log-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-    }
-
-    .log-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 14px;
-      padding: 16px 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .log-item:last-child {
-      border-bottom: none;
-    }
-
-    .log-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
-      background: rgba(196, 43, 87, 0.1);
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-    }
-
-    .log-info h4 {
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 3px;
-    }
-
-    .log-info p {
-      font-size: 13px;
-      color: var(--text-muted);
-    }
-
-    .log-date {
-      font-size: 12px;
-      color: var(--text-dim);
-      margin-top: 4px;
-    }
+    #page-logs { overflow-y: auto; }
+    .log-list { display: flex; flex-direction: column; gap: 0; }
+    .log-item { display: flex; align-items: flex-start; gap: 14px; padding: 16px 0; border-bottom: 1px solid var(--border); }
+    .log-item:last-child { border-bottom: none; }
+    .log-icon { width: 36px; height: 36px; border-radius: 8px; background: rgba(196,43,87,0.1); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .log-info h4 { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+    .log-info p { font-size: 13px; color: var(--text-muted); }
+    .log-date { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
   </style>
 </head>
-
 <body>
 
   <!-- GLOBAL TOP BAR -->
@@ -887,13 +317,13 @@
     </a>
     <span style="color: var(--text-muted); font-size: 14px; margin-right: 8px;">|</span>
     <div class="topbar-server" id="topbar-server" style="display:none;">
-      <img id="topbar-server-icon" src="" alt="" />
+      <img id="topbar-server-icon" src="" alt=""/>
       <span id="topbar-server-name">Server</span>
     </div>
     <div class="topbar-actions">
       <a href="/api/auth/invite" target="_blank" class="btn btn-gray">Add To Server</a>
       <div class="topbar-user" id="topbar-user" style="display:none;">
-        <img id="user-avatar" src="" alt="" />
+        <img id="user-avatar" src="" alt=""/>
         <span id="user-name"></span>
         <a href="/api/auth/logout" class="btn btn-gray btn-sm" style="margin-left:8px;">↪</a>
       </div>
@@ -973,14 +403,12 @@
           <!-- Left: Bot Settings Form -->
           <div class="settings-card" style="margin: 0; max-width: 100%;">
             <h3>Bot Settings</h3>
-            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 24px;">Configure the core settings for
-              Subhuu in your server.</p>
-
+            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 24px;">Configure the core settings for Subhuu in your server.</p>
+            
             <div class="form-group">
               <label>Command Prefix</label>
               <input type="text" class="form-control" id="bot-prefix" placeholder="e.g. ! or /" value="/">
-              <small style="color: var(--text-dim); display: block; margin-top: 6px;">Note: Slash commands are fully
-                supported and recommended.</small>
+              <small style="color: var(--text-dim); display: block; margin-top: 6px;">Note: Slash commands are fully supported and recommended.</small>
             </div>
             <div class="form-group">
               <label>Bot Nickname</label>
@@ -989,8 +417,7 @@
             <div class="form-group">
               <label>Manager Roles</label>
               <select class="form-control" id="bot-manager-roles" multiple style="height: 100px;"></select>
-              <small style="color: var(--text-dim); display: block; margin-top: 6px;">Members with these roles can edit
-                dashboard settings.</small>
+              <small style="color: var(--text-dim); display: block; margin-top: 6px;">Members with these roles can edit dashboard settings.</small>
             </div>
             <div class="form-group">
               <label>Timezone</label>
@@ -1001,7 +428,7 @@
                 <option value="Asia/Kolkata">IST (India)</option>
               </select>
             </div>
-
+            
             <button class="btn btn-accent" onclick="saveGeneralSettings()">Save Settings</button>
             <span class="toast-msg" id="toast-general">✓ Saved</span>
           </div>
@@ -1038,112 +465,82 @@
             <h1>Modules</h1>
             <p>Enable and configure modules for your server.</p>
           </div>
-          <input type="text" class="form-control" id="module-search" placeholder="Search modules..."
-            oninput="filterModules()" style="max-width: 600px; font-size: 16px; padding: 14px 20px;">
+          <input type="text" class="form-control" id="module-search" placeholder="Search modules..." oninput="filterModules()" style="max-width: 600px; font-size: 16px; padding: 14px 20px;">
         </div>
-
+        
         <div class="modules-grid" id="modules-grid-container">
           <div class="module-card" data-name="Economy & Shop">
             <div class="module-card-header">
-              <div class="module-card-title"><span class="module-icon">💰</span>
-                <h3>Economy & Shop</h3>
-              </div>
+              <div class="module-card-title"><span class="module-icon">💰</span><h3>Economy & Shop</h3></div>
               <label class="toggle" onclick="event.stopPropagation()">
-                <input type="checkbox" id="mod-economy" onchange="toggleModule('economy', this.checked)"><span
-                  class="toggle-slider"></span>
+                <input type="checkbox" id="mod-economy" onchange="toggleModule('economy', this.checked)"><span class="toggle-slider"></span>
               </label>
             </div>
-            <p style="margin-bottom: 24px; flex: 1;">Virtual coins, daily rewards, gambling mini-games, and a
-              customizable role shop.</p>
-            <button class="btn btn-gray btn-sm" style="width: 100%; justify-content: center;"
-              onclick="openModuleSettings('Economy', '💰')">⚙️ Settings</button>
+            <p style="margin-bottom: 24px; flex: 1;">Virtual coins, daily rewards, gambling mini-games, and a customizable role shop.</p>
+            <button class="btn btn-gray btn-sm" style="width: 100%; justify-content: center;" onclick="openModuleSettings('Economy', '💰')">⚙️ Settings</button>
           </div>
-
+          
           <div class="module-card" data-name="Leveling">
             <div class="module-card-header">
-              <div class="module-card-title"><span class="module-icon">📈</span>
-                <h3>Leveling System</h3>
-              </div>
+              <div class="module-card-title"><span class="module-icon">📈</span><h3>Leveling System</h3></div>
               <label class="toggle" onclick="event.stopPropagation()">
                 <input type="checkbox" checked><span class="toggle-slider"></span>
               </label>
             </div>
-            <p style="margin-bottom: 24px; flex: 1;">Reward active members with XP and automatically grant roles at
-              milestone levels.</p>
-            <button class="btn btn-gray btn-sm" style="width: 100%; justify-content: center;"
-              onclick="openModuleSettings('Leveling', '📈')">⚙️ Settings</button>
+            <p style="margin-bottom: 24px; flex: 1;">Reward active members with XP and automatically grant roles at milestone levels.</p>
+            <button class="btn btn-gray btn-sm" style="width: 100%; justify-content: center;" onclick="openModuleSettings('Leveling', '📈')">⚙️ Settings</button>
           </div>
-
+          
           <div class="module-card" data-name="Moderation">
             <div class="module-card-header">
-              <div class="module-card-title"><span class="module-icon">🛡️</span>
-                <h3>Moderation</h3>
-              </div>
+              <div class="module-card-title"><span class="module-icon">🛡️</span><h3>Moderation</h3></div>
               <label class="toggle" onclick="event.stopPropagation()">
-                <input type="checkbox" id="mod-moderation" onchange="toggleModule('moderation', this.checked)"><span
-                  class="toggle-slider"></span>
+                <input type="checkbox" id="mod-moderation" onchange="toggleModule('moderation', this.checked)"><span class="toggle-slider"></span>
               </label>
             </div>
-            <p style="margin-bottom: 24px; flex: 1;">Mod logs, timed mutes, bans, anti-spam, and scam-link
-              auto-blocking.</p>
-            <button class="btn btn-gray btn-sm" style="width: 100%; justify-content: center;"
-              onclick="openModuleSettings('Moderation', '🛡️')">⚙️ Settings</button>
+            <p style="margin-bottom: 24px; flex: 1;">Mod logs, timed mutes, bans, anti-spam, and scam-link auto-blocking.</p>
+            <button class="btn btn-gray btn-sm" style="width: 100%; justify-content: center;" onclick="openModuleSettings('Moderation', '🛡️')">⚙️ Settings</button>
           </div>
-
+          
           <div class="module-card" data-name="Welcome">
             <div class="module-card-header">
-              <div class="module-card-title"><span class="module-icon">👋</span>
-                <h3>Welcome & Auto Roles</h3>
-              </div>
+              <div class="module-card-title"><span class="module-icon">👋</span><h3>Welcome & Auto Roles</h3></div>
               <label class="toggle" onclick="event.stopPropagation()">
                 <input type="checkbox" checked><span class="toggle-slider"></span>
               </label>
             </div>
-            <p style="margin-bottom: 24px; flex: 1;">Send beautiful image welcome cards, leave announcements, and assign
-              Auto-roles on join.</p>
-            <button class="btn btn-gray btn-sm" style="width: 100%; justify-content: center;"
-              onclick="openModuleSettings('Welcome', '👋')">⚙️ Settings</button>
+            <p style="margin-bottom: 24px; flex: 1;">Send beautiful image welcome cards, leave announcements, and assign Auto-roles on join.</p>
+            <button class="btn btn-gray btn-sm" style="width: 100%; justify-content: center;" onclick="openModuleSettings('Welcome', '👋')">⚙️ Settings</button>
           </div>
-
+          
           <div class="module-card" data-name="Custom Commands">
             <div class="module-card-header">
-              <div class="module-card-title"><span class="module-icon">📝</span>
-                <h3>Custom Commands</h3>
-              </div>
+              <div class="module-card-title"><span class="module-icon">📝</span><h3>Custom Commands</h3></div>
               <label class="toggle" onclick="event.stopPropagation()">
                 <input type="checkbox" checked><span class="toggle-slider"></span>
               </label>
             </div>
-            <p style="margin-bottom: 24px; flex: 1;">Create personalized text commands and auto-responses for your
-              server.</p>
-            <button class="btn btn-gray btn-sm" style="width: 100%; justify-content: center;"
-              onclick="openModuleSettings('Custom', '📝')">⚙️ Settings</button>
+            <p style="margin-bottom: 24px; flex: 1;">Create personalized text commands and auto-responses for your server.</p>
+            <button class="btn btn-gray btn-sm" style="width: 100%; justify-content: center;" onclick="openModuleSettings('Custom', '📝')">⚙️ Settings</button>
           </div>
-
+          
           <div class="module-card" data-name="Reaction Roles">
             <div class="module-card-header">
-              <div class="module-card-title"><span class="module-icon">🎭</span>
-                <h3>Reaction Roles</h3>
-              </div>
+              <div class="module-card-title"><span class="module-icon">🎭</span><h3>Reaction Roles</h3></div>
               <label class="toggle" onclick="event.stopPropagation()">
                 <input type="checkbox" checked><span class="toggle-slider"></span>
               </label>
             </div>
-            <p style="margin-bottom: 24px; flex: 1;">Allow users to self-assign roles by clicking emojis on specific
-              messages.</p>
-            <button class="btn btn-gray btn-sm" style="width: 100%; justify-content: center;"
-              onclick="openModuleSettings('Reaction', '🎭')">⚙️ Settings</button>
+            <p style="margin-bottom: 24px; flex: 1;">Allow users to self-assign roles by clicking emojis on specific messages.</p>
+            <button class="btn btn-gray btn-sm" style="width: 100%; justify-content: center;" onclick="openModuleSettings('Reaction', '🎭')">⚙️ Settings</button>
           </div>
         </div>
       </div>
 
       <!-- MODULE SETTINGS PAGE -->
       <div id="page-settings" class="page">
-        <div class="plugin-breadcrumb"
-          onclick="navClick(document.querySelector('.sidebar-nav-item:nth-child(4)'), 'modules')">← Back to Modules
-        </div>
-        <div class="settings-title"><span id="settings-icon">⚙️</span> <span id="settings-title-text">Settings</span>
-        </div>
+        <div class="plugin-breadcrumb" onclick="navClick(document.querySelector('.sidebar-nav-item:nth-child(4)'), 'modules')">← Back to Modules</div>
+        <div class="settings-title"><span id="settings-icon">⚙️</span> <span id="settings-title-text">Settings</span></div>
         <p class="settings-subtitle" id="settings-subtitle-text">Configure module settings for your server.</p>
 
         <!-- LEVELING SETTINGS -->
@@ -1162,9 +559,7 @@
           </div>
           <div class="form-group">
             <label>Level-Up Announcement Channel</label>
-            <select class="form-control" id="select-level">
-              <option value="">-- Current Channel --</option>
-            </select>
+            <select class="form-control" id="select-level"><option value="">-- Current Channel --</option></select>
           </div>
         </div>
 
@@ -1173,9 +568,7 @@
           <h3>Automod & Logging</h3>
           <div class="form-group">
             <label>Mod Log Channel</label>
-            <select class="form-control" id="select-log">
-              <option value="">-- None --</option>
-            </select>
+            <select class="form-control" id="select-log"><option value="">-- None --</option></select>
           </div>
           <div class="form-group">
             <label style="display: flex; align-items: center; gap: 8px;">
@@ -1198,45 +591,36 @@
           <h3>Welcome, Leave & Auto Roles</h3>
           <div class="form-group">
             <label>Welcome Channel</label>
-            <select class="form-control" id="select-welcome">
-              <option value="">-- None --</option>
-            </select>
+            <select class="form-control" id="select-welcome"><option value="">-- None --</option></select>
           </div>
           <div class="form-group">
             <label>Join Message Template</label>
-            <textarea class="form-control" id="welcome-msg" rows="3"
-              placeholder="Welcome {user} to {server}!"></textarea>
+            <textarea class="form-control" id="welcome-msg" rows="3" placeholder="Welcome {user} to {server}!"></textarea>
             <small style="color: var(--text-dim);">Variables: {user}, {username}, {server}, {memberCount}</small>
           </div>
           <div class="form-group" style="margin-top: 24px;">
             <label>Leave Message Template</label>
-            <textarea class="form-control" id="leave-msg" rows="3"
-              placeholder="{username} just left the server."></textarea>
+            <textarea class="form-control" id="leave-msg" rows="3" placeholder="{username} just left the server."></textarea>
             <small style="color: var(--text-dim);">Variables: {user}, {username}, {server}, {memberCount}</small>
           </div>
           <div class="form-group" style="margin-top: 24px;">
             <label>Auto-Role on Join</label>
-            <select class="form-control" id="select-autorole">
-              <option value="">-- None --</option>
-            </select>
-            <small style="color: var(--text-dim);">This role will be instantly assigned to new members when they
-              join.</small>
+            <select class="form-control" id="select-autorole"><option value="">-- None --</option></select>
+            <small style="color: var(--text-dim);">This role will be instantly assigned to new members when they join.</small>
           </div>
         </div>
 
         <!-- CUSTOM COMMANDS SETTINGS -->
         <div class="settings-card mod-settings" id="mod-settings-Custom" style="display: none;">
           <h3>Custom Commands</h3>
-          <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 24px;">Create automated text responses for
-            specific trigger phrases.</p>
-
+          <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 24px;">Create automated text responses for specific trigger phrases.</p>
+          
           <div style="display: flex; gap: 12px; margin-bottom: 16px;">
-            <input type="text" class="form-control" id="cc-trigger" placeholder="Trigger (e.g. !socials)"
-              style="width: 30%;">
+            <input type="text" class="form-control" id="cc-trigger" placeholder="Trigger (e.g. !socials)" style="width: 30%;">
             <input type="text" class="form-control" id="cc-response" placeholder="Response text..." style="width: 55%;">
             <button class="btn btn-accent" onclick="addCustomCommand()" style="width: 15%; padding: 0;">Add</button>
           </div>
-
+          
           <div class="data-table-wrap">
             <table class="data-table">
               <thead>
@@ -1247,9 +631,7 @@
                 </tr>
               </thead>
               <tbody id="cc-tbody">
-                <tr>
-                  <td colspan="3" style="text-align: center; color: var(--text-muted);">Loading commands...</td>
-                </tr>
+                <tr><td colspan="3" style="text-align: center; color: var(--text-muted);">Loading commands...</td></tr>
               </tbody>
             </table>
           </div>
@@ -1258,9 +640,8 @@
         <!-- REACTION ROLES SETTINGS -->
         <div class="settings-card mod-settings" id="mod-settings-Reaction" style="display: none;">
           <h3>Reaction Roles</h3>
-          <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 24px;">Automatically give roles to users
-            who click specific emojis on a message.</p>
-
+          <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 24px;">Automatically give roles to users who click specific emojis on a message.</p>
+          
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
             <div class="form-group" style="margin: 0;">
               <label>Message ID</label>
@@ -1268,9 +649,7 @@
             </div>
             <div class="form-group" style="margin: 0;">
               <label>Channel</label>
-              <select class="form-control" id="rr-channel">
-                <option value="">-- Select Channel --</option>
-              </select>
+              <select class="form-control" id="rr-channel"><option value="">-- Select Channel --</option></select>
             </div>
             <div class="form-group" style="margin: 0;">
               <label>Emoji</label>
@@ -1278,14 +657,11 @@
             </div>
             <div class="form-group" style="margin: 0;">
               <label>Role to Give</label>
-              <select class="form-control" id="rr-role">
-                <option value="">-- Select Role --</option>
-              </select>
+              <select class="form-control" id="rr-role"><option value="">-- Select Role --</option></select>
             </div>
           </div>
-          <button class="btn btn-accent" onclick="addReactionRole()" style="margin-bottom: 24px;">Add Reaction
-            Role</button>
-
+          <button class="btn btn-accent" onclick="addReactionRole()" style="margin-bottom: 24px;">Add Reaction Role</button>
+          
           <div class="data-table-wrap">
             <table class="data-table">
               <thead>
@@ -1298,14 +674,12 @@
                 </tr>
               </thead>
               <tbody id="rr-tbody">
-                <tr>
-                  <td colspan="5" style="text-align: center; color: var(--text-muted);">Loading reaction roles...</td>
-                </tr>
+                <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Loading reaction roles...</td></tr>
               </tbody>
             </table>
           </div>
         </div>
-
+        
         <!-- GENERIC / FALLBACK -->
         <div class="settings-card mod-settings" id="mod-settings-Generic" style="display: none;">
           <h3>Module Configuration</h3>
@@ -1322,7 +696,7 @@
       <div id="page-commands-dash" class="page" style="padding: 32px;">
         <div class="page-title">Command Permissions</div>
         <p class="page-sub">Configure who can use which commands and where.</p>
-
+        
         <div class="settings-card" style="max-width:100%; margin-bottom: 24px;">
           <div style="display: flex; gap: 12px; margin-bottom: 24px;" id="cmd-category-tabs">
             <button class="btn btn-accent btn-sm" onclick="filterDashCommands('Economy')">Economy</button>
@@ -1330,14 +704,12 @@
             <button class="btn btn-gray btn-sm" onclick="filterDashCommands('Music')">Music</button>
             <button class="btn btn-gray btn-sm" onclick="filterDashCommands('Fun')">Fun</button>
           </div>
-          <div
-            style="display: flex; gap: 12px; margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 24px;">
+          <div style="display: flex; gap: 12px; margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 24px;">
             <button class="btn btn-success btn-sm" onclick="toggleAllCommands(true)">Enable All</button>
             <button class="btn btn-danger btn-sm" onclick="toggleAllCommands(false)">Disable All</button>
           </div>
-
-          <div id="dash-commands-grid"
-            style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;">
+          
+          <div id="dash-commands-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;">
             <!-- Commands injected by JS -->
           </div>
         </div>
@@ -1347,35 +719,20 @@
       <div id="page-members" class="page" style="padding: 32px;">
         <div class="page-title">Member Database</div>
         <p class="page-sub">View and edit user XP, levels, and coins directly.</p>
-        <div class="data-table-wrap"
-          style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden;">
+        <div class="data-table-wrap" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden;">
           <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 14px;">
             <thead>
               <tr style="background: var(--bg-card2); border-bottom: 1px solid var(--border);">
-                <th
-                  style="padding: 12px 18px; text-align: left; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">
-                  User ID</th>
-                <th
-                  style="padding: 12px 18px; text-align: left; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">
-                  Username</th>
-                <th
-                  style="padding: 12px 18px; text-align: left; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">
-                  Level</th>
-                <th
-                  style="padding: 12px 18px; text-align: left; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">
-                  XP</th>
-                <th
-                  style="padding: 12px 18px; text-align: left; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">
-                  Coins</th>
-                <th
-                  style="padding: 12px 18px; text-align: left; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">
-                  Actions</th>
+                <th style="padding: 12px 18px; text-align: left; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">User ID</th>
+                <th style="padding: 12px 18px; text-align: left; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Username</th>
+                <th style="padding: 12px 18px; text-align: left; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Level</th>
+                <th style="padding: 12px 18px; text-align: left; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">XP</th>
+                <th style="padding: 12px 18px; text-align: left; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Coins</th>
+                <th style="padding: 12px 18px; text-align: left; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Actions</th>
               </tr>
             </thead>
             <tbody id="members-tbody">
-              <tr>
-                <td colspan="6" style="color: var(--text-muted); padding: 20px;">Loading...</td>
-              </tr>
+              <tr><td colspan="6" style="color: var(--text-muted); padding: 20px;">Loading...</td></tr>
             </tbody>
           </table>
         </div>
@@ -1385,7 +742,7 @@
       <div id="page-logs" class="page" style="padding: 32px;">
         <div class="page-title">Live Audit Logs</div>
         <p class="page-sub">Monitor all server activity tracked by Subhuu.</p>
-
+        
         <div style="display: flex; gap: 12px; margin-bottom: 24px;">
           <button class="btn btn-gray btn-sm log-filter-btn active" data-type="all">All Events</button>
           <button class="btn btn-gray btn-sm log-filter-btn" data-type="message_delete">Messages</button>
@@ -1394,8 +751,7 @@
         </div>
 
         <div class="settings-card" style="max-width: 100%; padding: 0; overflow: hidden;">
-          <div class="log-list" id="log-list"
-            style="padding: 24px; display: flex; flex-direction: column; gap: 16px; background: rgba(0,0,0,0.2);">
+          <div class="log-list" id="log-list" style="padding: 24px; display: flex; flex-direction: column; gap: 16px; background: rgba(0,0,0,0.2);">
             <!-- Logs injected by JS -->
             <div style="color: var(--text-muted); text-align: center; padding: 20px;">Loading logs...</div>
           </div>
@@ -1403,26 +759,23 @@
       </div>
 
       <!-- PERMISSIONS MODAL (HIDDEN) -->
-      <div id="perm-modal"
-        style="display: none; position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+      <div id="perm-modal" style="display: none; position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
         <div class="settings-card" style="width: 500px; max-width: 90%; background: var(--bg-panel2); margin: 0;">
           <h3 id="perm-modal-title">Edit Permissions</h3>
-
+          
           <div class="form-group">
             <label>Allowed Roles</label>
             <select class="form-control" id="perm-allowed-roles" multiple style="height: 100px;"></select>
-            <small style="color: var(--text-muted); font-size: 11px;">Hold Ctrl (Windows) or Cmd (Mac) to select
-              multiple</small>
+            <small style="color: var(--text-muted); font-size: 11px;">Hold Ctrl (Windows) or Cmd (Mac) to select multiple</small>
           </div>
-
+          
           <div class="form-group">
             <label>Ignored Channels</label>
             <select class="form-control" id="perm-ignored-channels" multiple style="height: 100px;"></select>
           </div>
-
+          
           <div style="display: flex; gap: 12px; justify-content: flex-end;">
-            <button class="btn btn-gray"
-              onclick="document.getElementById('perm-modal').style.display = 'none'">Cancel</button>
+            <button class="btn btn-gray" onclick="document.getElementById('perm-modal').style.display = 'none'">Cancel</button>
             <button class="btn btn-accent" id="perm-save-btn">Save Permissions</button>
           </div>
         </div>
@@ -1459,7 +812,7 @@
         data.guilds.forEach(g => {
           const card = document.createElement('div');
           card.className = 'server-card';
-          const iconHtml = g.icon ? `<img src="${g.icon}" />` : `<div class="initials">${g.name.substring(0, 2).toUpperCase()}</div>`;
+          const iconHtml = g.icon ? `<img src="${g.icon}" />` : `<div class="initials">${g.name.substring(0,2).toUpperCase()}</div>`;
           card.innerHTML = `${iconHtml}<div class="server-card-info"><h3>${g.name}</h3><p>Configure Bot</p></div>`;
           card.onclick = () => initDashboard(g.id, g.name, g.icon);
           grid.appendChild(card);
@@ -1488,9 +841,30 @@
 
         let optHtml = '<option value="">-- None --</option>';
         (data.channels || []).forEach(c => optHtml += `<option value="${c.id}">#${c.name}</option>`);
-        ['select-welcome', 'select-level', 'select-log'].forEach(id => {
+        ['select-welcome', 'select-level', 'select-log', 'rr-channel'].forEach(id => {
           document.getElementById(id).innerHTML = optHtml;
         });
+
+        let roleOptHtml = '<option value="">-- None --</option>';
+        let roleMultiHtml = '';
+        (data.roles || []).forEach(r => {
+          roleOptHtml += `<option value="${r.id}" style="color:${r.color}">${r.name}</option>`;
+          roleMultiHtml += `<option value="${r.id}" style="color:${r.color}">${r.name}</option>`;
+        });
+        ['select-autorole', 'rr-role'].forEach(id => {
+          document.getElementById(id).innerHTML = roleOptHtml;
+        });
+        
+        const managerRolesSelect = document.getElementById('bot-manager-roles');
+        if (managerRolesSelect) {
+          managerRolesSelect.innerHTML = roleMultiHtml;
+          if (guildSettings.managerRoles) {
+            Array.from(managerRolesSelect.options).forEach(o => {
+              if (guildSettings.managerRoles.includes(o.value)) o.selected = true;
+            });
+          }
+        }
+        
         document.getElementById('select-welcome').value = guildSettings.welcomeChannel || '';
         document.getElementById('select-level').value = guildSettings.levelChannel || '';
         document.getElementById('select-log').value = guildSettings.logChannel || '';
@@ -1520,7 +894,7 @@
       document.getElementById('settings-title-text').innerText = title;
       document.getElementById('settings-icon').innerText = icon;
       currentSettingsModule = title.split(' ')[0]; // Leveling, Moderation, Welcome, Economy
-
+      
       document.querySelectorAll('.mod-settings').forEach(el => el.style.display = 'none');
       const target = document.getElementById(`mod-settings-${currentSettingsModule}`);
       if (target) target.style.display = 'block';
@@ -1595,7 +969,7 @@
       const res = await fetch(`/api/guilds/${currentGuildId}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
       });
-
+      
       if (res.ok) {
         const data = await res.json();
         guildSettings = data.settings;
@@ -1680,7 +1054,7 @@
       const cmds = await res.json();
       tbody.innerHTML = '';
       if (!cmds.length) tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No custom commands yet.</td></tr>';
-
+      
       cmds.forEach(c => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -1721,7 +1095,7 @@
       const roles = await res.json();
       tbody.innerHTML = '';
       if (!roles.length) tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No reaction roles set up.</td></tr>';
-
+      
       roles.forEach(r => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -1742,7 +1116,7 @@
       const roleId = document.getElementById('rr-role').value;
       const roleName = document.getElementById('rr-role').options[document.getElementById('rr-role').selectedIndex].text;
       if (!msgId || !channelId || !emoji || !roleId) return alert('Fill all fields');
-
+      
       await fetch(`/api/guilds/${currentGuildId}/reaction-roles`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'add', messageId: msgId, channelId, emoji, roleId, roleName })
@@ -1766,6 +1140,7 @@
       });
       fetchMembers();
     }
+
     // ==========================================
     // LOGS PAGE LOGIC
     // ==========================================
@@ -1783,11 +1158,11 @@
     async function fetchLogs() {
       const list = document.getElementById('log-list');
       list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">Loading logs...</div>';
-
+      
       try {
         const res = await fetch(`/api/guilds/${currentGuildId}/logs?type=${currentLogFilter}`);
         const logs = await res.json();
-
+        
         if (!logs.length) {
           list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No logs found.</div>';
           return;
@@ -1798,7 +1173,7 @@
           const div = document.createElement('div');
           div.className = 'log-item';
           div.style.cssText = 'display: flex; gap: 16px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid var(--border);';
-
+          
           let icon = '🛡️';
           if (log.type.includes('message')) icon = '📝';
           if (log.type.includes('member')) icon = '👤';
@@ -1838,7 +1213,7 @@
       // Fetch permissions
       const pRes = await fetch(`/api/guilds/${currentGuildId}/command-permissions`);
       allCommandPermissions = await pRes.json() || {};
-
+      
       // Fetch server roles/channels to populate the modal later
       const gRes = await fetch(`/api/guilds/${currentGuildId}`);
       const gData = await gRes.json();
@@ -1852,16 +1227,16 @@
       currentCmdCategory = category;
       const grid = document.getElementById('dash-commands-grid');
       grid.innerHTML = '';
-
+      
       const cmds = DASH_COMMANDS[category] || [];
-
+      
       cmds.forEach(cmdName => {
         const perms = allCommandPermissions[cmdName] || { enabled: true };
-
+        
         const card = document.createElement('div');
         card.className = 'module-card';
         card.style.cssText = 'padding: 20px; gap: 12px; cursor: default;';
-
+        
         card.innerHTML = `
           <div class="module-card-header">
             <h3 style="color: var(--cyan); font-family: monospace;">${cmdName}</h3>
@@ -1880,7 +1255,7 @@
       if (!allCommandPermissions[cmdName]) allCommandPermissions[cmdName] = {};
       allCommandPermissions[cmdName].enabled = enabled;
       await fetch(`/api/guilds/${currentGuildId}/command-permissions`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ commandName: cmdName, enabled })
       });
     }
@@ -1897,7 +1272,7 @@
     function openPermModal(cmdName) {
       editingCommand = cmdName;
       document.getElementById('perm-modal-title').innerText = `Permissions for ${cmdName}`;
-
+      
       const perms = allCommandPermissions[cmdName] || {};
       const aRoles = perms.allowedRoles || [];
       const iChans = perms.ignoredChannels || [];
@@ -1928,30 +1303,30 @@
     document.getElementById('perm-save-btn').addEventListener('click', async () => {
       const roleSelect = document.getElementById('perm-allowed-roles');
       const allowedRoles = Array.from(roleSelect.selectedOptions).map(o => o.value);
-
+      
       const chanSelect = document.getElementById('perm-ignored-channels');
       const ignoredChannels = Array.from(chanSelect.selectedOptions).map(o => o.value);
-
+      
       await fetch(`/api/guilds/${currentGuildId}/command-permissions`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          commandName: editingCommand,
-          allowedRoles,
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ 
+          commandName: editingCommand, 
+          allowedRoles, 
           ignoredChannels,
           enabled: (allCommandPermissions[editingCommand] || {}).enabled !== false
         })
       });
-
+      
       if (!allCommandPermissions[editingCommand]) allCommandPermissions[editingCommand] = {};
       allCommandPermissions[editingCommand].allowedRoles = allowedRoles;
       allCommandPermissions[editingCommand].ignoredChannels = ignoredChannels;
-
+      
       document.getElementById('perm-modal').style.display = 'none';
     });
 
     // Patch navClick to trigger loads
     const originalNavClick = navClick;
-    navClick = function (el, pageName) {
+    navClick = function(el, pageName) {
       originalNavClick(el, pageName);
       if (pageName === 'logs') fetchLogs();
       if (pageName === 'commands-dash') loadDashCommands();
@@ -1959,5 +1334,4 @@
 
   </script>
 </body>
-
 </html>
