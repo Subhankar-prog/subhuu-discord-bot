@@ -79,7 +79,17 @@ module.exports = {
                 if (customChannel) targetChannel = customChannel;
               }
               if (targetChannel) {
-                targetChannel.send(`🗣️ **YAPPER ALERT!** ${newState.member} yapped so much in voice chat they just hit **Level ${result.newLevel}**! Someone get them some water! 🚰`).catch(() => {});
+                const msgs = settings?.xpSettings?.levelUpMessages || [
+                  'Congrats {user}! You reached level {level}!'
+                ];
+                let rawMsg = msgs.length > 0 ? msgs[Math.floor(Math.random() * msgs.length)] : 'Congrats {user}! You reached level {level}!';
+
+                const lvlMsg = rawMsg
+                  .replace(/{user}/g, newState.member.toString())
+                  .replace(/{level}/g, result.newLevel)
+                  .replace(/{username}/g, newState.member.user.username);
+                  
+                targetChannel.send(`🗣️ **VOICE CHAT LEVEL UP!**\n${lvlMsg}`).catch(() => {});
               }
             }
           }
