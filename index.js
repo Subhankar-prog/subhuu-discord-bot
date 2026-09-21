@@ -325,6 +325,16 @@ client.distube
     const components = buildMusicButtons(false);
     const msg = await queue.textChannel?.send({ embeds: [embed], components });
     if (msg) nowPlayingMessages.set(queue.id, msg);
+
+    // Web Music Player broadcast
+    if (global.io) {
+      global.io.to(`music_${queue.id}`).emit('music_play', {
+        name: song.name,
+        thumbnail: song.thumbnail,
+        duration: song.formattedDuration,
+        queueLength: queue.songs.length
+      });
+    }
   })
   .on('addSong', async (queue, song) => {
     queue.textChannel?.send(`✅ Added to queue: **${song.name}** (\`${song.formattedDuration}\`)`);
@@ -334,6 +344,13 @@ client.distube
     if (msg) {
       const updatedEmbed = buildNowPlayingEmbed(queue.songs[0], queue);
       try { await msg.edit({ embeds: [updatedEmbed] }); } catch (err) {}
+    }
+
+    if (global.io) {
+      global.io.to(`music_${queue.id}`).emit('music_add', {
+        name: song.name,
+        queueLength: queue.songs.length
+      });
     }
   })
   .on('addList', async (queue, playlist) => {
@@ -345,6 +362,13 @@ client.distube
       const updatedEmbed = buildNowPlayingEmbed(queue.songs[0], queue);
       try { await msg.edit({ embeds: [updatedEmbed] }); } catch (err) {}
     }
+
+    if (global.io) {
+      global.io.to(`music_${queue.id}`).emit('music_addList', {
+        name: playlist.name,
+        queueLength: queue.songs.length
+      });
+    }
   })
   .on('error', (e, queue) => {
     console.error('DisTube error:', e);
@@ -353,9 +377,11 @@ client.distube
   .on('finish', queue => {
     nowPlayingMessages.delete(queue.id);
     queue.textChannel?.send('✅ Queue finished!');
+    if (global.io) global.io.to(`music_${queue.id}`).emit('music_stop');
   })
   .on('empty', queue => {
     queue.textChannel?.send('👋 Voice channel is empty, leaving.');
+    if (global.io) global.io.to(`music_${queue.id}`).emit('music_stop');
   });
 
 // --- KEEP ALIVE ---

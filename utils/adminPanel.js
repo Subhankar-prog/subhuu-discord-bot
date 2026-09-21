@@ -440,8 +440,43 @@ module.exports = function startAdminPanel(client) {
     } catch (err) { res.status(500).json({ error: 'Failed to save module settings' }); }
   });
 
-  // Start the server
-  app.listen(PORT, () => {
-    console.log(`[Admin Panel] Running at http://localhost:${PORT}`);
+  // Start the server with socket.io
+  const server = require('http').createServer(app);
+  const { Server } = require('socket.io');
+  const io = new Server(server, { cors: { origin: '*' } });
+  
+  global.io = io; // Expose globally so other modules (like DisTube events) can use it
+
+  io.on('connection', (socket) => {
+    // Dashboard joins a specific guild's room to receive its music events
+    socket.on('subscribe_music', (guildId) => {
+      socket.join(`music_${guildId}`);
+    });
+
+    socket.on('unsubscribe_music', (guildId) => {
+      socket.leave(`music_${guildId}`);
+    });
+
+    // Remote control from Dashboard
+    socket.on('music_control', async (data) => {
+      const distube = client.distube;
+      if (!distube) return;
+      const queue = distube.getQueue(data.guildId);
+      if (!queue) return;
+      
+      try {
+        if (data.action === 'pause' && !queue.paused) queue.pause();
+        else if (data.action === 'resume' && queue.paused) queue.resume();
+        else if (data.action === 'skip') await queue.skip();
+        else if (data.action === 'stop') await queue.stop();
+        else if (data.action === 'volume' && data.value) queue.setVolume(data.value);
+      } catch (err) {
+        console.error('[WebMusic] Control Error:', err);
+      }
+    });
+  });
+
+  server.listen(PORT, () => {
+    console.log(`[Admin Panel & Socket.io] Running at http://localhost:${PORT}`);
   });
 };
