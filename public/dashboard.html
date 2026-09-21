@@ -357,6 +357,23 @@
       0%, 100% { box-shadow: 0 2px 10px rgba(245, 158, 11, 0.3); }
       50% { box-shadow: 0 2px 18px rgba(245, 158, 11, 0.6); }
     }
+    .premium-badge {
+      display: none;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-left: 8px;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+      animation: premiumPulse 3s ease-in-out infinite;
+    }
+    @keyframes premiumPulse {
+      0%, 100% { box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3); }
+      50% { box-shadow: 0 2px 18px rgba(16, 185, 129, 0.6); }
+    }
   </style>
 </head>
 <body>
@@ -378,6 +395,7 @@
       <div class="topbar-user" id="topbar-user" style="display:none;">
         <img id="user-avatar" src="" alt=""/>
         <span id="user-name"></span>
+        <span class="premium-badge" id="premium-badge">✨ Premium</span>
         <span class="super-admin-badge" id="super-admin-badge">👑 Super Admin</span>
         <a href="/api/auth/logout" class="btn btn-gray btn-sm" style="margin-left:8px;">↪</a>
       </div>
@@ -414,7 +432,10 @@
         <span class="sidebar-icon">🏆</span> Leaderboard
       </div>
 
-      <div class="sidebar-section-label" style="margin-top: 16px;">Bot Settings</div>
+      <div class="sidebar-section-label" style="margin-top: 16px;">Monetization</div>
+      <a href="https://buy.stripe.com/test_YOUR_LINK_HERE" target="_blank" id="sidebar-premium-btn" class="btn btn-accent" style="margin: 0 16px 16px 16px; justify-content: center; text-decoration: none;">✨ Get Premium</a>
+
+      <div class="sidebar-section-label">Bot Settings</div>
       <div class="sidebar-nav-item" onclick="navClick(this, 'settings')">
         <span class="sidebar-icon">⚙️</span> General Settings
       </div>
@@ -933,6 +954,17 @@
           document.getElementById('super-admin-badge').style.display = 'inline-flex';
           const selectorSub = document.querySelector('#page-selector p');
           if (selectorSub) selectorSub.innerHTML = '👑 <strong>Super Admin Mode</strong> — You can manage all ' + data.guilds.length + ' servers the bot is in.';
+        }
+        
+        // Handle Premium status
+        if (data.isPremium || data.isSuperAdmin) {
+          document.getElementById('premium-badge').style.display = 'inline-flex';
+          const premiumBtn = document.getElementById('sidebar-premium-btn');
+          if (premiumBtn) {
+             premiumBtn.innerText = '💎 Premium Active';
+             premiumBtn.style.pointerEvents = 'none';
+             premiumBtn.style.opacity = '0.7';
+          }
         }
 
         const grid = document.getElementById('server-grid');

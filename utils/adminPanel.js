@@ -7,6 +7,35 @@ module.exports = function startAdminPanel(client) {
   const app = express();
   const PORT = process.env.PORT || 3000;
   
+  // --- STRIPE WEBHOOK ---
+  // Must be before express.json() to get raw body
+  app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), async (req, res) => {
+    const sig = req.headers['stripe-signature'];
+    let event;
+    try {
+      const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+      if (process.env.STRIPE_WEBHOOK_SECRET) {
+        event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+      } else {
+        event = JSON.parse(req.body.toString()); // Prototype fallback
+      }
+    } catch (err) {
+      console.error('[Stripe] Webhook signature verification failed:', err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object;
+      const discordUserId = session.client_reference_id; 
+      if (discordUserId) {
+        const { User } = require('./database');
+        await User.updateMany({ userId: discordUserId }, { $set: { isPremium: true } });
+        console.log(`[Stripe] Automatically upgraded user ${discordUserId} to Premium!`);
+      }
+    }
+    res.json({ received: true });
+  });
+
   app.use(express.json());
   app.use(cookieParser());
   app.use(express.static(path.join(__dirname, '..', 'public')));
@@ -200,6 +229,10 @@ module.exports = function startAdminPanel(client) {
         }));
       }
 
+      const { User } = require('./database');
+      const dbUser = await User.findOne({ userId: userData.id });
+      const isPremium = dbUser ? dbUser.isPremium : false;
+
       res.json({
         user: {
           username: userData.username,
@@ -208,7 +241,8 @@ module.exports = function startAdminPanel(client) {
             : null
         },
         guilds: formattedGuilds,
-        isSuperAdmin: !!req.isSuperAdmin
+        isSuperAdmin: !!req.isSuperAdmin,
+        isPremium: isPremium
       });
     } catch (err) {
       console.error(err);

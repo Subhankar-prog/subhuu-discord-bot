@@ -9,7 +9,8 @@ const UserSchema = new mongoose.Schema({
   xp: { type: Number, default: 0 },
   level: { type: Number, default: 0 },
   coins: { type: Number, default: 0 },
-  lastDaily: { type: Number, default: 0 }
+  lastDaily: { type: Number, default: 0 },
+  isPremium: { type: Boolean, default: false }
 });
 UserSchema.index({ guildId: 1, userId: 1 }, { unique: true });
 
