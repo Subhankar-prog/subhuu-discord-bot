@@ -81,6 +81,11 @@ module.exports = function startAdminPanel(client) {
     res.redirect('/');
   });
 
+  app.get('/api/auth/status', (req, res) => {
+    const token = req.cookies.discord_token;
+    res.json({ loggedIn: !!token });
+  });
+
   // --- AUTH MIDDLEWARE ---
 
   async function requireDiscordAuth(req, res, next) {

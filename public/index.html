@@ -459,5 +459,20 @@
     </div>
   </footer>
 
+  <script>
+    fetch('/api/auth/status')
+      .then(res => res.json())
+      .then(data => {
+        if (data.loggedIn) {
+          document.querySelectorAll('a[href="/api/auth/login"]').forEach(link => {
+            link.href = '/dashboard.html';
+            if (link.innerText.includes('Login')) {
+              link.innerText = 'Go to Dashboard';
+            }
+          });
+        }
+      })
+      .catch(() => {});
+  </script>
 </body>
 </html>
