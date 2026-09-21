@@ -23,7 +23,7 @@ async function updateGuildSettings(guildId, newSettings) {
   if (newSettings.timezone !== undefined) settings.timezone = newSettings.timezone;
   if (newSettings.managerRoles !== undefined) settings.managerRoles = newSettings.managerRoles;
   
-  const mergeObjects = ['modules', 'xpSettings', 'automodSettings', 'welcomeSettings', 'leaveSettings', 'autoRoles', 'economySettings', 'aiSettings'];
+  const mergeObjects = ['modules', 'xpSettings', 'automodSettings', 'welcomeSettings', 'leaveSettings', 'autoRoles', 'economySettings', 'aiSettings', 'ticketSettings'];
   for (const obj of mergeObjects) {
     if (newSettings[obj]) {
       settings[obj] = { ...(settings[obj] || {}), ...newSettings[obj] };

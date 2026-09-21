@@ -602,6 +602,17 @@
             <p style="margin-bottom: 24px; flex: 1;">Allow users to self-assign roles by clicking emojis on specific messages.</p>
             <button class="btn btn-gray btn-sm" style="width: 100%; justify-content: center;" onclick="openModuleSettings('Reaction', '🎭')">⚙️ Settings</button>
           </div>
+          
+          <div class="module-card" data-name="Tickets">
+            <div class="module-card-header">
+              <div class="module-card-title"><span class="module-icon">🎫</span><h3>Support Tickets</h3></div>
+              <label class="toggle" onclick="event.stopPropagation()">
+                <input type="checkbox" checked><span class="toggle-slider"></span>
+              </label>
+            </div>
+            <p style="margin-bottom: 24px; flex: 1;">Create private support channels when users need help. Use /ticketpanel to deploy.</p>
+            <button class="btn btn-gray btn-sm" style="width: 100%; justify-content: center;" onclick="openModuleSettings('Tickets', '🎫')">⚙️ Settings</button>
+          </div>
         </div>
       </div>
 
@@ -778,6 +789,17 @@
             <label>AI Personality / System Instruction</label>
             <textarea class="form-control" id="ai-instruction" rows="4" placeholder="You are Subhuu, a helpful and slightly sarcastic Discord bot..."></textarea>
             <small style="color: var(--text-dim);">Tell the AI how to act, what its name is, and what its tone should be.</small>
+          </div>
+        </div>
+        
+        <!-- TICKETS SETTINGS -->
+        <div class="settings-card mod-settings" id="mod-settings-Tickets" style="display: none;">
+          <h3>Ticket Settings</h3>
+          <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 24px;">Configure who can see and manage support tickets. Create a ticket panel in Discord using /ticketpanel.</p>
+          <div class="form-group">
+            <label>Staff Role</label>
+            <select class="form-control" id="ticket-staff"><option value="">-- None --</option></select>
+            <small style="color: var(--text-dim);">Members with this role will be added to all newly created tickets.</small>
           </div>
         </div>
 
@@ -972,7 +994,7 @@
             </label>
           `;
         });
-        ['select-autorole', 'rr-role'].forEach(id => {
+        ['select-autorole', 'rr-role', 'ticket-staff'].forEach(id => {
           document.getElementById(id).innerHTML = roleOptHtml;
         });
         
@@ -1063,6 +1085,11 @@
           document.getElementById('ai-instruction').value = guildSettings.aiSettings.systemInstruction || 'You are Subhuu, a helpful and slightly sarcastic Discord bot.';
         }
       }
+      if (currentSettingsModule === 'Tickets') {
+        if (guildSettings.ticketSettings) {
+          document.getElementById('ticket-staff').value = guildSettings.ticketSettings.staffRoleId || '';
+        }
+      }
       if (currentSettingsModule === 'Custom') fetchCustomCommands();
       if (currentSettingsModule === 'Reaction') fetchReactionRoles();
 
@@ -1123,6 +1150,11 @@
           ...guildSettings.aiSettings,
           channelId: document.getElementById('ai-channel').value,
           systemInstruction: document.getElementById('ai-instruction').value
+        };
+      } else if (currentSettingsModule === 'Tickets') {
+        payload.ticketSettings = {
+          ...guildSettings.ticketSettings,
+          staffRoleId: document.getElementById('ticket-staff').value
         };
       }
 

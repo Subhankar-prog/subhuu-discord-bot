@@ -23,6 +23,10 @@ module.exports = {
       await interaction.deferReply({ ephemeral: true });
 
       try {
+        const { getGuildSettings } = require('../utils/settingsManager');
+        const settings = await getGuildSettings(interaction.guildId);
+        const staffRoleId = settings?.ticketSettings?.staffRoleId || interaction.guild.roles.highest.id;
+
         const ticketChannel = await interaction.guild.channels.create({
           name: channelName,
           type: ChannelType.GuildText,
@@ -37,9 +41,9 @@ module.exports = {
               allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ReadMessageHistory], // Let user see
             },
             {
-              // Give admin access (could also map to a specific support role)
-              id: interaction.guild.roles.highest.id, 
-              allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages],
+              // Give admin access or specific support role
+              id: staffRoleId, 
+              allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ReadMessageHistory],
             }
           ],
         });
@@ -66,7 +70,14 @@ module.exports = {
     }
 
     else if (interaction.customId === 'ticket_close') {
-      if (!interaction.member.permissions.has(PermissionFlagsBits.ManageChannels)) {
+      const { getGuildSettings } = require('../utils/settingsManager');
+      const settings = await getGuildSettings(interaction.guildId);
+      const staffRoleId = settings?.ticketSettings?.staffRoleId;
+      
+      const isStaff = staffRoleId && interaction.member.roles.cache.has(staffRoleId);
+      const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.ManageChannels);
+
+      if (!isStaff && !isAdmin) {
         return interaction.reply({ content: '❌ Only staff can close tickets.', ephemeral: true });
       }
       await interaction.reply('🔒 Closing ticket in 3 seconds...');

@@ -84,6 +84,10 @@ const GuildSchema = new mongoose.Schema({
     channelId: { type: String, default: '' },
     systemInstruction: { type: String, default: 'You are Subhuu, a helpful and slightly sarcastic Discord bot.' }
   },
+  // Ticket settings
+  ticketSettings: {
+    staffRoleId: { type: String, default: '' }
+  },
   // Music settings
   musicSettings: {
     djOnly: { type: Boolean, default: false },
