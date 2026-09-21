@@ -1,9 +1,53 @@
-<!DOCTYPE html>
+const fs = require('fs');
+const path = require('path');
+
+const publicDir = path.join(__dirname, '..', 'public');
+
+// Create subdirectories if they don't exist
+const dirs = ['features', 'legal', 'resources'];
+dirs.forEach(d => {
+  const dirPath = path.join(publicDir, d);
+  if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
+});
+
+// The pages to generate
+const pages = [
+  // Features
+  { path: 'features/welcome.html', title: 'Welcome & Goodbye', icon: '👋', desc: 'Give your new members a warm welcome.' },
+  { path: 'features/custom-commands.html', title: 'Custom Commands', icon: '📝', desc: 'Build your own unique Discord bot.' },
+  { path: 'features/reaction-roles.html', title: 'Reaction Roles', icon: '🎭', desc: 'Let your community assign roles themselves.' },
+  { path: 'features/moderation.html', title: 'Moderator', icon: '🛡️', desc: 'Keep your server safe from trolls and spam.' },
+  { path: 'features/leveling.html', title: 'Levels', icon: '📈', desc: 'Reward your most active members with XP.' },
+  { path: 'features/economy.html', title: 'Economy', icon: '💰', desc: 'A fun virtual economy and shop system.' },
+  { path: 'features/music.html', title: 'Music Player', icon: '🎵', desc: 'Play high-quality music in your voice channels.' },
+  { path: 'features/social-alerts.html', title: 'Social Alerts', icon: '🔔', desc: 'Get notified when your favorite creators go live.' },
+  
+  // Product / Generic
+  { path: 'premium.html', title: 'Subhuu Premium', icon: '👑', desc: 'Unlock the full power of your Discord server.' },
+  { path: 'commands.html', title: 'Commands List', icon: '💻', desc: 'A complete list of all available Subhuu commands.' },
+  { path: 'leaderboard.html', title: 'Leaderboard', icon: '🏆', desc: 'See who the most active members are.' },
+
+  // Resources
+  { path: 'resources/support.html', title: 'Support Server', icon: '🆘', desc: 'Get help from our amazing community.' },
+  { path: 'resources/tutorials.html', title: 'Tutorials', icon: '📚', desc: 'Learn how to master Subhuu with guides.' },
+  { path: 'resources/help.html', title: 'Help Center', icon: '❓', desc: 'Frequently asked questions and documentation.' },
+
+  // Legal
+  { path: 'legal/terms.html', title: 'Terms of Service', icon: '⚖️', desc: 'Read our terms of service.' },
+  { path: 'legal/privacy.html', title: 'Privacy Policy', icon: '🔒', desc: 'How we protect and use your data.' },
+  { path: 'legal/refund.html', title: 'Refund Policy', icon: '💳', desc: 'Our refund and cancellation policies.' },
+];
+
+const template = (p, depth) => {
+  // Determine relative path to root for assets/links
+  const rootPath = depth === 1 ? '../' : './';
+  
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Commands List | Subhuu Discord Bot</title>
+  <title>${p.title} | Subhuu Discord Bot</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -62,45 +106,45 @@
 <body>
 
   <nav>
-    <a href="./index.html" class="nav-brand">Subhuu</a>
+    <a href="${rootPath}index.html" class="nav-brand">Subhuu</a>
     <div class="nav-links">
       <div class="nav-item dropdown">
         Features <span class="chevron-down">▼</span>
         <div class="dropdown-content">
-          <a href="./features/welcome.html" class="dropdown-item">👋 Welcome & Goodbye</a>
-          <a href="./features/custom-commands.html" class="dropdown-item">📝 Custom Commands</a>
-          <a href="./features/reaction-roles.html" class="dropdown-item">🎭 Reaction Roles</a>
-          <a href="./features/moderation.html" class="dropdown-item">🛡️ Moderation</a>
-          <a href="./features/leveling.html" class="dropdown-item">📈 Leveling</a>
-          <a href="./features/economy.html" class="dropdown-item">💰 Economy</a>
-          <a href="./features/music.html" class="dropdown-item">🎵 Music Player</a>
-          <a href="./features/social-alerts.html" class="dropdown-item">🔔 Social Alerts</a>
+          <a href="${rootPath}features/welcome.html" class="dropdown-item">👋 Welcome & Goodbye</a>
+          <a href="${rootPath}features/custom-commands.html" class="dropdown-item">📝 Custom Commands</a>
+          <a href="${rootPath}features/reaction-roles.html" class="dropdown-item">🎭 Reaction Roles</a>
+          <a href="${rootPath}features/moderation.html" class="dropdown-item">🛡️ Moderation</a>
+          <a href="${rootPath}features/leveling.html" class="dropdown-item">📈 Leveling</a>
+          <a href="${rootPath}features/economy.html" class="dropdown-item">💰 Economy</a>
+          <a href="${rootPath}features/music.html" class="dropdown-item">🎵 Music Player</a>
+          <a href="${rootPath}features/social-alerts.html" class="dropdown-item">🔔 Social Alerts</a>
         </div>
       </div>
       <div class="nav-item dropdown">
         Resources <span class="chevron-down">▼</span>
         <div class="dropdown-content">
-          <a href="./resources/support.html" class="dropdown-item">🆘 Support Server</a>
-          <a href="./resources/tutorials.html" class="dropdown-item">📚 Tutorials</a>
-          <a href="./resources/help.html" class="dropdown-item">❓ Help Center</a>
+          <a href="${rootPath}resources/support.html" class="dropdown-item">🆘 Support Server</a>
+          <a href="${rootPath}resources/tutorials.html" class="dropdown-item">📚 Tutorials</a>
+          <a href="${rootPath}resources/help.html" class="dropdown-item">❓ Help Center</a>
         </div>
       </div>
       <div class="nav-item">EN <span class="chevron-down">▼</span></div>
     </div>
     <div class="nav-actions">
-      <a href="./premium.html" class="premium-badge">👑 Premium</a>
+      <a href="${rootPath}premium.html" class="premium-badge">👑 Premium</a>
       <a href="/api/auth/login" class="btn btn-primary login-btn">Login with Discord</a>
     </div>
   </nav>
 
   <div class="page-content">
-    <div class="page-icon">💻</div>
-    <h1 class="page-title">Commands List</h1>
-    <p class="page-desc">A complete list of all available Subhuu commands.</p>
+    <div class="page-icon">${p.icon}</div>
+    <h1 class="page-title">${p.title}</h1>
+    <p class="page-desc">${p.desc}</p>
     
     <div class="placeholder-box">
       This page is currently under construction.<br/>
-      We are working hard to bring you the full details of the <strong>Commands List</strong> module. Check back soon!
+      We are working hard to bring you the full details of the <strong>${p.title}</strong> module. Check back soon!
     </div>
   </div>
 
@@ -113,22 +157,22 @@
       </div>
       <div class="footer-col">
         <h4>Product</h4>
-        <a href="./premium.html">Premium</a>
-        <a href="./dashboard.html">Dashboard</a>
-        <a href="./commands.html">Commands</a>
-        <a href="./leaderboard.html">Leaderboard</a>
+        <a href="${rootPath}premium.html">Premium</a>
+        <a href="${rootPath}dashboard.html">Dashboard</a>
+        <a href="${rootPath}commands.html">Commands</a>
+        <a href="${rootPath}leaderboard.html">Leaderboard</a>
       </div>
       <div class="footer-col">
         <h4>Resources</h4>
-        <a href="./resources/support.html">Support Server</a>
-        <a href="./resources/tutorials.html">Tutorials</a>
-        <a href="./resources/help.html">Help Center</a>
+        <a href="${rootPath}resources/support.html">Support Server</a>
+        <a href="${rootPath}resources/tutorials.html">Tutorials</a>
+        <a href="${rootPath}resources/help.html">Help Center</a>
       </div>
       <div class="footer-col">
         <h4>Legal</h4>
-        <a href="./legal/terms.html">Terms of Service</a>
-        <a href="./legal/privacy.html">Privacy Policy</a>
-        <a href="./legal/refund.html">Refund Policy</a>
+        <a href="${rootPath}legal/terms.html">Terms of Service</a>
+        <a href="${rootPath}legal/privacy.html">Privacy Policy</a>
+        <a href="${rootPath}legal/refund.html">Refund Policy</a>
       </div>
     </div>
   </footer>
@@ -137,11 +181,20 @@
     fetch('/api/auth/status').then(res => res.json()).then(data => {
       if (data.loggedIn) {
         document.querySelectorAll('.login-btn').forEach(link => {
-          link.href = './dashboard.html';
+          link.href = '${rootPath}dashboard.html';
           link.innerHTML = 'Go to Dashboard';
         });
       }
     }).catch(() => {});
   </script>
 </body>
-</html>
+</html>`;
+};
+
+pages.forEach(p => {
+  const isNested = p.path.includes('/');
+  const depth = isNested ? 1 : 0;
+  const filePath = path.join(publicDir, p.path);
+  fs.writeFileSync(filePath, template(p, depth));
+  console.log('Generated:', p.path);
+});

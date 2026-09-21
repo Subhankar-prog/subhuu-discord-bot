@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Commands List | Subhuu Discord Bot</title>
+  <title>Welcome & Goodbye | Subhuu Discord Bot</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -62,45 +62,45 @@
 <body>
 
   <nav>
-    <a href="./index.html" class="nav-brand">Subhuu</a>
+    <a href="../index.html" class="nav-brand">Subhuu</a>
     <div class="nav-links">
       <div class="nav-item dropdown">
         Features <span class="chevron-down">▼</span>
         <div class="dropdown-content">
-          <a href="./features/welcome.html" class="dropdown-item">👋 Welcome & Goodbye</a>
-          <a href="./features/custom-commands.html" class="dropdown-item">📝 Custom Commands</a>
-          <a href="./features/reaction-roles.html" class="dropdown-item">🎭 Reaction Roles</a>
-          <a href="./features/moderation.html" class="dropdown-item">🛡️ Moderation</a>
-          <a href="./features/leveling.html" class="dropdown-item">📈 Leveling</a>
-          <a href="./features/economy.html" class="dropdown-item">💰 Economy</a>
-          <a href="./features/music.html" class="dropdown-item">🎵 Music Player</a>
-          <a href="./features/social-alerts.html" class="dropdown-item">🔔 Social Alerts</a>
+          <a href="../features/welcome.html" class="dropdown-item">👋 Welcome & Goodbye</a>
+          <a href="../features/custom-commands.html" class="dropdown-item">📝 Custom Commands</a>
+          <a href="../features/reaction-roles.html" class="dropdown-item">🎭 Reaction Roles</a>
+          <a href="../features/moderation.html" class="dropdown-item">🛡️ Moderation</a>
+          <a href="../features/leveling.html" class="dropdown-item">📈 Leveling</a>
+          <a href="../features/economy.html" class="dropdown-item">💰 Economy</a>
+          <a href="../features/music.html" class="dropdown-item">🎵 Music Player</a>
+          <a href="../features/social-alerts.html" class="dropdown-item">🔔 Social Alerts</a>
         </div>
       </div>
       <div class="nav-item dropdown">
         Resources <span class="chevron-down">▼</span>
         <div class="dropdown-content">
-          <a href="./resources/support.html" class="dropdown-item">🆘 Support Server</a>
-          <a href="./resources/tutorials.html" class="dropdown-item">📚 Tutorials</a>
-          <a href="./resources/help.html" class="dropdown-item">❓ Help Center</a>
+          <a href="../resources/support.html" class="dropdown-item">🆘 Support Server</a>
+          <a href="../resources/tutorials.html" class="dropdown-item">📚 Tutorials</a>
+          <a href="../resources/help.html" class="dropdown-item">❓ Help Center</a>
         </div>
       </div>
       <div class="nav-item">EN <span class="chevron-down">▼</span></div>
     </div>
     <div class="nav-actions">
-      <a href="./premium.html" class="premium-badge">👑 Premium</a>
+      <a href="../premium.html" class="premium-badge">👑 Premium</a>
       <a href="/api/auth/login" class="btn btn-primary login-btn">Login with Discord</a>
     </div>
   </nav>
 
   <div class="page-content">
-    <div class="page-icon">💻</div>
-    <h1 class="page-title">Commands List</h1>
-    <p class="page-desc">A complete list of all available Subhuu commands.</p>
+    <div class="page-icon">👋</div>
+    <h1 class="page-title">Welcome & Goodbye</h1>
+    <p class="page-desc">Give your new members a warm welcome.</p>
     
     <div class="placeholder-box">
       This page is currently under construction.<br/>
-      We are working hard to bring you the full details of the <strong>Commands List</strong> module. Check back soon!
+      We are working hard to bring you the full details of the <strong>Welcome & Goodbye</strong> module. Check back soon!
     </div>
   </div>
 
@@ -113,22 +113,22 @@
       </div>
       <div class="footer-col">
         <h4>Product</h4>
-        <a href="./premium.html">Premium</a>
-        <a href="./dashboard.html">Dashboard</a>
-        <a href="./commands.html">Commands</a>
-        <a href="./leaderboard.html">Leaderboard</a>
+        <a href="../premium.html">Premium</a>
+        <a href="../dashboard.html">Dashboard</a>
+        <a href="../commands.html">Commands</a>
+        <a href="../leaderboard.html">Leaderboard</a>
       </div>
       <div class="footer-col">
         <h4>Resources</h4>
-        <a href="./resources/support.html">Support Server</a>
-        <a href="./resources/tutorials.html">Tutorials</a>
-        <a href="./resources/help.html">Help Center</a>
+        <a href="../resources/support.html">Support Server</a>
+        <a href="../resources/tutorials.html">Tutorials</a>
+        <a href="../resources/help.html">Help Center</a>
       </div>
       <div class="footer-col">
         <h4>Legal</h4>
-        <a href="./legal/terms.html">Terms of Service</a>
-        <a href="./legal/privacy.html">Privacy Policy</a>
-        <a href="./legal/refund.html">Refund Policy</a>
+        <a href="../legal/terms.html">Terms of Service</a>
+        <a href="../legal/privacy.html">Privacy Policy</a>
+        <a href="../legal/refund.html">Refund Policy</a>
       </div>
     </div>
   </footer>
@@ -137,7 +137,7 @@
     fetch('/api/auth/status').then(res => res.json()).then(data => {
       if (data.loggedIn) {
         document.querySelectorAll('.login-btn').forEach(link => {
-          link.href = './dashboard.html';
+          link.href = '../dashboard.html';
           link.innerHTML = 'Go to Dashboard';
         });
       }
