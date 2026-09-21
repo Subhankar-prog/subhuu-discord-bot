@@ -111,16 +111,31 @@
 
   <div style="flex:1;">
     
-    <div style="padding: 120px 20px; text-align: center; max-width: 800px; margin: 0 auto; min-height: 60vh;">
-      <div style="font-size: 80px; margin-bottom: 20px;">🏆</div>
-      <h1 class="hero-title">Global Leaderboard</h1>
-      <p class="hero-desc">See who the most active members are across all servers.</p>
+    <div style="padding: 120px 20px 60px; text-align: center; max-width: 1000px; margin: 0 auto;">
+      <h1 class="hero-title" id="lb-title">Server Leaderboard</h1>
+      <p class="hero-desc" id="lb-desc">See who the most active members are in this community.</p>
       
-      <div style="background: rgba(57,148,255,0.1); border: 1px solid var(--accent); border-radius: 12px; padding: 40px; margin-top: 40px;">
-        <h3 style="font-size: 24px; margin-bottom: 16px; color: var(--accent);">Need immediate help?</h3>
-        <p style="margin-bottom: 24px; line-height: 1.6;">Our community moderators and developers are available 24/7 in the official Discord support server to assist you with any configuration issues.</p>
-        <a href="/api/auth/invite" class="btn btn-primary">Join Support Server</a>
+      <div id="lb-container" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; margin-top: 40px; text-align: left; overflow: hidden; display: none;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border);">
+              <th style="padding: 20px; color: var(--text-muted); font-weight: 600; width: 80px; text-align: center;">Rank</th>
+              <th style="padding: 20px; color: var(--text-muted); font-weight: 600;">User</th>
+              <th style="padding: 20px; color: var(--text-muted); font-weight: 600; text-align: right;">Level</th>
+              <th style="padding: 20px; color: var(--text-muted); font-weight: 600; text-align: right;">Experience</th>
+            </tr>
+          </thead>
+          <tbody id="lb-tbody">
+            <!-- Rows injected by JS -->
+          </tbody>
+        </table>
       </div>
+
+      <div id="lb-error" style="background: rgba(255,100,100,0.1); border: 1px solid rgba(255,100,100,0.3); border-radius: 12px; padding: 40px; margin-top: 40px; display: none;">
+        <h3 style="font-size: 20px; margin-bottom: 8px; color: #ff6b6b;">No Server Selected</h3>
+        <p style="color: var(--text-muted);">Please provide a valid server ID in the URL to view its leaderboard, or access it from your Server Dashboard.</p>
+      </div>
+
     </div>
   
   </div>
@@ -164,12 +179,61 @@
     fetch('/api/auth/status').then(res => res.json()).then(data => {
       if (data.loggedIn) {
         document.querySelectorAll('.login-btn').forEach(link => {
-          link.href = './dashboard.html';
+          link.href = '../dashboard.html';
           link.innerHTML = 'Go to Dashboard';
         });
       }
     }).catch(() => {});
-  </script>
 
+    async function loadLeaderboard() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const guildId = urlParams.get('guild');
+
+      if (!guildId) {
+        document.getElementById('lb-error').style.display = 'block';
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/guilds/${guildId}/leaderboard`);
+        if (!res.ok) throw new Error('Failed to fetch');
+        const data = await res.json();
+
+        document.getElementById('lb-container').style.display = 'block';
+        
+        const tbody = document.getElementById('lb-tbody');
+        tbody.innerHTML = '';
+
+        if (!data.users || data.users.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 40px; color: var(--text-muted);">No activity found for this server yet.</td></tr>';
+          return;
+        }
+
+        data.users.forEach((user, index) => {
+          const rank = index + 1;
+          let rankHtml = `<span style="font-weight: 800; font-size: 18px; color: var(--text-muted);">#${rank}</span>`;
+          if (rank === 1) rankHtml = `<span style="font-size: 24px;">🥇</span>`;
+          if (rank === 2) rankHtml = `<span style="font-size: 24px;">🥈</span>`;
+          if (rank === 3) rankHtml = `<span style="font-size: 24px;">🥉</span>`;
+
+          const tr = document.createElement('tr');
+          tr.style.borderBottom = '1px solid var(--border)';
+          tr.innerHTML = `
+            <td style="padding: 20px; text-align: center;">${rankHtml}</td>
+            <td style="padding: 20px; font-weight: 700; font-size: 16px;">${user.username}</td>
+            <td style="padding: 20px; text-align: right; color: var(--accent); font-weight: 800;">${user.level}</td>
+            <td style="padding: 20px; text-align: right; font-weight: 600;">${user.xp.toLocaleString()} XP</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+      } catch (err) {
+        document.getElementById('lb-error').style.display = 'block';
+        document.getElementById('lb-error').querySelector('p').innerText = "Could not load leaderboard data. The server might not exist or the bot isn't in it.";
+      }
+    }
+
+    loadLeaderboard();
+  </script>
 </body>
 </html>

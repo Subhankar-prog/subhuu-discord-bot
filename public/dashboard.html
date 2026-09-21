@@ -410,6 +410,9 @@
       <div class="sidebar-nav-item" onclick="navClick(this, 'logs')">
         <span class="sidebar-icon">📋</span> Logs
       </div>
+      <div class="sidebar-nav-item" onclick="openLeaderboard()">
+        <span class="sidebar-icon">🏆</span> Leaderboard
+      </div>
 
       <div class="sidebar-section-label" style="margin-top: 16px;">Bot Settings</div>
       <div class="sidebar-nav-item" onclick="navClick(this, 'settings')">
@@ -1538,6 +1541,12 @@
       await originalSaveSettings();
       floatingBanner.classList.remove('show');
     };
+
+    function openLeaderboard() {
+      if (activeGuildId) {
+        window.open('../leaderboard.html?guild=' + activeGuildId, '_blank');
+      }
+    }
 
   </script>
 
