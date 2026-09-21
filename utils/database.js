@@ -55,7 +55,18 @@ const GuildSchema = new mongoose.Schema({
         'Congrats {user}! You reached level {level}!',
         'Wow {user}, level {level}? Go touch some grass! 🌱',
         'Level {level} reached! {user} is unstoppable! 🔥',
-        'GG {user}, you just hit level {level}! 🎉'
+        'GG {user}, you just hit level {level}! 🎉',
+        'Hold up, {user} is level {level} now? The prophecy was true! 🔮',
+        '{user} just leveled up to {level}! Time to celebrate with virtual pizza! 🍕',
+        'Level {level}?! {user}, do you even sleep? 😴',
+        'Alert! {user} is now level {level}. Hide your snacks! 🍪',
+        '{user} is evolving! Congratulations on level {level}! ✨',
+        'Level {level} unlocked! {user} is officially a legend in the making. 🏆',
+        'Whoa, {user} hit level {level}! The grind never stops! ⚙️',
+        'DING! 🔔 {user} just leveled up to {level}.',
+        '{user} is level {level} now. Please sign my digital autograph book! 📝',
+        'Level {level} achieved! {user}, you are too dangerous to be left alive! ⚔️',
+        '{user} just reached level {level}! The server trembles before your power! ⚡'
       ] 
     }
   },
@@ -75,7 +86,9 @@ const GuildSchema = new mongoose.Schema({
   // Welcome settings
   welcomeSettings: {
     joinMessage: { type: String, default: 'Welcome {user} to {server}!' },
-    leaveMessage: { type: String, default: '{user} has left the server.' }
+    leaveMessage: { type: String, default: '{user} has left the server.' },
+    joinBannerUrl: { type: String, default: '' },
+    leaveBannerUrl: { type: String, default: '' }
   },
   // Announcement settings
   announcementSettings: {

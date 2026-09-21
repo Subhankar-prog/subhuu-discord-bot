@@ -22,7 +22,30 @@ module.exports = {
           .replace(/{user}/g, member.user.toString())
           .replace(/{username}/g, member.user.username)
           .replace(/{server}/g, member.guild.name);
-        ch.send(`👋 ${msg}`).catch(() => {});
+          
+        try {
+          const { AttachmentBuilder } = require('discord.js');
+          const canvacord = require('canvacord');
+          const leaver = new canvacord.Leaver()
+            .setUsername(member.user.username)
+            .setDiscriminator(member.user.discriminator === '0' ? '' : member.user.discriminator)
+            .setMemberCount(member.guild.memberCount)
+            .setGuildName(member.guild.name)
+            .setAvatar(member.user.displayAvatarURL({ extension: 'png', forceStatic: true, size: 256 }))
+            .setColor('title', '#ef4444')
+            .setColor('title-border', '#ffffff')
+            .setColor('avatar', '#ef4444');
+            
+          if (settings.welcomeSettings?.leaveBannerUrl) {
+            leaver.setBackground(settings.welcomeSettings.leaveBannerUrl);
+          }
+
+          const data = await leaver.build();
+          const attachment = new AttachmentBuilder(data, { name: 'leave.png' });
+          ch.send({ content: `👋 ${msg}`, files: [attachment] }).catch(() => {});
+        } catch {
+          ch.send(`👋 ${msg}`).catch(() => {});
+        }
       }
     }
 

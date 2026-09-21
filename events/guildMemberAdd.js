@@ -43,6 +43,11 @@ module.exports = {
             .setColor('title', '#8b5cf6')
             .setColor('title-border', '#ffffff')
             .setColor('avatar', '#8b5cf6');
+            
+          if (settings.welcomeSettings?.joinBannerUrl) {
+            welcome.setBackground(settings.welcomeSettings.joinBannerUrl);
+          }
+
           const data = await welcome.build();
           const attachment = new AttachmentBuilder(data, { name: 'welcome.png' });
           welcomeChannel.send({ content: `🚨 **NEW CHALLENGER APPROACHES!**\n${joinMsg}`, files: [attachment] }).catch(console.error);
