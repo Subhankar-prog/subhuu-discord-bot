@@ -319,6 +319,27 @@
     .log-info h4 { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
     .log-info p { font-size: 13px; color: var(--text-muted); }
     .log-date { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+
+    /* ====== SUPER ADMIN BADGE ====== */
+    .super-admin-badge {
+      display: none;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(245, 158, 11, 0.3);
+      animation: badgePulse 3s ease-in-out infinite;
+    }
+    @keyframes badgePulse {
+      0%, 100% { box-shadow: 0 2px 10px rgba(245, 158, 11, 0.3); }
+      50% { box-shadow: 0 2px 18px rgba(245, 158, 11, 0.6); }
+    }
   </style>
 </head>
 <body>
@@ -340,6 +361,7 @@
       <div class="topbar-user" id="topbar-user" style="display:none;">
         <img id="user-avatar" src="" alt=""/>
         <span id="user-name"></span>
+        <span class="super-admin-badge" id="super-admin-badge">👑 Super Admin</span>
         <a href="/api/auth/logout" class="btn btn-gray btn-sm" style="margin-left:8px;">↪</a>
       </div>
     </div>
@@ -846,6 +868,13 @@
         document.getElementById('user-avatar').src = data.user.avatar || '';
         document.getElementById('user-name').innerText = data.user.username;
         document.getElementById('topbar-user').style.display = 'flex';
+
+        // Show super admin badge if applicable
+        if (data.isSuperAdmin) {
+          document.getElementById('super-admin-badge').style.display = 'inline-flex';
+          const selectorSub = document.querySelector('#page-selector p');
+          if (selectorSub) selectorSub.innerHTML = '👑 <strong>Super Admin Mode</strong> — You can manage all ' + data.guilds.length + ' servers the bot is in.';
+        }
 
         const grid = document.getElementById('server-grid');
         grid.innerHTML = '';

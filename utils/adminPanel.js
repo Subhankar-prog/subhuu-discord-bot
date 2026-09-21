@@ -14,6 +14,11 @@ module.exports = function startAdminPanel(client) {
   const CLIENT_ID = process.env.CLIENT_ID;
   const CLIENT_SECRET = process.env.CLIENT_SECRET;
   const REDIRECT_URI = process.env.REDIRECT_URI;
+  const SUPER_ADMIN_ID = process.env.SUPER_ADMIN_ID;
+
+  // Cache Discord user info per access token to avoid redundant API calls
+  // Map<accessToken, { userId, username, avatar, expiresAt }>
+  const userInfoCache = new Map();
 
   // --- OAUTH2 LOGIN ---
 
@@ -82,7 +87,41 @@ module.exports = function startAdminPanel(client) {
     const token = req.cookies.discord_token;
     if (!token) return res.status(401).json({ error: 'Unauthorized' });
     req.token = token;
-    next();
+
+    try {
+      // Check cache first
+      let cached = userInfoCache.get(token);
+      if (cached && cached.expiresAt > Date.now()) {
+        req.userId = cached.userId;
+        req.isSuperAdmin = SUPER_ADMIN_ID && cached.userId === SUPER_ADMIN_ID;
+        return next();
+      }
+
+      // Fetch user info from Discord
+      const userRes = await fetch('https://discord.com/api/users/@me', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!userRes.ok) {
+        res.clearCookie('discord_token');
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      const userData = await userRes.json();
+
+      // Cache for 5 minutes
+      userInfoCache.set(token, {
+        userId: userData.id,
+        username: userData.username,
+        avatar: userData.avatar,
+        expiresAt: Date.now() + 5 * 60 * 1000
+      });
+
+      req.userId = userData.id;
+      req.isSuperAdmin = SUPER_ADMIN_ID && userData.id === SUPER_ADMIN_ID;
+      next();
+    } catch (err) {
+      console.error('[Auth Middleware]', err);
+      res.status(401).json({ error: 'Unauthorized' });
+    }
   }
 
   // --- DASHBOARD API ---
@@ -90,32 +129,58 @@ module.exports = function startAdminPanel(client) {
   // Get user profile + manageable guilds
   app.get('/api/user/guilds', requireDiscordAuth, async (req, res) => {
     try {
-      const userRes = await fetch('https://discord.com/api/users/@me', {
-        headers: { Authorization: `Bearer ${req.token}` }
-      });
-      const userData = await userRes.json();
+      // Use cached user info if available
+      const cached = userInfoCache.get(req.token);
+      let userData;
+      if (cached) {
+        userData = { id: cached.userId, username: cached.username, avatar: cached.avatar };
+      } else {
+        const userRes = await fetch('https://discord.com/api/users/@me', {
+          headers: { Authorization: `Bearer ${req.token}` }
+        });
+        userData = await userRes.json();
+      }
 
-      const guildsRes = await fetch('https://discord.com/api/users/@me/guilds', {
-        headers: { Authorization: `Bearer ${req.token}` }
-      });
-      const userGuilds = await guildsRes.json();
+      let formattedGuilds;
 
-      const manageableGuilds = userGuilds.filter(g => {
-        const perms = BigInt(g.permissions);
-        const isAdmin = (perms & 8n) === 8n;
-        const isManager = (perms & 32n) === 32n;
-        return (isAdmin || isManager) && client.guilds.cache.has(g.id);
-      });
+      if (req.isSuperAdmin) {
+        // Super admin sees ALL guilds the bot is in
+        formattedGuilds = client.guilds.cache.map(g => ({
+          id: g.id,
+          name: g.name,
+          icon: g.iconURL() || null,
+          memberCount: g.memberCount
+        }));
+      } else {
+        // Regular users see only guilds they can manage
+        const guildsRes = await fetch('https://discord.com/api/users/@me/guilds', {
+          headers: { Authorization: `Bearer ${req.token}` }
+        });
+        const userGuilds = await guildsRes.json();
 
-      const formattedGuilds = manageableGuilds.map(g => ({
-        id: g.id,
-        name: g.name,
-        icon: g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png` : null
-      }));
+        const manageableGuilds = userGuilds.filter(g => {
+          const perms = BigInt(g.permissions);
+          const isAdmin = (perms & 8n) === 8n;
+          const isManager = (perms & 32n) === 32n;
+          return (isAdmin || isManager) && client.guilds.cache.has(g.id);
+        });
+
+        formattedGuilds = manageableGuilds.map(g => ({
+          id: g.id,
+          name: g.name,
+          icon: g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png` : null
+        }));
+      }
 
       res.json({
-        user: { username: userData.username, avatar: userData.avatar ? `https://cdn.discordapp.com/avatars/${userData.id}/${userData.avatar}.png` : null },
-        guilds: formattedGuilds
+        user: {
+          username: userData.username,
+          avatar: userData.avatar
+            ? `https://cdn.discordapp.com/avatars/${userData.id}/${userData.avatar}.png`
+            : null
+        },
+        guilds: formattedGuilds,
+        isSuperAdmin: !!req.isSuperAdmin
       });
     } catch (err) {
       console.error(err);
