@@ -696,6 +696,11 @@
             <label>Level-Up Announcement Channel</label>
             <select class="form-control" id="select-level"><option value="">-- Current Channel --</option></select>
           </div>
+          <div class="form-group" style="margin-top: 24px;">
+            <label>Random Level-Up Messages</label>
+            <textarea class="form-control" id="xp-level-msgs" rows="4" placeholder="Congrats {user}! You reached level {level}!"></textarea>
+            <small style="color: var(--text-dim);">Put each funny message on a new line! Variables: {user}, {username}, {level}</small>
+          </div>
         </div>
 
         <!-- MODERATION SETTINGS -->
@@ -1159,6 +1164,9 @@
         document.getElementById('xp-min').value = guildSettings.xpSettings.minXp || 15;
         document.getElementById('xp-max').value = guildSettings.xpSettings.maxXp || 25;
         document.getElementById('xp-cooldown').value = guildSettings.xpSettings.cooldown || 60;
+        if (guildSettings.xpSettings.levelUpMessages) {
+          document.getElementById('xp-level-msgs').value = guildSettings.xpSettings.levelUpMessages.join('\n');
+        }
       }
       if (currentSettingsModule === 'Moderation' && guildSettings.automodSettings) {
         document.getElementById('automod-spam').checked = guildSettings.automodSettings.antiSpam;
@@ -1166,8 +1174,10 @@
         document.getElementById('automod-words').value = (guildSettings.automodSettings.filterWords || []).join(', ');
       }
       if (currentSettingsModule === 'Welcome') {
-        if (guildSettings.welcomeSettings) document.getElementById('welcome-msg').value = guildSettings.welcomeSettings.joinMessage || '';
-        if (guildSettings.leaveSettings) document.getElementById('leave-msg').value = guildSettings.leaveSettings.leaveMessage || '';
+        if (guildSettings.welcomeSettings) {
+          document.getElementById('welcome-msg').value = guildSettings.welcomeSettings.joinMessage || '';
+          document.getElementById('leave-msg').value = guildSettings.welcomeSettings.leaveMessage || '';
+        }
         if (guildSettings.autoRoles) document.getElementById('select-autorole').value = guildSettings.autoRoles.joinRole || '';
       }
       if (currentSettingsModule === 'AI') {
@@ -1207,7 +1217,8 @@
           ...guildSettings.xpSettings,
           minXp: parseInt(document.getElementById('xp-min').value) || 15,
           maxXp: parseInt(document.getElementById('xp-max').value) || 25,
-          cooldown: parseInt(document.getElementById('xp-cooldown').value) || 60
+          cooldown: parseInt(document.getElementById('xp-cooldown').value) || 60,
+          levelUpMessages: document.getElementById('xp-level-msgs').value.split('\n').map(l => l.trim()).filter(l => l.length > 0)
         };
             } else if (currentSettingsModule === 'Economy') {
         payload.economySettings = {
@@ -1226,10 +1237,7 @@
       } else if (currentSettingsModule === 'Welcome') {
         payload.welcomeSettings = {
           ...guildSettings.welcomeSettings,
-          joinMessage: document.getElementById('welcome-msg').value
-        };
-        payload.leaveSettings = {
-          ...guildSettings.leaveSettings,
+          joinMessage: document.getElementById('welcome-msg').value,
           leaveMessage: document.getElementById('leave-msg').value
         };
         payload.autoRoles = {

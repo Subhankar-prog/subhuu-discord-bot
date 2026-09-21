@@ -156,7 +156,12 @@ module.exports = {
         if (ch) targetChannel = ch;
       }
 
-      const lvlMsg = (settings?.xpSettings?.levelUpMessage || 'Congrats {user}! You reached level {level}!')
+      const msgs = settings?.xpSettings?.levelUpMessages || [
+        'Congrats {user}! You reached level {level}!'
+      ];
+      let rawMsg = msgs.length > 0 ? msgs[Math.floor(Math.random() * msgs.length)] : 'Congrats {user}! You reached level {level}!';
+
+      const lvlMsg = rawMsg
         .replace(/{user}/g, message.author.toString())
         .replace(/{level}/g, result.newLevel)
         .replace(/{username}/g, message.author.username);

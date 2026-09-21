@@ -49,7 +49,15 @@ const GuildSchema = new mongoose.Schema({
     cooldown: { type: Number, default: 60 }, // seconds
     noXpChannels: [{ type: String }],
     noXpRoles: [{ type: String }],
-    levelUpMessage: { type: String, default: 'Congrats {user}! You reached level {level}!' }
+    levelUpMessages: { 
+      type: [String], 
+      default: [
+        'Congrats {user}! You reached level {level}!',
+        'Wow {user}, level {level}? Go touch some grass! 🌱',
+        'Level {level} reached! {user} is unstoppable! 🔥',
+        'GG {user}, you just hit level {level}! 🎉'
+      ] 
+    }
   },
   // Economy settings
   economySettings: {
