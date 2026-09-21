@@ -1157,9 +1157,14 @@
           method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
         });
       if (res.ok) {
-        const t = document.getElementById('toast-general');
-        t.style.display = 'inline';
-        setTimeout(() => t.style.display = 'none', 3000);
+        const data = await res.json();
+        if (data.warning) {
+          alert('Settings saved, but there was a problem:\n\n' + data.warning + '\n\nMake sure the bot role is higher than the roles it is trying to manage, and has the "Change Nickname" permission in your server.');
+        } else {
+          const t = document.getElementById('toast-general');
+          t.style.display = 'inline';
+          setTimeout(() => t.style.display = 'none', 3000);
+        }
       }
     }
 

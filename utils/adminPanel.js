@@ -268,17 +268,19 @@ module.exports = function startAdminPanel(client) {
     const discordGuild = client.guilds.cache.get(guildId);
     if (!discordGuild) return res.status(404).json({ error: 'Bot not in guild' });
     
-    // Apply nickname to discord if provided
+    let nicknameWarn = null;
     if (req.body.nickname !== undefined) {
       try {
-        await discordGuild.members.me.setNickname(req.body.nickname || '');
+        const newNick = req.body.nickname.trim() === '' ? null : req.body.nickname.trim();
+        await discordGuild.members.me.setNickname(newNick);
       } catch (err) {
         console.error('[Nickname Update Failed]', err.message);
+        nicknameWarn = err.message;
       }
     }
 
     const updated = await settingsManager.updateGuildSettings(guildId, req.body);
-    res.json({ success: true, settings: updated });
+    res.json({ success: true, settings: updated, warning: nicknameWarn });
   });
 
   // --- MEMBERS ---
