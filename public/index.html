@@ -81,6 +81,51 @@
       font-size: 10px; opacity: 0.7;
     }
 
+    /* Dropdown CSS */
+    .dropdown {
+      position: relative;
+    }
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      top: 100%; left: 0;
+      background: var(--bg-card);
+      min-width: 240px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+      padding: 12px 0;
+      z-index: 200;
+      margin-top: 15px; /* Gap below navbar */
+    }
+    /* Invisible bridge to prevent hover loss */
+    .dropdown::before {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      height: 15px;
+    }
+    .dropdown:hover .dropdown-content {
+      display: flex;
+      flex-direction: column;
+    }
+    .dropdown-item {
+      padding: 12px 20px;
+      color: var(--text-light);
+      font-size: 15px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: background 0.2s, color 0.2s;
+    }
+    .dropdown-item:hover {
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+    }
+
     .nav-actions { display: flex; align-items: center; gap: 12px; margin-left: auto; }
 
     /* ============================
@@ -239,8 +284,27 @@
   <nav>
     <a href="/" class="nav-brand">Subhuu</a>
     <div class="nav-links">
-      <div class="nav-item">Features <span class="chevron-down">▼</span></div>
-      <div class="nav-item">Resources <span class="chevron-down">▼</span></div>
+      <div class="nav-item dropdown">
+        Features <span class="chevron-down">▼</span>
+        <div class="dropdown-content">
+          <a href="#" class="dropdown-item">👋 Welcome & Goodbye</a>
+          <a href="#" class="dropdown-item">📝 Custom Commands</a>
+          <a href="#" class="dropdown-item">🎭 Reaction Roles</a>
+          <a href="#" class="dropdown-item">🛡️ Moderation</a>
+          <a href="#" class="dropdown-item">📈 Leveling</a>
+          <a href="#" class="dropdown-item">💰 Economy</a>
+          <a href="#" class="dropdown-item">🎵 Music Player</a>
+          <a href="#" class="dropdown-item">🔔 Social Alerts</a>
+        </div>
+      </div>
+      <div class="nav-item dropdown">
+        Resources <span class="chevron-down">▼</span>
+        <div class="dropdown-content">
+          <a href="#" class="dropdown-item">🆘 Support Server</a>
+          <a href="#" class="dropdown-item">📚 Tutorials</a>
+          <a href="#" class="dropdown-item">❓ Help Center</a>
+        </div>
+      </div>
       <div class="nav-item">EN <span class="chevron-down">▼</span></div>
     </div>
     <div class="nav-actions">
