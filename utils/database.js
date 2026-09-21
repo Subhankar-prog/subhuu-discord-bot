@@ -79,6 +79,11 @@ const GuildSchema = new mongoose.Schema({
   },
   // Auto roles
   autoRoleIds: [{ type: String }],
+  // AI Chatbot settings
+  aiSettings: {
+    channelId: { type: String, default: '' },
+    systemInstruction: { type: String, default: 'You are Subhuu, a helpful and slightly sarcastic Discord bot.' }
+  },
   // Music settings
   musicSettings: {
     djOnly: { type: Boolean, default: false },

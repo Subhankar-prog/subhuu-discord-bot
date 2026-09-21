@@ -82,6 +82,46 @@ module.exports = {
     }
 
     // =========================================================
+    //  AI CHATBOT (Gemini)
+    // =========================================================
+    if (dbReady && settings?.aiSettings?.channelId === message.channelId) {
+      if (process.env.GEMINI_API_KEY) {
+        try {
+          message.channel.sendTyping().catch(() => {});
+          const { GoogleGenerativeAI } = require('@google/generative-ai');
+          const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+          const model = genAI.getGenerativeModel({ 
+            model: 'gemini-1.5-flash',
+            systemInstruction: settings.aiSettings.systemInstruction || "You are Subhuu, a helpful Discord bot."
+          });
+          
+          const rawMessages = await message.channel.messages.fetch({ limit: 15 });
+          const history = [];
+          
+          const msgsArray = Array.from(rawMessages.values()).reverse();
+          msgsArray.forEach(m => {
+             if (m.id === message.id) return;
+             if (!m.content) return;
+             history.push({
+               role: m.author.id === message.client.user.id ? 'model' : 'user',
+               parts: [{ text: `[${m.author.username}]: ${m.content}` }]
+             });
+          });
+
+          const chat = model.startChat({ history });
+          const result = await chat.sendMessage(`[${message.author.username}]: ${content}`);
+          
+          let text = result.response.text();
+          if (text.length > 1900) text = text.slice(0, 1900) + '...';
+          await message.reply(text).catch(() => {});
+          return;
+        } catch (err) {
+          console.error('[AI Chatbot]', err);
+        }
+      }
+    }
+
+    // =========================================================
     //  CUSTOM COMMANDS
     // =========================================================
     if (dbReady && settings?.modules?.customCommands) {

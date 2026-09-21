@@ -581,6 +581,17 @@
             <button class="btn btn-gray btn-sm" style="width: 100%; justify-content: center;" onclick="openModuleSettings('Custom', '📝')">⚙️ Settings</button>
           </div>
           
+          <div class="module-card" data-name="AI Chatbot">
+            <div class="module-card-header">
+              <div class="module-card-title"><span class="module-icon">🤖</span><h3>AI Chatbot</h3></div>
+              <label class="toggle" onclick="event.stopPropagation()">
+                <input type="checkbox" checked><span class="toggle-slider"></span>
+              </label>
+            </div>
+            <p style="margin-bottom: 24px; flex: 1;">Turn a channel into an intelligent AI conversationalist using Google Gemini.</p>
+            <button class="btn btn-gray btn-sm" style="width: 100%; justify-content: center;" onclick="openModuleSettings('AI', '🤖')">⚙️ Settings</button>
+          </div>
+          
           <div class="module-card" data-name="Reaction Roles">
             <div class="module-card-header">
               <div class="module-card-title"><span class="module-icon">🎭</span><h3>Reaction Roles</h3></div>
@@ -753,6 +764,23 @@
             <input type="number" class="form-control" id="econ-daily" placeholder="100" value="100">
           </div>
         </div>
+        
+        <!-- AI CHATBOT SETTINGS -->
+        <div class="settings-card mod-settings" id="mod-settings-AI" style="display: none;">
+          <h3>AI Chatbot Settings</h3>
+          <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 24px;">Transform a specific channel into an AI conversationalist. Members can just chat naturally, no commands needed!</p>
+          <div class="form-group">
+            <label>AI Channel</label>
+            <select class="form-control" id="ai-channel"><option value="">-- None --</option></select>
+            <small style="color: var(--text-dim);">The bot will read and reply to ALL messages in this channel.</small>
+          </div>
+          <div class="form-group" style="margin-top: 24px;">
+            <label>AI Personality / System Instruction</label>
+            <textarea class="form-control" id="ai-instruction" rows="4" placeholder="You are Subhuu, a helpful and slightly sarcastic Discord bot..."></textarea>
+            <small style="color: var(--text-dim);">Tell the AI how to act, what its name is, and what its tone should be.</small>
+          </div>
+        </div>
+
         <!-- GENERIC / FALLBACK -->
         <div class="settings-card mod-settings" id="mod-settings-Generic" style="display: none;">
           <h3>Module Configuration</h3>
@@ -929,7 +957,7 @@
 
         let optHtml = '<option value="">-- None --</option>';
         (data.channels || []).forEach(c => optHtml += `<option value="${c.id}">#${c.name}</option>`);
-        ['select-welcome', 'select-level', 'select-log', 'rr-channel'].forEach(id => {
+        ['select-welcome', 'select-level', 'select-log', 'rr-channel', 'ai-channel'].forEach(id => {
           document.getElementById(id).innerHTML = optHtml;
         });
 
@@ -1029,6 +1057,12 @@
         if (guildSettings.leaveSettings) document.getElementById('leave-msg').value = guildSettings.leaveSettings.leaveMessage || '';
         if (guildSettings.autoRoles) document.getElementById('select-autorole').value = guildSettings.autoRoles.joinRole || '';
       }
+      if (currentSettingsModule === 'AI') {
+        if (guildSettings.aiSettings) {
+          document.getElementById('ai-channel').value = guildSettings.aiSettings.channelId || '';
+          document.getElementById('ai-instruction').value = guildSettings.aiSettings.systemInstruction || 'You are Subhuu, a helpful and slightly sarcastic Discord bot.';
+        }
+      }
       if (currentSettingsModule === 'Custom') fetchCustomCommands();
       if (currentSettingsModule === 'Reaction') fetchReactionRoles();
 
@@ -1083,6 +1117,12 @@
         payload.autoRoles = {
           ...guildSettings.autoRoles,
           joinRole: document.getElementById('select-autorole').value
+        };
+      } else if (currentSettingsModule === 'AI') {
+        payload.aiSettings = {
+          ...guildSettings.aiSettings,
+          channelId: document.getElementById('ai-channel').value,
+          systemInstruction: document.getElementById('ai-instruction').value
         };
       }
 
