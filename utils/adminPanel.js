@@ -93,7 +93,7 @@ module.exports = function startAdminPanel(client) {
       let cached = userInfoCache.get(token);
       if (cached && cached.expiresAt > Date.now()) {
         req.userId = cached.userId;
-        req.isSuperAdmin = SUPER_ADMIN_ID && cached.userId === SUPER_ADMIN_ID;
+        req.isSuperAdmin = SUPER_ADMIN_ID && String(cached.userId).trim() === String(SUPER_ADMIN_ID).trim();
         return next();
       }
 
@@ -116,7 +116,7 @@ module.exports = function startAdminPanel(client) {
       });
 
       req.userId = userData.id;
-      req.isSuperAdmin = SUPER_ADMIN_ID && userData.id === SUPER_ADMIN_ID;
+      req.isSuperAdmin = SUPER_ADMIN_ID && String(userData.id).trim() === String(SUPER_ADMIN_ID).trim();
       next();
     } catch (err) {
       console.error('[Auth Middleware]', err);
