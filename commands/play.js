@@ -24,17 +24,26 @@ module.exports = {
       }
 
       // 2. Intercept YouTube links and seamlessly route them to SoundCloud
-      // (Bypasses Render datacenter IP blocks completely without needing cookies)
       if (query.includes('youtube.com/watch') || query.includes('youtu.be/')) {
         try {
-          const YouTube = require('youtube-sr').default;
-          const video = await YouTube.getVideo(query);
-          if (video && video.title) {
-            finalQuery = 'scsearch:' + video.title;
-            console.log(`[YouTube Intercept] Converted URL to search: ${finalQuery}`);
+          // Use YouTube's official oEmbed API (used for Discord/Twitter link previews)
+          // This endpoint is rarely IP-banned because it's meant for servers.
+          const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(query)}&format=json`;
+          const response = await fetch(oembedUrl);
+          if (response.ok) {
+            const data = await response.json();
+            if (data && data.title) {
+              finalQuery = 'scsearch:' + data.title;
+              console.log(`[YouTube Intercept] Converted URL via oEmbed: ${finalQuery}`);
+            }
           }
         } catch (fetchErr) {
-          console.error('[YouTube Intercept] Failed to scrape title using youtube-sr:', fetchErr);
+          console.error('[YouTube Intercept] oEmbed failed:', fetchErr);
+        }
+        
+        // If we failed to convert it to a SoundCloud search, it means YouTube completely firewalled us.
+        if (!finalQuery.startsWith('scsearch:')) {
+          return interaction.editReply('❌ **YouTube Firewall Block!** YouTube completely blocked the server from reading this link. \n\n👉 **PLEASE FIX:** Just type the name of the song instead of pasting the link (Example: `/play query: post malone`).');
         }
       }
 
