@@ -23,25 +23,6 @@ module.exports = {
         finalQuery = 'scsearch:' + query;
       }
 
-      // 2. Intercept YouTube links and seamlessly route them to SoundCloud
-      // (Bypasses Render datacenter IP blocks completely without needing cookies)
-      if (query.includes('youtube.com/watch') || query.includes('youtu.be/')) {
-        try {
-          const ytResponse = await fetch(query);
-          const html = await ytResponse.text();
-          const match = html.match(/<title>(.*?) - YouTube<\/title>/i) || html.match(/<title>(.*?)<\/title>/i);
-          if (match && match[1]) {
-            let title = match[1].replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
-            if (title.toLowerCase() !== 'youtube') {
-              finalQuery = 'scsearch:' + title;
-              console.log(`[YouTube Intercept] Converted URL to search: ${finalQuery}`);
-            }
-          }
-        } catch (fetchErr) {
-          console.error('[YouTube Intercept] Failed to scrape title:', fetchErr);
-        }
-      }
-
       await client.distube.play(voiceChannel, finalQuery, {
         member: interaction.member,
         textChannel: interaction.channel,

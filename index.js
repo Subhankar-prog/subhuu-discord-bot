@@ -63,7 +63,8 @@ if (fs.existsSync('/etc/secrets/cookies.txt')) {
   cookiePath = path.join(__dirname, 'cookies.txt');
 }
 
-const ytDlpOptions = { update: false };
+// Enable update: true so the community's daily anti-bot patches are pulled!
+const ytDlpOptions = { update: true };
 if (cookiePath) ytDlpOptions['--cookies'] = cookiePath;
 
 client.distube = new DisTube(client, {
