@@ -33,7 +33,13 @@ module.exports = {
           if (response.ok) {
             const data = await response.json();
             if (data && data.title) {
-              finalQuery = 'scsearch:' + data.title;
+              let cleanTitle = data.title;
+              // Remove SEO spam and tags like (Official Video) for better SoundCloud searches
+              cleanTitle = cleanTitle.split('|')[0];
+              cleanTitle = cleanTitle.split(/\[|\(/)[0];
+              cleanTitle = cleanTitle.trim();
+              
+              finalQuery = 'scsearch:' + cleanTitle;
               console.log(`[YouTube Intercept] Converted URL via oEmbed: ${finalQuery}`);
             }
           }
@@ -55,7 +61,8 @@ module.exports = {
       await interaction.editReply(`🔎 Searching for: **${finalQuery.replace('scsearch:', '')}**...`);
     } catch (err) {
       console.error('[play] Full error:', err);
-      await interaction.editReply('Could not play that link/search — it may be blocked, private, or unsupported.');
+      const errMsg = err.message || err.toString();
+      await interaction.editReply(`❌ **Error:** ${errMsg}`);
     }
   },
 };
