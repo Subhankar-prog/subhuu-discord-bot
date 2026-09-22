@@ -409,11 +409,19 @@
     .wp-btn:hover { color: #fff; transform: scale(1.1); }
     .wp-play-btn { width: 40px; height: 40px; border-radius: 50%; background: #fff; color: #000; font-size: 18px; }
     .wp-play-btn:hover { transform: scale(1.05); color: #000; }
-  </style>
+  
+    .brand-logo { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 10px rgba(57,148,255,0.5); }
+    .footer-logo { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 10px rgba(57,148,255,0.5); }
+    .bg-watermark {
+      position: fixed; right: -10vw; bottom: -10vh; width: 60vw; max-width: 800px;
+      opacity: 0.04; pointer-events: none; z-index: -1; border-radius: 50%; filter: blur(4px);
+    }
+</style>
+  <link rel="icon" type="image/png" href="/assets/feature_new_logo.png">
 </head>
 <body>
-
-  <!-- GLOBAL TOP BAR -->
+  <img src="/assets/feature_new_logo.png" class="bg-watermark" alt="">
+<!-- GLOBAL TOP BAR -->
   <div class="global-topbar">
     <button class="hamburger" onclick="toggleSidebar()">☰</button>
     <a href="/" class="topbar-brand">
