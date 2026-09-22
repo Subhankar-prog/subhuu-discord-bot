@@ -27,18 +27,14 @@ module.exports = {
       // (Bypasses Render datacenter IP blocks completely without needing cookies)
       if (query.includes('youtube.com/watch') || query.includes('youtu.be/')) {
         try {
-          const ytResponse = await fetch(query);
-          const html = await ytResponse.text();
-          const match = html.match(/<title>(.*?) - YouTube<\/title>/i) || html.match(/<title>(.*?)<\/title>/i);
-          if (match && match[1]) {
-            let title = match[1].replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
-            if (title.toLowerCase() !== 'youtube') {
-              finalQuery = 'scsearch:' + title;
-              console.log(`[YouTube Intercept] Converted URL to search: ${finalQuery}`);
-            }
+          const YouTube = require('youtube-sr').default;
+          const video = await YouTube.getVideo(query);
+          if (video && video.title) {
+            finalQuery = 'scsearch:' + video.title;
+            console.log(`[YouTube Intercept] Converted URL to search: ${finalQuery}`);
           }
         } catch (fetchErr) {
-          console.error('[YouTube Intercept] Failed to scrape title:', fetchErr);
+          console.error('[YouTube Intercept] Failed to scrape title using youtube-sr:', fetchErr);
         }
       }
 
