@@ -58,7 +58,6 @@ class SoundCloudSpotifyPlugin extends SpotifyPlugin {
 client.distube = new DisTube(client, {
   plugins: [scPlugin, new SoundCloudSpotifyPlugin(), new YtDlpPlugin({ update: false })],
   emitNewSongOnly: true,
-  searchSongs: 0,
 });
 
 // ---- Track the "Now Playing" message per guild so we can delete/update it ----
