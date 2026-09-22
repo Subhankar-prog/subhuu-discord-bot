@@ -45,7 +45,7 @@ const client = new Client({
 // YtDlpPlugin uses yt-dlp under the hood, which currently handles YouTube's
 // anti-bot measures better than older ytdl-core-only setups.
 client.distube = new DisTube(client, {
-  plugins: [new SoundCloudPlugin(), new SpotifyPlugin(), new YtDlpPlugin()],
+  plugins: [new SoundCloudPlugin(), new SpotifyPlugin(), new YtDlpPlugin({ update: true })],
   emitNewSongOnly: true,
 });
 
@@ -324,7 +324,13 @@ client.distube
     const embed = buildNowPlayingEmbed(song, queue);
     const components = buildMusicButtons(false);
     const msg = await queue.textChannel?.send({ embeds: [embed], components });
-    if (msg) nowPlayingMessages.set(queue.id, msg);
+    
+    // Prevent race condition: if queue finished before message sent, delete it
+    if (client.distube.getQueue(queue.id)) {
+      if (msg) nowPlayingMessages.set(queue.id, msg);
+    } else if (msg) {
+      msg.delete().catch(() => {});
+    }
 
     // Web Music Player broadcast
     if (global.io) {
