@@ -20,7 +20,7 @@ module.exports = {
       try {
         const { YtDlpPlugin } = require('@distube/yt-dlp');
         const plugin = new YtDlpPlugin({ update: false });
-        const ffmpeg = require('@ffmpeg-installer/ffmpeg');
+        const ffmpegStatic = require('ffmpeg-static');
         const child_process = require('child_process');
         const path = require('path');
         const fs = require('fs');
@@ -31,7 +31,7 @@ module.exports = {
         await interaction.editReply(`2. Stream URL acquired! Testing FFmpeg download...`);
         const filepath = path.join(__dirname, '..', `test-${Date.now()}.mp3`);
         
-        const process = child_process.spawn(ffmpeg.path, ['-version']);
+        const process = child_process.spawn(ffmpegStatic, ['-y', '-i', streamUrl, '-t', '5', '-f', 'mp3', filepath]);
         let stderrLog = '';
         let stdoutLog = '';
         

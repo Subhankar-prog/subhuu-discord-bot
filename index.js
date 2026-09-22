@@ -26,9 +26,9 @@ connectDB().then(() => {
 }).catch(console.error);
 
 // Make the bundled ffmpeg binary discoverable by DisTube and prism-media
-const ffmpeg = require('@ffmpeg-installer/ffmpeg');
-process.env.PATH = require('path').dirname(ffmpeg.path) + require('path').delimiter + (process.env.PATH || '');
-process.env.FFMPEG_PATH = ffmpeg.path;
+const ffmpegStatic = require('ffmpeg-static');
+process.env.PATH = require('path').dirname(ffmpegStatic) + require('path').delimiter + (process.env.PATH || '');
+process.env.FFMPEG_PATH = ffmpegStatic;
 
 const client = new Client({
   intents: [
