@@ -40,11 +40,25 @@ const client = new Client({
 });
 
 // ---- Music player (DisTube) ----
-// YtDlpPlugin uses yt-dlp under the hood, which currently handles YouTube's
-// anti-bot measures better than older ytdl-core-only setups.
+// Render is blocked by YouTube's datacenter bans, so we must force Spotify
+// to resolve tracks via SoundCloud instead of the default YouTube search!
+const scPlugin = new SoundCloudPlugin();
+
+class SoundCloudSpotifyPlugin extends SpotifyPlugin {
+  async search(query) {
+    try {
+      const results = await scPlugin.search(query, { limit: 1 });
+      return results && results[0] ? results[0] : null;
+    } catch {
+      return null;
+    }
+  }
+}
+
 client.distube = new DisTube(client, {
-  plugins: [new SoundCloudPlugin(), new SpotifyPlugin(), new YtDlpPlugin({ update: true })],
+  plugins: [scPlugin, new SoundCloudSpotifyPlugin(), new YtDlpPlugin({ update: false })],
   emitNewSongOnly: true,
+  searchSongs: 0,
 });
 
 // ---- Track the "Now Playing" message per guild so we can delete/update it ----

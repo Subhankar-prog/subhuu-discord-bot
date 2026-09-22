@@ -17,11 +17,19 @@ module.exports = {
 
     await interaction.deferReply();
     try {
-      await client.distube.play(voiceChannel, query, {
-        textChannel: interaction.channel,
+      let finalQuery = query;
+      // If it's a raw text search (not a URL), force it to use SoundCloud
+      // because YouTube blocks Render datacenter IPs.
+      if (!query.startsWith('http') && !query.startsWith('scsearch:') && !query.startsWith('ytsearch:')) {
+        finalQuery = 'scsearch:' + query;
+      }
+
+      await client.distube.play(voiceChannel, finalQuery, {
         member: interaction.member,
+        textChannel: interaction.channel,
+        interaction,
       });
-      await interaction.editReply(`Searching for: **${query}**`);
+      await interaction.editReply(`🔎 Searching for: **${query}**...`);
     } catch (err) {
       console.error('[play] Full error:', err);
       await interaction.editReply('Could not play that link/search — it may be blocked, private, or unsupported.');
