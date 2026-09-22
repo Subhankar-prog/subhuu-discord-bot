@@ -25,9 +25,10 @@ connectDB().then(() => {
   console.log('MongoDB connection initialized.');
 }).catch(console.error);
 
-// Make the bundled ffmpeg-static binary discoverable by DisTube (which searches PATH)
+// Make the bundled ffmpeg-static binary discoverable by DisTube and prism-media
 const ffmpegStatic = require('ffmpeg-static');
 process.env.PATH = require('path').dirname(ffmpegStatic) + require('path').delimiter + (process.env.PATH || '');
+process.env.FFMPEG_PATH = ffmpegStatic;
 
 const client = new Client({
   intents: [
@@ -341,7 +342,11 @@ client.distube
         queueLength: queue.songs.length
       });
     }
-  })
+  });
+  // Capture debug logs to send to the channel
+  const debugLogs = new Map();
+
+  client.distube
   .on('addSong', async (queue, song) => {
     queue.textChannel?.send(`✅ Added to queue: **${song.name}** (\`${song.formattedDuration}\`)`);
     
@@ -377,12 +382,22 @@ client.distube
     }
   })
   .on('error', (e, queue) => {
-    console.error('DisTube error:', e);
-    queue?.textChannel?.send('❌ There was an error playing that. It may be region-locked, private, or blocked — try another link.');
+    console.error('[DisTube ERROR]', e);
+    queue?.textChannel?.send(`❌ Error: ${e.message.slice(0, 100)}... Try another link.`);
+  })
+  .on('debug', message => {
+    console.log('[DisTube DEBUG]', message);
+    // Extract queue ID if possible, otherwise store globally (not perfect but works for debugging 1 queue)
+    const logs = debugLogs.get('global') || [];
+    logs.push(message.slice(0, 200));
+    if (logs.length > 5) logs.shift();
+    debugLogs.set('global', logs);
   })
   .on('finish', queue => {
     nowPlayingMessages.delete(queue.id);
-    queue.textChannel?.send('✅ Queue finished!');
+    const logs = (debugLogs.get('global') || []).join('\n');
+    queue.textChannel?.send('✅ Queue finished!\n\n**DEBUG LOGS (Last 5 events):**\n```\n' + logs + '\n```');
+    debugLogs.set('global', []);
     if (global.io) global.io.to(`music_${queue.id}`).emit('music_stop');
   })
   .on('empty', queue => {
