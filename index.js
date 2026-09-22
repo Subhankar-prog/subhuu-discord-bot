@@ -55,8 +55,19 @@ class SoundCloudSpotifyPlugin extends SpotifyPlugin {
   }
 }
 
+// Try to locate cookies.txt (Render puts secret files in /etc/secrets/ by default)
+let cookiePath = null;
+if (fs.existsSync('/etc/secrets/cookies.txt')) {
+  cookiePath = '/etc/secrets/cookies.txt';
+} else if (fs.existsSync(path.join(__dirname, 'cookies.txt'))) {
+  cookiePath = path.join(__dirname, 'cookies.txt');
+}
+
+const ytDlpOptions = { update: false };
+if (cookiePath) ytDlpOptions['--cookies'] = cookiePath;
+
 client.distube = new DisTube(client, {
-  plugins: [scPlugin, new SoundCloudSpotifyPlugin(), new YtDlpPlugin({ update: false })],
+  plugins: [scPlugin, new SoundCloudSpotifyPlugin(), new YtDlpPlugin(ytDlpOptions)],
   emitNewSongOnly: true,
 });
 
