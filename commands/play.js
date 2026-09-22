@@ -26,9 +26,7 @@ module.exports = {
         const fs = require('fs');
         const { AttachmentBuilder } = require('discord.js');
 
-        await interaction.editReply('1. Resolving test song via yt-dlp...');
-        const song = await plugin.resolve('https://soundcloud.com/nocopyrightsounds/alan-walker-fade-ncs-release'); 
-        const streamUrl = await plugin.getStreamURL(song);
+        const streamUrl = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
         
         await interaction.editReply(`2. Stream URL acquired! Testing FFmpeg download...`);
         const filepath = path.join(__dirname, '..', `test-${Date.now()}.mp3`);
