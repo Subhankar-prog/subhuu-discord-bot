@@ -15,36 +15,6 @@ module.exports = {
       return interaction.reply({ content: 'Join a voice channel first!', ephemeral: true });
     }
 
-    if (query === 'testaudio') {
-      await interaction.deferReply();
-      try {
-        const child_process = require('child_process');
-        const path = require('path');
-        const fs = require('fs');
-        const { AttachmentBuilder } = require('discord.js');
-
-        const streamUrl = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
-        
-        await interaction.editReply(`2. Stream URL acquired! Testing system FFmpeg download...`);
-        const filepath = path.join(__dirname, '..', `test-${Date.now()}.mp3`);
-        
-        const process = child_process.spawn('ffmpeg', ['-y', '-i', streamUrl, '-t', '5', '-f', 'mp3', filepath]);
-        let stderrLog = '';
-        let stdoutLog = '';
-        
-        process.stdout.on('data', data => { stdoutLog += data.toString(); });
-        process.stderr.on('data', data => { stderrLog += data.toString(); });
-        
-        process.on('close', async (code, signal) => {
-          const log = (stdoutLog + stderrLog).slice(-1500);
-          return interaction.editReply(`❌ FFmpeg crashed with code ${code}, signal: ${signal}.\n**Logs:**\n\`\`\`\n${log}\n\`\`\``);
-        });
-      } catch (e) {
-        await interaction.editReply(`❌ Network Error: ${e.message}`);
-      }
-      return;
-    }
-
     await interaction.deferReply();
     try {
       await client.distube.play(voiceChannel, query, {
