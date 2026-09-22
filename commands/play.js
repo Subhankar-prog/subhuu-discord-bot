@@ -18,9 +18,6 @@ module.exports = {
     if (query === 'testaudio') {
       await interaction.deferReply();
       try {
-        const { YtDlpPlugin } = require('@distube/yt-dlp');
-        const plugin = new YtDlpPlugin({ update: false });
-        const ffmpegStatic = require('ffmpeg-static');
         const child_process = require('child_process');
         const path = require('path');
         const fs = require('fs');
@@ -28,10 +25,10 @@ module.exports = {
 
         const streamUrl = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
         
-        await interaction.editReply(`2. Stream URL acquired! Testing FFmpeg download...`);
+        await interaction.editReply(`2. Stream URL acquired! Testing system FFmpeg download...`);
         const filepath = path.join(__dirname, '..', `test-${Date.now()}.mp3`);
         
-        const process = child_process.spawn(ffmpegStatic, ['-y', '-i', streamUrl, '-t', '5', '-f', 'mp3', filepath]);
+        const process = child_process.spawn('ffmpeg', ['-y', '-i', streamUrl, '-t', '5', '-f', 'mp3', filepath]);
         let stderrLog = '';
         let stdoutLog = '';
         

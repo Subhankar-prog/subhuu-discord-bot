@@ -5,7 +5,6 @@ const fs = require('fs');
 const path = require('path');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const googleTTS = require('google-tts-api');
-const ffmpegStatic = require('ffmpeg-static');
 const child_process = require('child_process');
 
 const activeLoops = new Map();
@@ -25,7 +24,7 @@ async function processConversation(interaction, client, connection, userId) {
     const filename = `temp-${userId}-${Date.now()}.mp3`;
     const filepath = path.join(__dirname, '..', filename);
     
-    const ffmpegProcess = child_process.spawn(ffmpegStatic, [
+    const ffmpegProcess = child_process.spawn('ffmpeg', [
       '-f', 's16le', '-ar', '48000', '-ac', '2', '-i', 'pipe:0', '-f', 'mp3', filepath
     ]);
 

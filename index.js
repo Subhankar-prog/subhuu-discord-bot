@@ -25,10 +25,7 @@ connectDB().then(() => {
   console.log('MongoDB connection initialized.');
 }).catch(console.error);
 
-// Make the bundled ffmpeg binary discoverable by DisTube and prism-media
-const ffmpegStatic = require('ffmpeg-static');
-process.env.PATH = require('path').dirname(ffmpegStatic) + require('path').delimiter + (process.env.PATH || '');
-process.env.FFMPEG_PATH = ffmpegStatic;
+// Render native Node.js comes with ffmpeg pre-installed in the OS, so we let prism-media fall back to it naturally.
 
 const client = new Client({
   intents: [
