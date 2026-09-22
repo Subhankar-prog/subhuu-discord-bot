@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const googleTTS = require('google-tts-api');
-const ffmpegStatic = require('ffmpeg-static');
+const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
 const child_process = require('child_process');
 
 const activeLoops = new Map();
@@ -25,14 +25,14 @@ async function processConversation(interaction, client, connection, userId) {
     const filename = `temp-${userId}-${Date.now()}.mp3`;
     const filepath = path.join(__dirname, '..', filename);
     
-    const ffmpeg = child_process.spawn(ffmpegStatic, [
+    const ffmpegProcess = child_process.spawn(ffmpegInstaller.path, [
       '-f', 's16le', '-ar', '48000', '-ac', '2', '-i', 'pipe:0', '-f', 'mp3', filepath
     ]);
 
-    stream.pipe(opusDecoder).pipe(ffmpeg.stdin);
+    stream.pipe(opusDecoder).pipe(ffmpegProcess.stdin);
 
     await new Promise((resolve, reject) => {
-      ffmpeg.on('close', (code) => {
+      ffmpegProcess.on('close', (code) => {
         if (code === 0) resolve();
         else reject(new Error(`FFmpeg exited with code ${code}`));
       });
