@@ -31,20 +31,16 @@ module.exports = {
         await interaction.editReply(`2. Stream URL acquired! Testing FFmpeg download...`);
         const filepath = path.join(__dirname, '..', `test-${Date.now()}.mp3`);
         
-        const args = ['-y', '-i', streamUrl, '-t', '5', '-f', 'mp3', filepath];
-        const process = child_process.spawn(ffmpeg.path, args);
+        const process = child_process.spawn(ffmpeg.path, ['-version']);
         let stderrLog = '';
+        let stdoutLog = '';
         
+        process.stdout.on('data', data => { stdoutLog += data.toString(); });
         process.stderr.on('data', data => { stderrLog += data.toString(); });
         
-        process.on('close', async (code) => {
-          if (code !== 0 || !fs.existsSync(filepath) || fs.statSync(filepath).size === 0) {
-            const log = stderrLog.slice(-1500);
-            return interaction.editReply(`❌ FFmpeg crashed with code ${code}.\n**Logs:**\n\`\`\`\n${log}\n\`\`\``);
-          }
-          const attachment = new AttachmentBuilder(filepath, { name: 'test-audio.mp3' });
-          await interaction.editReply({ content: '✅ FFmpeg successfully downloaded the audio! This proves the issue is UDP/Voice connection dropping on Render!', files: [attachment] });
-          fs.unlinkSync(filepath);
+        process.on('close', async (code, signal) => {
+          const log = (stdoutLog + stderrLog).slice(-1500);
+          return interaction.editReply(`❌ FFmpeg crashed with code ${code}, signal: ${signal}.\n**Logs:**\n\`\`\`\n${log}\n\`\`\``);
         });
       } catch (e) {
         await interaction.editReply(`❌ Network Error: ${e.message}`);
