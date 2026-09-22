@@ -27,7 +27,7 @@ module.exports = {
         const { AttachmentBuilder } = require('discord.js');
 
         await interaction.editReply('1. Resolving test song via yt-dlp...');
-        const song = await plugin.resolve('https://www.youtube.com/watch?v=BaW_vrWEBtc'); 
+        const song = await plugin.resolve('https://soundcloud.com/nocopyrightsounds/alan-walker-fade-ncs-release'); 
         const streamUrl = await plugin.getStreamURL(song);
         
         await interaction.editReply(`2. Stream URL acquired! Testing FFmpeg download...`);
