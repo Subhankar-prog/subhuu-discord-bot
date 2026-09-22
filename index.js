@@ -25,10 +25,10 @@ connectDB().then(() => {
   console.log('MongoDB connection initialized.');
 }).catch(console.error);
 
-// Make the bundled ffmpeg-static binary discoverable by DisTube and prism-media
-const ffmpegStatic = require('ffmpeg-static');
-process.env.PATH = require('path').dirname(ffmpegStatic) + require('path').delimiter + (process.env.PATH || '');
-process.env.FFMPEG_PATH = ffmpegStatic;
+// Make the bundled ffmpeg binary discoverable by DisTube and prism-media
+const ffmpeg = require('@ffmpeg-installer/ffmpeg');
+process.env.PATH = require('path').dirname(ffmpeg.path) + require('path').delimiter + (process.env.PATH || '');
+process.env.FFMPEG_PATH = ffmpeg.path;
 
 const client = new Client({
   intents: [
