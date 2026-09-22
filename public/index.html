@@ -865,7 +865,15 @@
         const imgFile = availableAssets.find(a => a.startsWith(f.image.replace('/assets/', '')));
         imgSrc = imgFile ? ('/assets/' + imgFile) : '';
       }
-      document.getElementById('modal-img').src = imgSrc;
+      
+      // Instantly clear the old image to prevent "ghosting" while the new one downloads
+      const imgEl = document.getElementById('modal-img');
+      imgEl.src = ''; 
+      
+      // Only set the new source after a tiny delay to ensure the DOM clears the old one
+      setTimeout(() => {
+        imgEl.src = imgSrc;
+      }, 10);
 
       document.getElementById('feature-modal').classList.add('open');
       document.body.style.overflow = 'hidden';
