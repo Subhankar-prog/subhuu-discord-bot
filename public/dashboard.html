@@ -1787,5 +1787,19 @@
       <button class="btn btn-accent btn-sm" onclick="saveSettings()">Save Changes</button>
     </div>
   </div>
+<script>
+    // Smart login button script - instantly updates buttons if user is already logged in
+    fetch('/api/auth/status')
+      .then(res => res.json())
+      .then(data => {
+        if (data.loggedIn) {
+          document.querySelectorAll('.login-btn').forEach(link => {
+            link.href = '/dashboard.html';
+            link.innerHTML = 'Go to Dashboard';
+          });
+        }
+      })
+      .catch(() => {});
+  </script>
 </body>
 </html>
