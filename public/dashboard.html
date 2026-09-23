@@ -30,6 +30,29 @@
       /* Glassmorphism filters */
       --glass-blur: blur(24px);
     }
+    
+    /* TOASTER CSS */
+    #global-toast {
+      position: fixed;
+      bottom: 30px;
+      right: -300px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 16px 24px;
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 9999;
+      transition: right 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      font-weight: 500;
+    }
+    #global-toast.show { right: 30px; }
+    #global-toast.success { border-left: 4px solid var(--success); }
+    #global-toast.error { border-left: 4px solid #f85149; }
+    #global-toast.warning { border-left: 4px solid #f59e0b; }
     html { height: 100%; overflow: hidden; }
     body { 
       font-family: 'Inter', sans-serif; 
@@ -52,7 +75,7 @@
       padding: 0 24px; gap: 16px; flex-shrink: 0; z-index: 50;
     }
     .topbar-brand { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 700; margin-right: 16px; }
-    .topbar-brand-icon { width: 28px; height: 28px; background: var(--accent); clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); }
+    .topbar-brand-icon { width: 32px; height: 32px; border-radius: 50%; box-shadow: 0 0 10px rgba(57,148,255,0.5); object-fit: cover; }
     .topbar-server { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 700; }
     .topbar-server img { width: 32px; height: 32px; border-radius: 50%; }
     .topbar-actions { margin-left: auto; display: flex; align-items: center; gap: 12px; }
@@ -425,7 +448,7 @@
   <div class="global-topbar">
     <button class="hamburger" onclick="toggleSidebar()">☰</button>
     <a href="/" class="topbar-brand">
-      <div class="topbar-brand-icon"></div>
+      <img src="/assets/feature_new_logo.png" alt="Logo" class="topbar-brand-icon">
       <span>Subhuu</span>
     </a>
     <span style="color: var(--text-muted); font-size: 14px; margin-right: 8px;">|</span>
@@ -1761,40 +1784,206 @@
       if (pageName === 'commands-dash') loadDashCommands();
     };
 
-    // Floating Banner Logic
-    const floatingBanner = document.getElementById('floating-save-banner');
-    document.querySelectorAll('input, select, textarea').forEach(el => {
-      el.addEventListener('change', () => {
-        if (activeGuildId) floatingBanner.classList.add('show');
-      });
-      el.addEventListener('input', () => {
-        if (activeGuildId) floatingBanner.classList.add('show');
-      });
-    });
-
-    // Override saveSettings to hide banner
-    const originalSaveSettings = saveSettings;
-    saveSettings = async function() {
-      await originalSaveSettings();
-      floatingBanner.classList.remove('show');
-    };
-
-    function openLeaderboard() {
-      if (activeGuildId) {
-        window.open('../leaderboard.html?guild=' + activeGuildId, '_blank');
-      }
+  <div id="global-toast">
+    <span id="toast-icon">✅</span>
+    <span id="toast-text">Success message</span>
+  </div>
+  
+  <script>
+    // --- EDIT / UPDATE UI WORKFLOW ---
+    function showToast(msg, type = 'success') {
+      const toast = document.getElementById('global-toast');
+      const icon = document.getElementById('toast-icon');
+      const text = document.getElementById('toast-text');
+      
+      toast.className = 'show ' + type;
+      text.innerText = msg;
+      
+      if (type === 'success') icon.innerText = '✅';
+      else if (type === 'error') icon.innerText = '❌';
+      else if (type === 'warning') icon.innerText = '⚠️';
+      
+      setTimeout(() => toast.classList.remove('show'), 4000);
     }
 
-  </script>
+    // Override the floating banner logic
+    document.querySelectorAll('.floating-save-banner, #floating-save-banner').forEach(el => el.remove());
+    
+    // Original saveSettings refactored to return success state
+    saveSettings = async function(container, inputs, updateBtn, editBtn) {
+      updateBtn.innerText = 'Saving...';
+      const payload = {
+        welcomeChannel: document.getElementById('select-welcome').value,
+        levelChannel: document.getElementById('select-level').value,
+        logChannel: document.getElementById('select-log').value,
+      };
 
-  <!-- FLOATING SAVE BANNER -->
-  <div id="floating-save-banner">
-    <p>Careful — you have unsaved changes!</p>
-    <div style="display: flex; gap: 12px;">
-      <button class="btn btn-gray btn-sm" onclick="document.getElementById('floating-save-banner').classList.remove('show')">Reset</button>
-      <button class="btn btn-accent btn-sm" onclick="saveSettings()">Save Changes</button>
-    </div>
-  </div>
+      if (currentSettingsModule === 'Leveling') {
+        payload.xpSettings = {
+          ...guildSettings.xpSettings,
+          minXp: parseInt(document.getElementById('xp-min').value) || 15,
+          maxXp: parseInt(document.getElementById('xp-max').value) || 25,
+          cooldown: parseInt(document.getElementById('xp-cooldown').value) || 60,
+          levelUpMessages: document.getElementById('xp-level-msgs').value.split('\\n').map(l => l.trim()).filter(l => l.length > 0)
+        };
+      } else if (currentSettingsModule === 'Economy') {
+        payload.economySettings = {
+          ...guildSettings.economySettings,
+          currencySymbol: document.getElementById('econ-symbol').value || '🪙',
+          startingBalance: parseInt(document.getElementById('econ-start').value) || 500,
+          dailyReward: parseInt(document.getElementById('econ-daily').value) || 100
+        };
+      } else if (currentSettingsModule === 'Moderation') {
+        payload.automodSettings = {
+          ...guildSettings.automodSettings,
+          antiSpam: document.getElementById('automod-spam').checked,
+          antiScamLinks: document.getElementById('automod-scam').checked,
+          filterWords: document.getElementById('automod-words').value.split(',').map(w => w.trim()).filter(w => w.length > 0)
+        };
+      } else if (currentSettingsModule === 'Welcome') {
+        payload.welcomeSettings = {
+          ...guildSettings.welcomeSettings,
+          joinMessage: document.getElementById('welcome-msg').value,
+          leaveMessage: document.getElementById('leave-msg').value,
+          joinBannerUrl: document.getElementById('welcome-banner').value,
+          leaveBannerUrl: document.getElementById('leave-banner').value
+        };
+        payload.autoRoles = {
+          ...guildSettings.autoRoles,
+          joinRole: document.getElementById('select-autorole').value
+        };
+      } else if (currentSettingsModule === 'AI') {
+        payload.aiSettings = {
+          ...guildSettings.aiSettings,
+          channelId: document.getElementById('ai-channel').value,
+          systemInstruction: document.getElementById('ai-instruction').value
+        };
+      } else if (currentSettingsModule === 'Tickets') {
+        payload.ticketSettings = {
+          ...guildSettings.ticketSettings,
+          staffRoleId: document.getElementById('ticket-staff').value
+        };
+      }
+
+      try {
+        const res = await fetch(\`/api/guilds/\${currentGuildId}\`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          guildSettings = data.settings;
+          showToast('Updated successfully!', 'success');
+          inputs.forEach(input => input.disabled = true);
+          updateBtn.style.display = 'none';
+          editBtn.style.display = 'inline-flex';
+        } else {
+          showToast(data.error || 'Failed to update.', 'error');
+          // Leave fields enabled so user can fix
+        }
+      } catch (err) {
+        showToast('Network error while saving.', 'error');
+      }
+      updateBtn.innerText = 'Update';
+    };
+    
+    saveGeneralSettings = async function(container, inputs, updateBtn, editBtn) {
+        updateBtn.innerText = 'Saving...';
+        const rolesEl = document.getElementById('bot-manager-roles');
+        const managerRoles = Array.from(rolesEl.querySelectorAll('input:checked')).map(cb => cb.value);
+
+        const payload = {
+          prefix: document.getElementById('bot-prefix').value || '/',
+          nickname: document.getElementById('bot-nickname').value || '',
+          timezone: document.getElementById('bot-timezone').value || 'UTC',
+          managerRoles: managerRoles
+        };
+        
+        try {
+          const res = await fetch(\`/api/guilds/\${currentGuildId}\`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          
+          if (data.success) {
+            guildSettings = data.settings;
+            showToast('Updated successfully!', 'success');
+            inputs.forEach(input => input.disabled = true);
+            updateBtn.style.display = 'none';
+            editBtn.style.display = 'inline-flex';
+          } else {
+            showToast(data.error || 'Update failed.', 'error');
+          }
+        } catch (err) {
+          showToast('Network error while saving.', 'error');
+        }
+        updateBtn.innerText = 'Update';
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // Apply Edit/Update workflow to standard forms
+      const updatableSections = [
+        '#tab-general', '#mod-settings-Leveling', '#mod-settings-Moderation', 
+        '#mod-settings-Welcome', '#mod-settings-Economy', '#mod-settings-AI', '#mod-settings-Tickets'
+      ];
+      
+      updatableSections.forEach(selector => {
+         const container = document.querySelector(selector);
+         if (!container) return;
+         
+         const inputs = container.querySelectorAll('input, select, textarea');
+         if (inputs.length === 0) return;
+         
+         const btnDiv = document.createElement('div');
+         btnDiv.className = 'edit-actions';
+         btnDiv.style.cssText = 'margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end; border-top: 1px solid var(--border); padding-top: 16px;';
+         btnDiv.innerHTML = \`
+           <button class="btn btn-gray btn-sm edit-btn">✏️ Edit</button>
+           <button class="btn btn-accent btn-sm update-btn" style="display:none;">💾 Update</button>
+         \`;
+         container.appendChild(btnDiv);
+         
+         // Disable all inputs initially
+         inputs.forEach(input => input.disabled = true);
+         
+         const editBtn = btnDiv.querySelector('.edit-btn');
+         const updateBtn = btnDiv.querySelector('.update-btn');
+         
+         let initialState = {};
+         
+         editBtn.addEventListener('click', () => {
+           inputs.forEach(input => {
+              input.disabled = false;
+              initialState[input.id || input.name || Math.random()] = input.type === 'checkbox' ? input.checked : input.value;
+           });
+           editBtn.style.display = 'none';
+           updateBtn.style.display = 'inline-flex';
+         });
+         
+         updateBtn.addEventListener('click', async () => {
+           let hasChanges = false;
+           inputs.forEach(input => {
+              const current = input.type === 'checkbox' ? input.checked : input.value;
+              if (current !== initialState[input.id || input.name || Math.random()]) hasChanges = true;
+           });
+           
+           if (!hasChanges) {
+             showToast('No changes made.', 'warning');
+             inputs.forEach(input => input.disabled = true);
+             updateBtn.style.display = 'none';
+             editBtn.style.display = 'inline-flex';
+             return;
+           }
+           
+           if (selector === '#tab-general') {
+               await saveGeneralSettings(container, inputs, updateBtn, editBtn);
+           } else {
+               await saveSettings(container, inputs, updateBtn, editBtn);
+           }
+         });
+      });
+    });
+  </script>
 <script>
     // Smart login button script - instantly updates buttons if user is already logged in
     fetch('/api/auth/status')

@@ -279,15 +279,7 @@ module.exports = function startAdminPanel(client) {
     });
   });
 
-  // Update specific guild settings
-  app.post('/api/guilds/:id', requireDiscordAuth, async (req, res) => {
-    const guildId = req.params.id;
-    if (!client.guilds.cache.has(guildId)) return res.status(404).json({ error: 'Bot not in guild' });
 
-    const newSettings = req.body;
-    const updated = await settingsManager.updateGuildSettings(guildId, newSettings);
-    res.json({ success: true, settings: updated });
-  });
 
   // --- PHASE 9+ API ENDPOINTS ---
   const configManager = require('./configManager');
@@ -325,19 +317,18 @@ module.exports = function startAdminPanel(client) {
     const discordGuild = client.guilds.cache.get(guildId);
     if (!discordGuild) return res.status(404).json({ error: 'Bot not in guild' });
     
-    let nicknameWarn = null;
     if (req.body.nickname !== undefined) {
       try {
         const newNick = req.body.nickname.trim() === '' ? null : req.body.nickname.trim();
         await discordGuild.members.me.setNickname(newNick);
       } catch (err) {
         console.error('[Nickname Update Failed]', err.message);
-        nicknameWarn = err.message;
+        return res.json({ success: false, error: `Permission Error: ${err.message}` });
       }
     }
 
     const updated = await settingsManager.updateGuildSettings(guildId, req.body);
-    res.json({ success: true, settings: updated, warning: nicknameWarn });
+    res.json({ success: true, settings: updated });
   });
 
   // --- MEMBERS ---
