@@ -1787,6 +1787,14 @@
   </div>
   
   <script>
+    function openLeaderboard() {
+      if (currentGuildId) {
+        window.open('../leaderboard.html?guild=' + currentGuildId, '_blank');
+      } else {
+        showToast('Please select a server first.', 'warning');
+      }
+    }
+
     // --- EDIT / UPDATE UI WORKFLOW ---
     function showToast(msg, type = 'success') {
       const toast = document.getElementById('global-toast');
