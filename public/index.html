@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Subhuu — The best all-in-one bot for Discord</title>
-  <link rel="icon" type="image/png" href="/assets/feature_new_logo.png">
+  <link rel="icon" type="image/png" href="/assets/feature_logo">
   <meta name="description" content="Subhuu is a complete Discord bot, easy-to-use, that millions of Discord servers worldwide trust to manage, entertain, and grow their community."/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
   <style>
@@ -266,7 +266,7 @@
     }
     .modal-close:hover { background: var(--accent); }
     .modal-image-container {
-      flex: 0 0 auto; max-width: 50%;
+      flex: 1.5; max-width: 60%;
       background: rgba(0,0,0,0.2); border-radius: 20px 0 0 20px; overflow: hidden;
       display: flex; align-items: center; justify-content: center;
     }
@@ -393,7 +393,7 @@
   </style>
 </head>
 <body>
-  <img src="/assets/feature_new_logo.png" class="bg-watermark" alt="">
+  <img src="/assets/feature_logo" class="bg-watermark" alt="">
 
   <!-- PROMO BAR -->
   <div class="promo-bar">
@@ -403,7 +403,7 @@
   <!-- NAVBAR -->
   <nav>
     <a href="/" class="nav-brand">
-      <img src="/assets/feature_new_logo.png" alt="Subhuu Logo" class="brand-logo">
+      <img src="/assets/feature_logo" alt="Subhuu Logo" class="brand-logo">
       Subhuu
     </a>
     <div class="nav-links">
@@ -554,7 +554,7 @@
     <div class="footer-inner">
       <div>
         <div class="footer-brand" style="display:flex; align-items:center; gap:12px;">
-          <img src="/assets/feature_new_logo.png" alt="Subhuu Logo" class="footer-logo">
+          <img src="/assets/feature_logo" alt="Subhuu Logo" class="footer-logo">
           Subhuu
         </div>
         <p class="footer-desc">The best all-in-one Discord bot to manage, entertain, and grow your community.</p>
@@ -612,7 +612,7 @@
           "Seamless web dashboard integration to edit user balances.",
           "Gambling mini-games like slots and coinflip."
         ],
-        image: "/assets/feature_new_economy.png" // We will match prefix
+        image: "/assets/feature_economy" // We will match prefix
       },
       {
         id: "leveling",
@@ -627,7 +627,7 @@
           "Automated role assignment removes manual admin work.",
           "Dedicated web leaderboard and role rewards setup."
         ],
-        image: "/assets/feature_new_leveling.png"
+        image: "/assets/feature_leveling"
       },
       {
         id: "moderation",
@@ -642,7 +642,7 @@
           "Auto-timeout capabilities for spam prevention.",
           "Clean, beautiful embed logs sent to a designated channel."
         ],
-        image: "/assets/feature_new_moderation.png"
+        image: "/assets/feature_moderation"
       },
       {
         id: "welcome",
@@ -657,7 +657,7 @@
           "Supports leave/goodbye messages to track retention.",
           "Beautiful graphical welcome cards make your server look premium."
         ],
-        image: "/assets/feature_new_welcome.png"
+        image: "/assets/feature_welcome"
       },
       {
         id: "custom",
@@ -672,7 +672,7 @@
           "Lightning fast response times.",
           "Create unlimited custom commands."
         ],
-        image: "/assets/feature_new_custom-commands.png"
+        image: "/assets/feature_custom-commands"
       },
       {
         id: "reaction",
@@ -687,7 +687,7 @@
           "Configure entirely through the Web Dashboard.",
           "Supports both standard and custom server emojis."
         ],
-        image: "/assets/feature_new_reaction-roles.png"
+        image: "/assets/feature_reaction-roles"
       },
       {
         id: "music",
@@ -702,7 +702,7 @@
           "Interactive control buttons (Pause, Skip, Volume).",
           "Create and save custom playlists directly to your account."
         ],
-        image: "/assets/feature_new_music.png"
+        image: "/assets/feature_music"
       },
       {
         id: "dashboard",
@@ -717,7 +717,7 @@
           "View live audit logs directly in the browser.",
           "Visually manage command permissions and modules."
         ],
-        image: "/assets/feature_new_dashboard.png"
+        image: "/assets/feature_dashboard"
       },
       {
         id: "ai",
@@ -732,7 +732,7 @@
           "Can summarize long conversations automatically.",
           "Keeps your community engaged 24/7."
         ],
-        image: "/assets/feature_new_ai.png"
+        image: "/assets/feature_ai"
       },
       {
         id: "tickets",
@@ -747,7 +747,7 @@
           "Claim system so admins know who is helping who.",
           "Highly customizable embed panels."
         ],
-        image: "/assets/feature_new_tickets.png"
+        image: "/assets/feature_tickets"
       },
       {
         id: "giveaways",
@@ -762,7 +762,7 @@
           "Multi-winner support for huge events.",
           "Bypass requirements feature for Premium users."
         ],
-        image: "/assets/feature_new_giveaways.png"
+        image: "/assets/feature_giveaways"
       },
       {
         id: "socials",
@@ -777,7 +777,7 @@
           "Lightning fast webhook response times.",
           "Supports YouTube, Twitch, and Twitter/X."
         ],
-        image: "/assets/feature_new_socials.png"
+        image: "/assets/feature_socials"
       },
       {
         id: "voice",
@@ -792,7 +792,7 @@
           "Easily lock, unlock, or kick users from temp channels.",
           "Great for dynamic LFG (Looking for Group) servers."
         ],
-        image: "/assets/feature_new_voice.png"
+        image: "/assets/feature_voice"
       },
       {
         id: "verification",
@@ -807,7 +807,7 @@
           "Grants the verified role automatically upon success.",
           "Logs all failed verification attempts."
         ],
-        image: "/assets/feature_new_security.png"
+        image: "/assets/feature_security"
       }
     ];
 
@@ -846,6 +846,7 @@
     });
 
     function openFeatureModal(f) {
+      document.getElementById('modal-img').src = '';
       document.getElementById('modal-icon').innerText = f.icon;
       document.getElementById('modal-title-text').innerText = f.title;
       document.getElementById('modal-desc').innerText = f.desc;
