@@ -1871,7 +1871,7 @@
       }
 
       try {
-        const res = await fetch(\`/api/guilds/\${currentGuildId}\`, {
+        const res = await fetch(`/api/guilds/${currentGuildId}`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
         });
         const data = await res.json();
@@ -1905,7 +1905,7 @@
         };
         
         try {
-          const res = await fetch(\`/api/guilds/\${currentGuildId}\`, {
+          const res = await fetch(`/api/guilds/${currentGuildId}`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
           });
           const data = await res.json();
@@ -1942,10 +1942,10 @@
          const btnDiv = document.createElement('div');
          btnDiv.className = 'edit-actions';
          btnDiv.style.cssText = 'margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end; border-top: 1px solid var(--border); padding-top: 16px;';
-         btnDiv.innerHTML = \`
+         btnDiv.innerHTML = `
            <button class="btn btn-gray btn-sm edit-btn">✏️ Edit</button>
            <button class="btn btn-accent btn-sm update-btn" style="display:none;">💾 Update</button>
-         \`;
+         `;
          container.appendChild(btnDiv);
          
          // Disable all inputs initially
