@@ -495,13 +495,29 @@
         <!-- LEFT SIDEBAR (MEE6 STYLE) -->
     <div class="sidebar" id="sidebar" style="display:none; width: 280px; padding: 0; overflow-y: auto; background: #1a1c23; border-right: 1px solid var(--border);">
       <!-- SERVER HEADER -->
-      <div id="sidebar-server-header" onclick="goToSelector()" style="display:flex; align-items:center; gap:12px; padding: 24px 24px 16px 24px; cursor:pointer;">
-        <img id="sidebar-server-icon" src="" style="width:36px; height:36px; border-radius:50%; object-fit:cover; display:none;" alt="">
-        <div id="sidebar-server-initials" style="width:36px; height:36px; border-radius:50%; background:#3b82f6; display:flex; align-items:center; justify-content:center; font-weight:bold; color:#fff; display:none;"></div>
-        <div style="flex:1;">
-          <div id="sidebar-server-name" style="font-size:15px; font-weight:800; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Server Name</div>
+      <!-- SERVER HEADER -->
+      <div style="position:relative; padding: 24px 24px 16px 24px;">
+        <div id="sidebar-server-header" onclick="document.getElementById('sidebar-dropdown').style.display = document.getElementById('sidebar-dropdown').style.display === 'none' ? 'block' : 'none';" style="display:flex; align-items:center; gap:12px; padding: 12px; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; cursor:pointer; background: #212330; transition: background 0.2s;">
+          <img id="sidebar-server-icon" src="" style="width:28px; height:28px; border-radius:50%; object-fit:cover; display:none;" alt="">
+          <div id="sidebar-server-initials" style="width:28px; height:28px; border-radius:50%; background:#3b82f6; display:flex; align-items:center; justify-content:center; font-weight:bold; color:#fff; font-size:12px; display:none;"></div>
+          <div style="flex:1;">
+            <div id="sidebar-server-name" style="font-size:14px; font-weight:800; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Server Name</div>
+          </div>
+          <span style="font-size:10px; color:#5c6070;">▼</span>
         </div>
-        <span style="font-size:10px; color:#5c6070;">▼</span>
+        
+        <!-- DROPDOWN MENU -->
+        <div id="sidebar-dropdown" style="display:none; position:absolute; top: 85px; left: 24px; right: 24px; background: #1a1c23; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow:hidden;">
+          <div style="padding: 12px; display:flex; align-items:center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <img id="dropdown-server-icon" src="" style="width:24px; height:24px; border-radius:50%; object-fit:cover; display:none;" alt="">
+            <div id="dropdown-server-initials" style="width:24px; height:24px; border-radius:50%; background:#3b82f6; display:flex; align-items:center; justify-content:center; font-weight:bold; color:#fff; font-size:10px; display:none;"></div>
+            <span id="dropdown-server-name" style="font-size:14px; font-weight:700; color:#fff;">Server Name</span>
+          </div>
+          <div onclick="goToSelector()" style="padding: 12px; display:flex; align-items:center; gap: 12px; cursor:pointer; color:#a0a4b8; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+            <span style="font-size:16px; width:24px; height:24px; display:flex; align-items:center; justify-content:center; border: 1px dashed #a0a4b8; border-radius: 50%;">+</span>
+            <span style="font-size:14px; font-weight:600;">Add new server</span>
+          </div>
+        </div>
       </div>
 
       
@@ -513,24 +529,24 @@
         <div class="sidebar-nav-item" onclick="openLeaderboard()">
           <span class="sidebar-icon">🏆</span> Leaderboard
         </div>
-        <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
+        <!-- <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
           <span class="sidebar-icon">👤</span> Bot Personalizer
-        </div>
-        <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
+        </div> -->
+        <!-- <!-- <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
           <span class="sidebar-icon">🎭</span> AI Characters
-        </div>
-        <div class="sidebar-nav-item" onclick="openModuleSettings('AI', '🤖')">
+        </div> --> -->
+        <!-- <div class="sidebar-nav-item" onclick="openModuleSettings('AI', '🤖')">
           <span class="sidebar-icon">🤖</span> Subhuu AI
-        </div>
-        <div class="sidebar-nav-item" onclick="navClick(this, 'settings')">
+        </div> -->
+        <!-- <div class="sidebar-nav-item" onclick="navClick(this, 'settings')">
           <span class="sidebar-icon">⚙️</span> Settings
-        </div>
+        </div> -->
         <a href="https://buy.stripe.com/test_YOUR_LINK_HERE" target="_blank" class="sidebar-nav-item" style="text-decoration:none; color:inherit;">
           <span class="sidebar-icon">💎</span> Premium
         </a>
-        <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
+        <!-- <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
           <span class="sidebar-icon">😀</span> Emojis
-        </div>
+        </div> -->
       </div>
 
       <!-- ESSENTIALS -->
@@ -551,26 +567,26 @@
         <div class="sidebar-nav-item" onclick="openModuleSettings('Leveling', '📈')">
           <span class="sidebar-icon">📈</span> Levels <span style="margin-left:auto; color:#facc15; font-size:12px;">👑</span>
         </div>
-        <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
+        <!-- <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
           <span class="sidebar-icon">🏆</span> Achievements <span style="margin-left:auto; color:#facc15; font-size:12px;">👑</span>
-        </div>
-        <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
+        </div> -->
+        <!-- <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
           <span class="sidebar-icon">⭐</span> Starboards <span style="margin-left:auto; color:#facc15; font-size:12px;">👑</span>
-        </div>
+        </div> -->
       </div>
 
       <!-- SERVER MANAGEMENT -->
       <div style="padding: 8px 24px;">
         <div class="sidebar-section-label" style="font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#5c6070;">Server Management</div>
-        <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
+        <!-- <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
           <span class="sidebar-icon">⚡</span> Automations <span style="margin-left:auto; color:#facc15; font-size:12px;">👑</span>
-        </div>
+        </div> -->
         <div class="sidebar-nav-item" onclick="openModuleSettings('Custom', '📝')">
           <span class="sidebar-icon">📝</span> Custom Commands
         </div>
-        <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
+        <!-- <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
           <span class="sidebar-icon">🔗</span> Invite Tracker <span style="margin-left:auto; color:#facc15; font-size:12px;">👑</span>
-        </div>
+        </div> -->
         <div class="sidebar-nav-item" onclick="openModuleSettings('Tickets', '🎫')">
           <span class="sidebar-icon">🎫</span> Ticketing <span style="margin-left:auto; color:#facc15; font-size:12px;">👑</span>
         </div>
@@ -593,29 +609,29 @@
       <!-- SOCIAL ALERTS -->
       <div style="padding: 8px 24px;">
         <div class="sidebar-section-label" style="font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#5c6070;">Social Alerts</div>
-        <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
+        <!-- <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
           <span class="sidebar-icon">📺</span> Twitch <span style="margin-left:auto; color:#facc15; font-size:12px;">👑</span>
-        </div>
-        <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
+        </div> -->
+        <!-- <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
           <span class="sidebar-icon">🐦</span> Twitter <span style="margin-left:auto; color:#facc15; font-size:12px;">👑</span>
-        </div>
-        <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
+        </div> -->
+        <!-- <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
           <span class="sidebar-icon">▶️</span> YouTube <span style="margin-left:auto; color:#facc15; font-size:12px;">👑</span>
-        </div>
-        <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
+        </div> -->
+        <!-- <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
           <span class="sidebar-icon">🟩</span> Kick <span style="margin-left:auto; color:#facc15; font-size:12px;">👑</span>
-        </div>
+        </div> -->
       </div>
 
       <!-- GAMES & FUN -->
       <div style="padding: 8px 24px;">
         <div class="sidebar-section-label" style="font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#5c6070;">Games & Fun</div>
-        <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
+        <!-- <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
           <span class="sidebar-icon">🎮</span> Trivia <span style="margin-left:auto; color:#facc15; font-size:12px;">👑</span>
-        </div>
-        <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
+        </div> -->
+        <!-- <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
           <span class="sidebar-icon">🎵</span> Music <span style="margin-left:auto; color:#facc15; font-size:12px;">👑</span>
-        </div>
+        </div> -->
       </div>
 
       <!-- SUBHUU AI -->
@@ -624,9 +640,9 @@
         <div class="sidebar-nav-item" onclick="openModuleSettings('AI', '🤖')">
           <span class="sidebar-icon">🤖</span> AI Chatbot
         </div>
-        <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
+        <!-- <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
           <span class="sidebar-icon">🎨</span> Image Gen <span style="margin-left:auto; color:#facc15; font-size:12px;">👑</span>
-        </div>
+        </div> -->
       </div>
 
       <!-- MONETIZATION -->
@@ -1283,16 +1299,25 @@
       document.getElementById('topbar-server-name').innerText = name;
       
       document.getElementById('sidebar-server-name').innerText = name.toUpperCase();
+      document.getElementById('dropdown-server-name').innerText = name.toUpperCase();
       const sidebarIcon = document.getElementById('sidebar-server-icon');
       const sidebarInitials = document.getElementById('sidebar-server-initials');
+      const dropIcon = document.getElementById('dropdown-server-icon');
+      const dropInitials = document.getElementById('dropdown-server-initials');
       if (icon) {
         sidebarIcon.src = icon;
+        dropIcon.src = icon;
         sidebarIcon.style.display = 'block';
+        dropIcon.style.display = 'block';
         sidebarInitials.style.display = 'none';
+        dropInitials.style.display = 'none';
       } else {
         sidebarIcon.style.display = 'none';
+        dropIcon.style.display = 'none';
         sidebarInitials.innerText = name.substring(0,2).toUpperCase();
+        dropInitials.innerText = name.substring(0,2).toUpperCase();
         sidebarInitials.style.display = 'flex';
+        dropInitials.style.display = 'flex';
       }
 
       if (icon) document.getElementById('topbar-server-icon').src = icon;
