@@ -567,26 +567,26 @@
         <div class="sidebar-nav-item" onclick="openModuleSettings('Leveling', '📈')">
           <span class="sidebar-icon">📈</span> Levels <span style="margin-left:auto; color:#facc15; font-size:12px;">👑</span>
         </div>
-        <!-- <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
+        <div class="sidebar-nav-item" onclick="openModuleSettings('Achievements', '🏆')">
           <span class="sidebar-icon">🏆</span> Achievements <span style="margin-left:auto; color:#facc15; font-size:12px;">👑</span>
-        </div> -->
-        <!-- <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
+        </div>
+        <div class="sidebar-nav-item" onclick="openModuleSettings('Starboards', '⭐')">
           <span class="sidebar-icon">⭐</span> Starboards <span style="margin-left:auto; color:#facc15; font-size:12px;">👑</span>
-        </div> -->
+        </div>
       </div>
 
       <!-- SERVER MANAGEMENT -->
       <div style="padding: 8px 24px;">
         <div class="sidebar-section-label" style="font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#5c6070;">Server Management</div>
-        <!-- <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
+        <div class="sidebar-nav-item" onclick="openModuleSettings('Automations', '⚡')">
           <span class="sidebar-icon">⚡</span> Automations <span style="margin-left:auto; color:#facc15; font-size:12px;">👑</span>
-        </div> -->
+        </div>
         <div class="sidebar-nav-item" onclick="openModuleSettings('Custom', '📝')">
           <span class="sidebar-icon">📝</span> Custom Commands
         </div>
-        <!-- <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
+        <div class="sidebar-nav-item" onclick="openModuleSettings('InviteTracker', '🔗')">
           <span class="sidebar-icon">🔗</span> Invite Tracker <span style="margin-left:auto; color:#facc15; font-size:12px;">👑</span>
-        </div> -->
+        </div>
         <div class="sidebar-nav-item" onclick="openModuleSettings('Tickets', '🎫')">
           <span class="sidebar-icon">🎫</span> Ticketing <span style="margin-left:auto; color:#facc15; font-size:12px;">👑</span>
         </div>
@@ -609,29 +609,29 @@
       <!-- SOCIAL ALERTS -->
       <div style="padding: 8px 24px;">
         <div class="sidebar-section-label" style="font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#5c6070;">Social Alerts</div>
-        <!-- <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
+        <div class="sidebar-nav-item" onclick="openModuleSettings('Twitch', '📺')">
           <span class="sidebar-icon">📺</span> Twitch <span style="margin-left:auto; color:#facc15; font-size:12px;">👑</span>
-        </div> -->
-        <!-- <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
+        </div>
+        <div class="sidebar-nav-item" onclick="openModuleSettings('Twitter', '🐦')">
           <span class="sidebar-icon">🐦</span> Twitter <span style="margin-left:auto; color:#facc15; font-size:12px;">👑</span>
-        </div> -->
-        <!-- <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
+        </div>
+        <div class="sidebar-nav-item" onclick="openModuleSettings('YouTube', '▶️')">
           <span class="sidebar-icon">▶️</span> YouTube <span style="margin-left:auto; color:#facc15; font-size:12px;">👑</span>
-        </div> -->
-        <!-- <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
+        </div>
+        <div class="sidebar-nav-item" onclick="openModuleSettings('Kick', '🟩')">
           <span class="sidebar-icon">🟩</span> Kick <span style="margin-left:auto; color:#facc15; font-size:12px;">👑</span>
-        </div> -->
+        </div>
       </div>
 
       <!-- GAMES & FUN -->
       <div style="padding: 8px 24px;">
         <div class="sidebar-section-label" style="font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#5c6070;">Games & Fun</div>
-        <!-- <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
+        <div class="sidebar-nav-item" onclick="openModuleSettings('Trivia', '🎮')">
           <span class="sidebar-icon">🎮</span> Trivia <span style="margin-left:auto; color:#facc15; font-size:12px;">👑</span>
-        </div> -->
-        <!-- <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
+        </div>
+        <div class="sidebar-nav-item" onclick="openModuleSettings('Music', '🎵')">
           <span class="sidebar-icon">🎵</span> Music <span style="margin-left:auto; color:#facc15; font-size:12px;">👑</span>
-        </div> -->
+        </div>
       </div>
 
       <!-- SUBHUU AI -->
@@ -640,9 +640,9 @@
         <div class="sidebar-nav-item" onclick="openModuleSettings('AI', '🤖')">
           <span class="sidebar-icon">🤖</span> AI Chatbot
         </div>
-        <!-- <div class="sidebar-nav-item" onclick="showToast('Coming Soon!', 'warning')">
+        <div class="sidebar-nav-item" onclick="openModuleSettings('ImageGen', '🎨')">
           <span class="sidebar-icon">🎨</span> Image Gen <span style="margin-left:auto; color:#facc15; font-size:12px;">👑</span>
-        </div> -->
+        </div>
       </div>
 
       <!-- MONETIZATION -->
@@ -923,7 +923,86 @@
           </div>
         </div>
 
-        <!-- MODERATION SETTINGS -->
+        
+          <!-- NEW FEATURE SETTINGS CARDS -->
+          <div class="settings-card mod-settings" id="mod-settings-Achievements" style="display: none;">
+            <h3>Achievements</h3>
+            <p style="color: var(--text-dim); margin-bottom: 24px;">Configure unlockable achievements for your server members.</p>
+            <div class="form-group"><label>Enable Achievements</label><select class="form-control"><option>Enabled</option><option>Disabled</option></select></div>
+            <button class="btn btn-primary">Save Settings</button>
+          </div>
+          
+          <div class="settings-card mod-settings" id="mod-settings-Starboards" style="display: none;">
+            <h3>Starboards</h3>
+            <p style="color: var(--text-dim); margin-bottom: 24px;">Highlight the best messages in your server.</p>
+            <div class="form-group"><label>Starboard Channel</label><select class="form-control"><option>-- Select Channel --</option></select></div>
+            <div class="form-group"><label>Stars Required</label><input type="number" class="form-control" value="3"></div>
+            <button class="btn btn-primary">Save Settings</button>
+          </div>
+
+          <div class="settings-card mod-settings" id="mod-settings-Automations" style="display: none;">
+            <h3>Automations</h3>
+            <p style="color: var(--text-dim); margin-bottom: 24px;">Create triggers and actions for your server events.</p>
+            <button class="btn btn-gray" style="width:100%; justify-content:center;">+ Add New Automation</button>
+          </div>
+
+          <div class="settings-card mod-settings" id="mod-settings-InviteTracker" style="display: none;">
+            <h3>Invite Tracker</h3>
+            <p style="color: var(--text-dim); margin-bottom: 24px;">Track who invited who to your server.</p>
+            <div class="form-group"><label>Enable Invite Tracking</label><select class="form-control"><option>Enabled</option><option>Disabled</option></select></div>
+            <button class="btn btn-primary">Save Settings</button>
+          </div>
+
+          <div class="settings-card mod-settings" id="mod-settings-Twitch" style="display: none;">
+            <h3>Twitch Alerts</h3>
+            <p style="color: var(--text-dim); margin-bottom: 24px;">Get notified when your favorite streamers go live.</p>
+            <div class="form-group"><label>Twitch Channel Name</label><input type="text" class="form-control" placeholder="e.g. ninja"></div>
+            <button class="btn btn-primary">Save Settings</button>
+          </div>
+
+          <div class="settings-card mod-settings" id="mod-settings-Twitter" style="display: none;">
+            <h3>Twitter Alerts</h3>
+            <p style="color: var(--text-dim); margin-bottom: 24px;">Forward tweets directly to a Discord channel.</p>
+            <div class="form-group"><label>Twitter Handle</label><input type="text" class="form-control" placeholder="e.g. @elonmusk"></div>
+            <button class="btn btn-primary">Save Settings</button>
+          </div>
+
+          <div class="settings-card mod-settings" id="mod-settings-YouTube" style="display: none;">
+            <h3>YouTube Alerts</h3>
+            <p style="color: var(--text-dim); margin-bottom: 24px;">Post new videos to your server automatically.</p>
+            <div class="form-group"><label>YouTube Channel ID</label><input type="text" class="form-control" placeholder="UC..."></div>
+            <button class="btn btn-primary">Save Settings</button>
+          </div>
+
+          <div class="settings-card mod-settings" id="mod-settings-Kick" style="display: none;">
+            <h3>Kick Alerts</h3>
+            <p style="color: var(--text-dim); margin-bottom: 24px;">Get notified when Kick streamers go live.</p>
+            <div class="form-group"><label>Kick Username</label><input type="text" class="form-control" placeholder="e.g. adinross"></div>
+            <button class="btn btn-primary">Save Settings</button>
+          </div>
+
+          <div class="settings-card mod-settings" id="mod-settings-Trivia" style="display: none;">
+            <h3>Trivia</h3>
+            <p style="color: var(--text-dim); margin-bottom: 24px;">Host automated trivia games for your members.</p>
+            <div class="form-group"><label>Game Channel</label><select class="form-control"><option>-- Select Channel --</option></select></div>
+            <button class="btn btn-primary">Save Settings</button>
+          </div>
+
+          <div class="settings-card mod-settings" id="mod-settings-Music" style="display: none;">
+            <h3>Music</h3>
+            <p style="color: var(--text-dim); margin-bottom: 24px;">High quality music playback controls.</p>
+            <div class="form-group"><label>Default Volume</label><input type="number" class="form-control" value="100"></div>
+            <button class="btn btn-primary">Save Settings</button>
+          </div>
+
+          <div class="settings-card mod-settings" id="mod-settings-ImageGen" style="display: none;">
+            <h3>Image Gen</h3>
+            <p style="color: var(--text-dim); margin-bottom: 24px;">AI Image Generation settings.</p>
+            <div class="form-group"><label>Default Model</label><select class="form-control"><option>DALL-E 3</option><option>Stable Diffusion</option></select></div>
+            <button class="btn btn-primary">Save Settings</button>
+          </div>
+
+          <!-- MODERATION SETTINGS -->
         <div class="settings-card mod-settings" id="mod-settings-Moderation" style="display: none;">
           <h3>Automod & Logging</h3>
           <div class="form-group">
