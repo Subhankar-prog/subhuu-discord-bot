@@ -45,7 +45,9 @@ const GuildSchema = new mongoose.Schema({
   // XP Settings
   xpSettings: {
     minXp: { type: Number, default: 5 },
-    maxXp: { type: Number, default: 15 },
+    maxXp: { type: Number, default: 25 },
+    voiceMinXp: { type: Number, default: 5 },
+    voiceMaxXp: { type: Number, default: 15 },
     cooldown: { type: Number, default: 60 }, // seconds
     noXpChannels: [{ type: String }],
     noXpRoles: [{ type: String }],

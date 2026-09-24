@@ -9,7 +9,7 @@ if (!fs.existsSync(dataDir)) {
 }
 
 const { Client, GatewayIntentBits, Collection, MessageFlags, Partials,
-        StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ActionRowBuilder } = require('discord.js');
+  StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ActionRowBuilder } = require('discord.js');
 const { DisTube } = require('distube');
 const { YtDlpPlugin } = require('@distube/yt-dlp');
 const { SoundCloudPlugin } = require('@distube/soundcloud');
@@ -103,7 +103,7 @@ client.on('interactionCreate', async interaction => {
 
   // ---- Select menu handlers ----
   if (interaction.isStringSelectMenu()) {
-    if (interaction.customId === 'queue_select')         return handleQueueSelect(interaction);
+    if (interaction.customId === 'queue_select') return handleQueueSelect(interaction);
     if (interaction.customId === 'save_playlist_select') return handleSavePlaylistSelect(interaction);
     return;
   }
@@ -229,7 +229,7 @@ async function handleQueuePicker(interaction) {
   }
 
   const songs = queue.songs.slice(0, 25); // Discord select menus max 25 options
-  const menu  = new StringSelectMenuBuilder()
+  const menu = new StringSelectMenuBuilder()
     .setCustomId('queue_select')
     .setPlaceholder('Choose a song to jump to…')
     .addOptions(
@@ -282,7 +282,7 @@ async function handleSavePlaylist(interaction) {
   }
 
   const playlists = pm.getUserPlaylists(interaction.guildId, interaction.user.id);
-  const keys      = Object.keys(playlists);
+  const keys = Object.keys(playlists);
 
   if (keys.length === 0) {
     return interaction.reply({
@@ -303,7 +303,7 @@ async function handleSavePlaylist(interaction) {
       )
     );
 
-  const row  = new ActionRowBuilder().addComponents(menu);
+  const row = new ActionRowBuilder().addComponents(menu);
   const song = queue.songs[0];
   return interaction.reply({
     content: `💾 Save **${song.name}** to which playlist?`,
@@ -320,7 +320,7 @@ async function handleSavePlaylistSelect(interaction) {
   }
 
   const plName = interaction.values[0];
-  const song   = queue.songs[0];
+  const song = queue.songs[0];
   const result = pm.addSong(
     interaction.guildId,
     interaction.user.id,
@@ -347,12 +347,12 @@ client.distube
     const embed = buildNowPlayingEmbed(song, queue);
     const components = buildMusicButtons(false);
     const msg = await queue.textChannel?.send({ embeds: [embed], components });
-    
+
     // Prevent race condition: if queue finished before message sent, delete it
     if (client.distube.getQueue(queue.id)) {
       if (msg) nowPlayingMessages.set(queue.id, msg);
     } else if (msg) {
-      msg.delete().catch(() => {});
+      msg.delete().catch(() => { });
     }
 
     // Web Music Player broadcast
@@ -365,18 +365,18 @@ client.distube
       });
     }
   });
-  // Capture debug logs to send to the channel
-  const debugLogs = new Map();
+// Capture debug logs to send to the channel
+const debugLogs = new Map();
 
-  client.distube
+client.distube
   .on('addSong', async (queue, song) => {
     queue.textChannel?.send(`✅ Added to queue: **${song.name}** (\`${song.formattedDuration}\`)`);
-    
+
     // Update the existing Now Playing card with the new queue count and "Up next" text
     const msg = nowPlayingMessages.get(queue.id);
     if (msg) {
       const updatedEmbed = buildNowPlayingEmbed(queue.songs[0], queue);
-      try { await msg.edit({ embeds: [updatedEmbed] }); } catch (err) {}
+      try { await msg.edit({ embeds: [updatedEmbed] }); } catch (err) { }
     }
 
     if (global.io) {
@@ -388,12 +388,12 @@ client.distube
   })
   .on('addList', async (queue, playlist) => {
     queue.textChannel?.send(`✅ Added playlist to queue: **${playlist.name}** (${playlist.songs.length} songs)`);
-    
+
     // Update the existing Now Playing card with the new queue count
     const msg = nowPlayingMessages.get(queue.id);
     if (msg) {
       const updatedEmbed = buildNowPlayingEmbed(queue.songs[0], queue);
-      try { await msg.edit({ embeds: [updatedEmbed] }); } catch (err) {}
+      try { await msg.edit({ embeds: [updatedEmbed] }); } catch (err) { }
     }
 
     if (global.io) {
@@ -431,7 +431,7 @@ client.distube
 // Pings the Render URL every 14 minutes to prevent the free tier from sleeping
 const RENDER_URL = 'https://subhuu-discord-bot.onrender.com';
 setInterval(() => {
-  fetch(RENDER_URL).catch(() => {});
+  fetch(RENDER_URL).catch(() => { });
 }, 14 * 60 * 1000);
 
 client.login(process.env.DISCORD_TOKEN);

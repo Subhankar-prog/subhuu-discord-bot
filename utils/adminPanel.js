@@ -162,11 +162,6 @@ module.exports = function startAdminPanel(client) {
       res.status(500).json({ error: 'Internal server error' });
     }
   });
-    } catch (err) {
-      console.error('[Leaderboard API]', err);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  });
 
   // --- AUTH MIDDLEWARE ---
 
