@@ -69,14 +69,23 @@
     .glass-box ul { margin-left: 20px; margin-bottom: 20px; color: var(--text-light); line-height: 1.7; }
     .glass-box li { margin-bottom: 10px; }
 
-    </style>
+    
+    /* BRANDING & LOGO OVERRIDES */
+    .brand-logo { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 10px rgba(57,148,255,0.5); }
+    .footer-logo { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 10px rgba(57,148,255,0.5); }
+    .bg-watermark {
+      position: fixed; right: -10vw; bottom: -10vh; width: 60vw; max-width: 800px;
+      opacity: 0.04; pointer-events: none; z-index: -1; border-radius: 50%; filter: blur(4px);
+    }
+</style>
   <link rel="icon" type="image/png" href="/assets/feature_new_logo.png">
 </head>
 <body>
   <img src="/assets/feature_new_logo.png" class="bg-watermark" alt="">
 <div class="promo-bar">
     SPECIAL LAUNCH — Get 50% off Subhuu Premium | Deal expires in: 00 : 09 : 38 : 35
-  </div>\n  <nav>
+  </div>
+  <nav>
     <a href="/" class="nav-brand">
       <img src="/assets/feature_new_logo.png" alt="Subhuu Logo" class="brand-logo">
       Subhuu
@@ -119,7 +128,15 @@
       .cmd-table th { background: rgba(255,255,255,0.05); font-weight: 700; color: var(--text); }
       .cmd-table td { color: var(--text-light); font-size: 15px; }
       .cmd-name { font-family: monospace; background: rgba(57,148,255,0.15); color: var(--accent); padding: 4px 8px; border-radius: 6px; }
-    </style>
+    
+    /* BRANDING & LOGO OVERRIDES */
+    .brand-logo { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 10px rgba(57,148,255,0.5); }
+    .footer-logo { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 10px rgba(57,148,255,0.5); }
+    .bg-watermark {
+      position: fixed; right: -10vw; bottom: -10vh; width: 60vw; max-width: 800px;
+      opacity: 0.04; pointer-events: none; z-index: -1; border-radius: 50%; filter: blur(4px);
+    }
+</style>
     <div class="page-header">
       <h1 class="page-title">Command Reference</h1>
       <p class="page-desc">A complete list of all Slash Commands available in Subhuu.</p>
