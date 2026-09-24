@@ -123,15 +123,45 @@ module.exports = function startAdminPanel(client) {
       
       const users = await User.find({ guildId }).sort({ xp: -1 }).limit(100);
       
-      res.json({
-        guildId,
-        users: users.map(u => ({
+      const guild = client.guilds.cache.get(guildId);
+      
+      const mappedUsers = await Promise.all(users.map(async u => {
+        let resolvedName = (u.username && u.username !== 'Unknown' && u.username !== '') ? u.username : 'Unknown';
+        
+        if (guild) {
+          try {
+            let member = guild.members.cache.get(u.userId);
+            if (!member && users.length <= 30) {
+              member = await guild.members.fetch(u.userId).catch(() => null);
+            }
+            if (member) {
+              resolvedName = member.user.username;
+              // Update database in background if it was incorrect
+              if (u.username !== resolvedName) {
+                u.username = resolvedName;
+                u.save().catch(()=>{});
+              }
+            }
+          } catch (e) {}
+        }
+        
+        return {
           userId: u.userId,
-          username: u.username,
+          username: resolvedName,
           xp: u.xp,
           level: u.level
-        }))
+        };
+      }));
+      
+      res.json({
+        guildId,
+        users: mappedUsers
       });
+    } catch (err) {
+      console.error('[Leaderboard API]', err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
     } catch (err) {
       console.error('[Leaderboard API]', err);
       res.status(500).json({ error: 'Internal server error' });
