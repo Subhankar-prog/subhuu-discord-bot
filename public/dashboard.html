@@ -494,6 +494,16 @@
     
         <!-- LEFT SIDEBAR (MEE6 STYLE) -->
     <div class="sidebar" id="sidebar" style="display:none; width: 280px; padding: 0; overflow-y: auto; background: #1a1c23; border-right: 1px solid var(--border);">
+      <!-- SERVER HEADER -->
+      <div id="sidebar-server-header" onclick="goToSelector()" style="display:flex; align-items:center; gap:12px; padding: 24px 24px 16px 24px; cursor:pointer;">
+        <img id="sidebar-server-icon" src="" style="width:36px; height:36px; border-radius:50%; object-fit:cover; display:none;" alt="">
+        <div id="sidebar-server-initials" style="width:36px; height:36px; border-radius:50%; background:#3b82f6; display:flex; align-items:center; justify-content:center; font-weight:bold; color:#fff; display:none;"></div>
+        <div style="flex:1;">
+          <div id="sidebar-server-name" style="font-size:15px; font-weight:800; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Server Name</div>
+        </div>
+        <span style="font-size:10px; color:#5c6070;">▼</span>
+      </div>
+
       
       <!-- TOP SECTION -->
       <div style="padding: 24px 24px 8px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 16px;">
@@ -1271,6 +1281,20 @@
       document.getElementById('sidebar').style.display = 'flex';
       document.getElementById('topbar-server').style.display = 'flex';
       document.getElementById('topbar-server-name').innerText = name;
+      
+      document.getElementById('sidebar-server-name').innerText = name.toUpperCase();
+      const sidebarIcon = document.getElementById('sidebar-server-icon');
+      const sidebarInitials = document.getElementById('sidebar-server-initials');
+      if (icon) {
+        sidebarIcon.src = icon;
+        sidebarIcon.style.display = 'block';
+        sidebarInitials.style.display = 'none';
+      } else {
+        sidebarIcon.style.display = 'none';
+        sidebarInitials.innerText = name.substring(0,2).toUpperCase();
+        sidebarInitials.style.display = 'flex';
+      }
+
       if (icon) document.getElementById('topbar-server-icon').src = icon;
       document.getElementById('dash-server-name').innerText = `Hello, ${name}`;
 
