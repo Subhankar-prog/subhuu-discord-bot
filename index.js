@@ -475,10 +475,12 @@ startAdminPanel(client);
     const timeout = setTimeout(() => controller.abort(), 15000);
     const testRes = await fetch('https://discord.com/api/v10/gateway', { signal: controller.signal });
     clearTimeout(timeout);
-    const gatewayData = await testRes.json();
-    console.log('[Network] Discord API reachable! Gateway:', JSON.stringify(gatewayData));
+    const rawText = await testRes.text();
+    const statusInfo = `Status: ${testRes.status} ${testRes.statusText}`;
+    console.log(`[Network] ${statusInfo} | Body: ${rawText.substring(0, 500)}`);
     if (global.discordDebugLogs) {
-      global.discordDebugLogs.push(`[Network] Discord reachable: ${JSON.stringify(gatewayData)}`);
+      global.discordDebugLogs.push(`[Network] ${statusInfo}`);
+      global.discordDebugLogs.push(`[Network] Body: ${rawText.substring(0, 300)}`);
     }
   } catch (err) {
     console.error('[Network] Discord API UNREACHABLE:', err.message);
