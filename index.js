@@ -1,4 +1,19 @@
 require('dotenv').config();
+
+// Catch ALL process errors to prevent Render crash loops
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[FATAL] Unhandled Rejection at:', promise, 'reason:', reason);
+  if (global.discordDebugLogs) {
+    global.discordDebugLogs.push(`[FATAL] Unhandled Rejection: ${reason}`);
+  }
+});
+process.on('uncaughtException', (err) => {
+  console.error('[FATAL] Uncaught Exception:', err);
+  if (global.discordDebugLogs) {
+    global.discordDebugLogs.push(`[FATAL] Uncaught Exception: ${err.message}`);
+  }
+});
+
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -447,5 +462,10 @@ setInterval(() => {
 const startAdminPanel = require('./utils/adminPanel');
 startAdminPanel(client);
 
-client.login(process.env.DISCORD_TOKEN);
+client.login(process.env.DISCORD_TOKEN).catch(err => {
+  console.error('[FATAL] Discord Login Failed:', err);
+  if (global.discordDebugLogs) {
+    global.discordDebugLogs.push(`[FATAL] Login Failed: ${err.message}`);
+  }
+});
 
