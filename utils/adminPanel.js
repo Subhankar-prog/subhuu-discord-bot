@@ -120,7 +120,8 @@ module.exports = function startAdminPanel(client) {
       isReady: client.isReady(),
       wsStatus: client.ws.status,
       user: client.user ? client.user.tag : null,
-      uptime: client.uptime
+      uptime: client.uptime,
+      logs: global.discordDebugLogs || []
     });
   });
 

@@ -129,8 +129,16 @@ client.on('interactionCreate', async interaction => {
   }
 });
 
+
 // ---- Prevent unhandled error events from crashing the process ----
 client.on('error', err => console.error('Discord client error:', err.message));
+
+global.discordDebugLogs = [];
+client.on('debug', info => {
+  global.discordDebugLogs.push(`[${new Date().toISOString()}] ${info}`);
+  if (global.discordDebugLogs.length > 50) global.discordDebugLogs.shift();
+});
+
 
 // ---- Music button interaction logic ----
 async function handleMusicButton(interaction) {
