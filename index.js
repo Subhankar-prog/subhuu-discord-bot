@@ -1,4 +1,9 @@
 require('dotenv').config();
+const dns = require('node:dns');
+// Force Node to prefer IPv4. Some PaaS environments (like Render) have broken IPv6 
+// configurations that cause Discord.js undici fetch requests to hang infinitely in a blackhole.
+dns.setDefaultResultOrder('ipv4first');
+
 
 // Catch ALL process errors to prevent Render crash loops
 process.on('unhandledRejection', (reason, promise) => {
