@@ -467,37 +467,69 @@ setInterval(() => {
 const startAdminPanel = require('./utils/adminPanel');
 startAdminPanel(client);
 
-// Network diagnostic: test if we can reach Discord at all before trying to login
+// Login with exponential backoff to avoid extending Cloudflare's IP rate-limit ban
 (async () => {
-  try {
-    console.log('[Network] Testing Discord API connectivity...');
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
-    const testRes = await fetch('https://discord.com/api/v10/gateway', { signal: controller.signal });
-    clearTimeout(timeout);
-    const rawText = await testRes.text();
-    const statusInfo = `Status: ${testRes.status} ${testRes.statusText}`;
-    console.log(`[Network] ${statusInfo} | Body: ${rawText.substring(0, 500)}`);
-    if (global.discordDebugLogs) {
-      global.discordDebugLogs.push(`[Network] ${statusInfo}`);
-      global.discordDebugLogs.push(`[Network] Body: ${rawText.substring(0, 300)}`);
-    }
-  } catch (err) {
-    console.error('[Network] Discord API UNREACHABLE:', err.message);
-    if (global.discordDebugLogs) {
-      global.discordDebugLogs.push(`[Network] UNREACHABLE: ${err.message}`);
+  const MAX_RETRIES = 10;
+  let delay = 30000; // Start with 30 seconds
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      console.log(`[Bot] Login attempt ${attempt}/${MAX_RETRIES}...`);
+      if (global.discordDebugLogs) {
+        global.discordDebugLogs.push(`[Bot] Login attempt ${attempt}/${MAX_RETRIES} at ${new Date().toISOString()}`);
+      }
+
+      // Quick connectivity test first
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000);
+      const testRes = await fetch('https://discord.com/api/v10/gateway', { signal: controller.signal });
+      clearTimeout(timeout);
+
+      if (testRes.status === 429) {
+        const retryAfter = testRes.headers.get('retry-after');
+        const waitTime = retryAfter ? parseInt(retryAfter) * 1000 : delay;
+        console.log(`[Bot] Cloudflare 429 — waiting ${waitTime / 1000}s before retry...`);
+        if (global.discordDebugLogs) {
+          global.discordDebugLogs.push(`[Bot] 429 rate-limited. Waiting ${waitTime / 1000}s...`);
+        }
+        await new Promise(r => setTimeout(r, waitTime));
+        delay = Math.min(delay * 2, 300000); // Double delay, max 5 minutes
+        continue;
+      }
+
+      // API is reachable — attempt login
+      console.log(`[Bot] Discord API reachable (status ${testRes.status}). Logging in...`);
+      if (global.discordDebugLogs) {
+        global.discordDebugLogs.push(`[Bot] API reachable! Logging in...`);
+      }
+
+      await client.login(process.env.DISCORD_TOKEN);
+      console.log('[Bot] Login successful!');
+      if (global.discordDebugLogs) {
+        global.discordDebugLogs.push(`[Bot] LOGIN SUCCESSFUL at ${new Date().toISOString()}`);
+      }
+      return; // Success — exit the retry loop
+
+    } catch (err) {
+      console.error(`[Bot] Attempt ${attempt} failed:`, err.message);
+      if (global.discordDebugLogs) {
+        global.discordDebugLogs.push(`[Bot] Attempt ${attempt} failed: ${err.message}`);
+      }
+
+      if (attempt < MAX_RETRIES) {
+        console.log(`[Bot] Retrying in ${delay / 1000}s...`);
+        if (global.discordDebugLogs) {
+          global.discordDebugLogs.push(`[Bot] Retrying in ${delay / 1000}s...`);
+        }
+        await new Promise(r => setTimeout(r, delay));
+        delay = Math.min(delay * 2, 300000);
+      }
     }
   }
 
-  // Now attempt login
-  try {
-    console.log('[Bot] Attempting Discord login...');
-    await client.login(process.env.DISCORD_TOKEN);
-    console.log('[Bot] Login successful!');
-  } catch (err) {
-    console.error('[FATAL] Discord Login Failed:', err.message);
-    if (global.discordDebugLogs) {
-      global.discordDebugLogs.push(`[FATAL] Login Failed: ${err.message}`);
-    }
+  console.error('[Bot] All login attempts exhausted. The bot will not be online until redeployed.');
+  if (global.discordDebugLogs) {
+    global.discordDebugLogs.push('[Bot] ALL ATTEMPTS EXHAUSTED. Redeploy needed.');
   }
 })();
+

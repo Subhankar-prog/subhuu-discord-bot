@@ -1323,16 +1323,40 @@
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('loggedin') === 'true') window.history.replaceState({}, '', '/dashboard.html');
 
-    fetch('/api/user/guilds')
-      .then(async res => {
-        if (res.status === 401) { window.location.href = '/api/auth/login'; return; }
-        if (res.status === 503 || !res.ok) {
-          const body = await res.json().catch(() => ({ error: 'Unknown server error.' }));
-          document.getElementById('server-grid').innerHTML = `<div style="grid-column: 1 / -1; padding: 40px; text-align: center; background: rgba(244, 63, 94, 0.1); border: 1px solid var(--red); border-radius: 12px;"><h3 style="color: var(--red); margin-bottom: 12px;">Connection Timeout</h3><p style="color: #fff;">${body.error || 'Server is taking too long to respond. Please refresh.'}</p></div>`;
+    // Auto-retry fetching guilds while bot is booting up
+    let retryCount = 0;
+    async function fetchGuildsWithRetry() {
+      retryCount++;
+      try {
+        const res = await fetch('/api/user/guilds');
+        if (res.status === 401) { window.location.href = '/api/auth/login'; return null; }
+        if (res.status === 503) {
+          // Bot is still booting — show retry status and try again
+          const grid = document.getElementById('server-grid');
+          if (grid) {
+            grid.innerHTML = `<div style="grid-column: 1 / -1; padding: 40px; text-align: center;">
+              <div class="spinner" style="margin: 0 auto 20px auto;"></div>
+              <p style="color: var(--text-muted); font-size: 15px;">Bot is warming up... auto-retrying (attempt ${retryCount})</p>
+              <p style="color: var(--text-dim); font-size: 13px; margin-top: 8px;">This can take 1-2 minutes on first boot.</p>
+            </div>`;
+          }
+          setTimeout(fetchGuildsWithRetry, 15000);
           return null;
         }
-        return res.json();
-      })
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({ error: 'Unknown error' }));
+          document.getElementById('server-grid').innerHTML = `<div style="grid-column: 1 / -1; padding: 40px; text-align: center; background: rgba(244, 63, 94, 0.1); border: 1px solid #f43f5e; border-radius: 12px;"><h3 style="color: #f43f5e; margin-bottom: 12px;">Error</h3><p style="color: #fff;">${body.error || 'Something went wrong.'}</p></div>`;
+          return null;
+        }
+        return await res.json();
+      } catch (err) {
+        // Network error — retry
+        setTimeout(fetchGuildsWithRetry, 15000);
+        return null;
+      }
+    }
+
+    fetchGuildsWithRetry()
       .then(data => {
         if (!data) return;
         document.getElementById('user-avatar').src = data.user.avatar || '';
