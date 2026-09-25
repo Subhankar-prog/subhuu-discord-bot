@@ -1,0 +1,977 @@
+<script>
+    let currentGuildId = null;
+    let guildSettings = {};
+
+    // ======= AUTH CHECK =======
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('loggedin') === 'true') window.history.replaceState({}, '', '/dashboard.html');
+
+    fetch('/api/user/guilds')
+      .then(res => {
+        if (res.status === 401) { window.location.href = '/api/auth/login'; return; }
+        return res.json();
+      })
+      .then(data => {
+        if (!data) return;
+        document.getElementById('user-avatar').src = data.user.avatar || '';
+        document.getElementById('user-name').innerText = data.user.username;
+        document.getElementById('topbar-user').style.display = 'flex';
+
+        // Show super admin badge if applicable
+        if (data.isSuperAdmin) {
+          document.getElementById('super-admin-badge').style.display = 'inline-flex';
+          const selectorSub = document.querySelector('#page-selector p');
+          if (selectorSub) selectorSub.innerHTML = '👑 <strong>Super Admin Mode</strong> — You can manage all ' + data.guilds.length + ' servers the bot is in.';
+        }
+        
+        // Handle Premium status
+        if (data.isPremium || data.isSuperAdmin) {
+          document.getElementById('premium-badge').style.display = 'inline-flex';
+          const premiumBtn = document.getElementById('sidebar-premium-btn');
+          if (premiumBtn) {
+             premiumBtn.innerText = '💎 Premium Active';
+             premiumBtn.style.pointerEvents = 'none';
+             premiumBtn.style.opacity = '0.7';
+          }
+        }
+
+        const grid = document.getElementById('server-grid');
+        grid.innerHTML = '';
+        if (!data.guilds.length) {
+          grid.innerHTML = '<p style="color: var(--text-muted);">No manageable servers found. Add Subhuu to a server first.</p>';
+          return;
+        }
+        data.guilds.forEach(g => {
+          const card = document.createElement('div');
+          card.className = 'server-card';
+          const iconHtml = g.icon ? `<img src="${g.icon}" />` : `<div class="initials">${g.name.substring(0,2).toUpperCase()}</div>`;
+          card.innerHTML = `${iconHtml}<div class="server-card-info"><h3>${g.name}</h3><p>Configure Bot</p></div>`;
+          card.onclick = () => initDashboard(g.id, g.name, g.icon);
+          grid.appendChild(card);
+        });
+      })
+      .catch(() => window.location.href = '/');
+
+    async function initDashboard(guildId, name, icon) {
+      if (currentGuildId) socket.emit('unsubscribe_music', currentGuildId);
+      currentGuildId = guildId;
+      socket.emit('subscribe_music', guildId);
+      document.getElementById('dash-server-name').innerText = `Loading...`;
+      
+      const res = await fetch(`/api/guilds/${guildId}`);
+      if (!res.ok) {
+        alert('Subhuu has not been added to this server yet! Please click "Add To Server" first.');
+        return;
+      }
+      
+      document.getElementById('sidebar').style.display = 'flex';
+      document.getElementById('topbar-server').style.display = 'flex';
+      document.getElementById('topbar-server-name').innerText = name;
+      if (icon) document.getElementById('topbar-server-icon').src = icon;
+      document.getElementById('dash-server-name').innerText = `Hello, ${name}`;
+
+      showPage('home');
+      navClick(document.querySelector('.sidebar-nav-item'), 'home');
+
+      const data = await res.json();
+        guildSettings = data.settings || {};
+        document.getElementById('stat-members').innerText = data.memberCount || '—';
+        document.getElementById('stat-channels').innerText = data.channels?.length || '—';
+        document.getElementById('stat-roles').innerText = data.roleCount || '—';
+
+        let optHtml = '<option value="">-- None --</option>';
+        (data.channels || []).forEach(c => optHtml += `<option value="${c.id}">#${c.name}</option>`);
+        ['select-welcome', 'select-level', 'select-log', 'rr-channel', 'ai-channel'].forEach(id => {
+          document.getElementById(id).innerHTML = optHtml;
+        });
+
+        let roleOptHtml = '<option value="">-- None --</option>';
+        let roleMultiHtml = '';
+        (data.roles || []).forEach(r => {
+          roleOptHtml += `<option value="${r.id}" style="color:${r.color}">${r.name}</option>`;
+          roleMultiHtml += `
+            <label class="multi-select-item">
+              <input type="checkbox" value="${r.id}">
+              <span class="multi-select-label" style="color:${r.color}">${r.name}</span>
+            </label>
+          `;
+        });
+        ['select-autorole', 'rr-role', 'ticket-staff'].forEach(id => {
+          document.getElementById(id).innerHTML = roleOptHtml;
+        });
+        
+        const managerRolesSelect = document.getElementById('bot-manager-roles');
+        if (managerRolesSelect) {
+          managerRolesSelect.innerHTML = roleMultiHtml;
+          if (guildSettings.managerRoles) {
+            managerRolesSelect.querySelectorAll('input').forEach(cb => {
+              if (guildSettings.managerRoles.includes(cb.value)) cb.checked = true;
+            });
+          }
+        }
+        
+        document.getElementById('select-welcome').value = guildSettings.welcomeChannel || '';
+        document.getElementById('select-level').value = guildSettings.levelChannel || '';
+        document.getElementById('select-log').value = guildSettings.logChannel || '';
+        
+        document.getElementById('bot-prefix').value = guildSettings.prefix || '/';
+        document.getElementById('bot-nickname').value = guildSettings.nickname || '';
+        document.getElementById('bot-timezone').value = guildSettings.timezone || 'UTC';
+
+        const mods = guildSettings.modules || {};
+        document.getElementById('mod-moderation').checked = !!mods.moderation;
+        document.getElementById('mod-economy').checked = !!mods.economy;
+        document.getElementById('mod-logging').checked = !!mods.logging;
+    }
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+    }
+
+    function showPage(name) {
+      document.getElementById('sidebar').classList.remove('open');
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(`page-${name}`).classList.add('active');
+    }
+
+    function goToSelector() {
+      document.getElementById('sidebar').style.display = 'none';
+      document.getElementById('topbar-server').style.display = 'none';
+      document.getElementById('dash-server-name').innerText = 'Select a Server';
+      showPage('selector');
+    }
+
+    function navClick(el, pageName) {
+      document.querySelectorAll('.sidebar-nav-item').forEach(n => n.classList.remove('active'));
+      el.classList.add('active');
+      showPage(pageName);
+      if (pageName === 'members') fetchMembers();
+    }
+
+    let currentSettingsModule = '';
+
+    function openModuleSettings(title, icon) {
+      document.getElementById('settings-title-text').innerText = title;
+      document.getElementById('settings-icon').innerText = icon;
+      currentSettingsModule = title.split(' ')[0]; // Leveling, Moderation, Welcome, Economy
+      
+      document.querySelectorAll('.mod-settings').forEach(el => el.style.display = 'none');
+      const target = document.getElementById(`mod-settings-${currentSettingsModule}`);
+      if (target) target.style.display = 'block';
+      else document.getElementById('mod-settings-Generic').style.display = 'block';
+
+      // Populate values
+            if (currentSettingsModule === 'Economy' && guildSettings.economySettings) {
+        document.getElementById('econ-symbol').value = guildSettings.economySettings.currencySymbol || '🪙';
+        document.getElementById('econ-start').value = guildSettings.economySettings.startingBalance || 500;
+        document.getElementById('econ-daily').value = guildSettings.economySettings.dailyReward || 100;
+      }
+      if (currentSettingsModule === 'Leveling' && guildSettings.xpSettings) {
+        document.getElementById('xp-min').value = guildSettings.xpSettings.minXp || 15;
+        document.getElementById('xp-max').value = guildSettings.xpSettings.maxXp || 25;
+        document.getElementById('xp-cooldown').value = guildSettings.xpSettings.cooldown || 60;
+        if (guildSettings.xpSettings.levelUpMessages) {
+          document.getElementById('xp-level-msgs').value = guildSettings.xpSettings.levelUpMessages.join('\n');
+        }
+      }
+      if (currentSettingsModule === 'Moderation' && guildSettings.automodSettings) {
+        document.getElementById('automod-spam').checked = guildSettings.automodSettings.antiSpam;
+        document.getElementById('automod-scam').checked = guildSettings.automodSettings.antiScamLinks !== false;
+        document.getElementById('automod-words').value = (guildSettings.automodSettings.filterWords || []).join(', ');
+      }
+      if (currentSettingsModule === 'Welcome') {
+        if (guildSettings.welcomeSettings) {
+          document.getElementById('welcome-msg').value = guildSettings.welcomeSettings.joinMessage || '';
+          document.getElementById('leave-msg').value = guildSettings.welcomeSettings.leaveMessage || '';
+          document.getElementById('welcome-banner').value = guildSettings.welcomeSettings.joinBannerUrl || '';
+          document.getElementById('leave-banner').value = guildSettings.welcomeSettings.leaveBannerUrl || '';
+        }
+        if (guildSettings.autoRoles) document.getElementById('select-autorole').value = guildSettings.autoRoles.joinRole || '';
+      }
+      if (currentSettingsModule === 'AI') {
+        if (guildSettings.aiSettings) {
+          document.getElementById('ai-channel').value = guildSettings.aiSettings.channelId || '';
+          document.getElementById('ai-instruction').value = guildSettings.aiSettings.systemInstruction || 'You are Subhuu, a helpful and slightly sarcastic Discord bot.';
+        }
+      }
+      if (currentSettingsModule === 'Tickets') {
+        if (guildSettings.ticketSettings) {
+          document.getElementById('ticket-staff').value = guildSettings.ticketSettings.staffRoleId || '';
+        }
+      }
+      if (currentSettingsModule === 'Custom') fetchCustomCommands();
+      if (currentSettingsModule === 'Reaction') fetchReactionRoles();
+
+      showPage('settings');
+    }
+
+    async function toggleModule(name, val) {
+      if (!guildSettings.modules) guildSettings.modules = {};
+      guildSettings.modules[name] = val;
+      await fetch(`/api/guilds/${currentGuildId}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ modules: guildSettings.modules })
+      });
+    }
+
+    async function saveSettings() {
+      const payload = {
+        welcomeChannel: document.getElementById('select-welcome').value,
+        levelChannel: document.getElementById('select-level').value,
+        logChannel: document.getElementById('select-log').value,
+      };
+
+      if (currentSettingsModule === 'Leveling') {
+        payload.xpSettings = {
+          ...guildSettings.xpSettings,
+          minXp: parseInt(document.getElementById('xp-min').value) || 15,
+          maxXp: parseInt(document.getElementById('xp-max').value) || 25,
+          cooldown: parseInt(document.getElementById('xp-cooldown').value) || 60,
+          levelUpMessages: document.getElementById('xp-level-msgs').value.split('\n').map(l => l.trim()).filter(l => l.length > 0)
+        };
+            } else if (currentSettingsModule === 'Economy') {
+        payload.economySettings = {
+          ...guildSettings.economySettings,
+          currencySymbol: document.getElementById('econ-symbol').value || '🪙',
+          startingBalance: parseInt(document.getElementById('econ-start').value) || 500,
+          dailyReward: parseInt(document.getElementById('econ-daily').value) || 100
+        };
+      } else if (currentSettingsModule === 'Moderation') {
+        payload.automodSettings = {
+          ...guildSettings.automodSettings,
+          antiSpam: document.getElementById('automod-spam').checked,
+          antiScamLinks: document.getElementById('automod-scam').checked,
+          filterWords: document.getElementById('automod-words').value.split(',').map(w => w.trim()).filter(w => w.length > 0)
+        };
+      } else if (currentSettingsModule === 'Welcome') {
+        payload.welcomeSettings = {
+          ...guildSettings.welcomeSettings,
+          joinMessage: document.getElementById('welcome-msg').value,
+          leaveMessage: document.getElementById('leave-msg').value,
+          joinBannerUrl: document.getElementById('welcome-banner').value,
+          leaveBannerUrl: document.getElementById('leave-banner').value
+        };
+        payload.autoRoles = {
+          ...guildSettings.autoRoles,
+          joinRole: document.getElementById('select-autorole').value
+        };
+      } else if (currentSettingsModule === 'AI') {
+        payload.aiSettings = {
+          ...guildSettings.aiSettings,
+          channelId: document.getElementById('ai-channel').value,
+          systemInstruction: document.getElementById('ai-instruction').value
+        };
+      } else if (currentSettingsModule === 'Tickets') {
+        payload.ticketSettings = {
+          ...guildSettings.ticketSettings,
+          staffRoleId: document.getElementById('ticket-staff').value
+        };
+      }
+
+      const res = await fetch(`/api/guilds/${currentGuildId}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        guildSettings = data.settings;
+        const t = document.getElementById('toast-settings');
+        t.style.display = 'inline';
+        setTimeout(() => t.style.display = 'none', 3000);
+      }
+    }
+
+    async function fetchMembers() {
+      const tbody = document.getElementById('members-tbody');
+      tbody.innerHTML = '<tr><td colspan="6" style="color: var(--text-muted);">Loading...</td></tr>';
+      const res = await fetch(`/api/guilds/${currentGuildId}/members`);
+      if (!res.ok) return;
+      const members = await res.json();
+      tbody.innerHTML = '';
+      if (!members.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="color: var(--text-muted);">No member data found.</td></tr>';
+        return;
+      }
+      members.forEach(m => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="color: var(--text-dim); font-size: 12px;">${m.userId}</td>
+          <td><strong>${m.username}</strong></td>
+          <td><input type="number" id="lvl-${m.userId}" value="${m.level}"/></td>
+          <td><input type="number" id="xp-${m.userId}" value="${m.xp}"/></td>
+          <td><input type="number" id="cns-${m.userId}" value="${m.coins}"/></td>
+          <td>
+            <div class="td-actions">
+              <button class="btn btn-success btn-sm" onclick="updateMember('${m.userId}')">Save</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteMember('${m.userId}')">Delete</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function updateMember(userId) {
+      await fetch(`/api/guilds/${currentGuildId}/members/${userId}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update',
+          level: document.getElementById(`lvl-${userId}`).value,
+          xp: document.getElementById(`xp-${userId}`).value,
+          coins: document.getElementById(`cns-${userId}`).value
+        })
+      });
+      alert('Updated!');
+    }
+
+    // --- Search Modules ---
+    function filterModules() {
+      const q = document.getElementById('module-search').value.toLowerCase();
+      document.querySelectorAll('#modules-grid-container .module-card').forEach(card => {
+        const name = card.getAttribute('data-name').toLowerCase();
+        card.style.display = name.includes(q) ? 'flex' : 'none';
+      });
+    }
+
+    // --- General Settings ---
+    async function saveGeneralSettings() {
+        const rolesEl = document.getElementById('bot-manager-roles');
+        const managerRoles = Array.from(rolesEl.querySelectorAll('input:checked')).map(cb => cb.value);
+
+        const payload = {
+          prefix: document.getElementById('bot-prefix').value || '/',
+          nickname: document.getElementById('bot-nickname').value || '',
+          timezone: document.getElementById('bot-timezone').value || 'UTC',
+          managerRoles: managerRoles
+        };
+        const res = await fetch(`/api/guilds/${currentGuildId}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+        });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.warning) {
+          alert('Settings saved, but there was a problem:\n\n' + data.warning + '\n\nMake sure the bot role is higher than the roles it is trying to manage, and has the "Change Nickname" permission in your server.');
+        } else {
+          const t = document.getElementById('toast-general');
+          t.style.display = 'inline';
+          setTimeout(() => t.style.display = 'none', 3000);
+        }
+      }
+    }
+
+    // --- Custom Commands ---
+    async function fetchCustomCommands() {
+      const tbody = document.getElementById('cc-tbody');
+      tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">Loading...</td></tr>';
+      const res = await fetch(`/api/guilds/${currentGuildId}/custom-commands`);
+      const cmds = await res.json();
+      tbody.innerHTML = '';
+      if (!cmds.length) tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No custom commands yet.</td></tr>';
+      
+      cmds.forEach(c => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${c.trigger}</td>
+          <td>${c.response}</td>
+          <td><button class="btn btn-danger btn-sm" onclick="deleteCustomCommand('${c._id}')">Delete</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function addCustomCommand() {
+      const trigger = document.getElementById('cc-trigger').value;
+      const response = document.getElementById('cc-response').value;
+      if (!trigger || !response) return;
+      await fetch(`/api/guilds/${currentGuildId}/custom-commands`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'add', trigger, response })
+      });
+      document.getElementById('cc-trigger').value = '';
+      document.getElementById('cc-response').value = '';
+      fetchCustomCommands();
+    }
+
+    async function deleteCustomCommand(id) {
+      await fetch(`/api/guilds/${currentGuildId}/custom-commands`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete', _id: id })
+      });
+      fetchCustomCommands();
+    }
+
+    // ==========================================
+    // LIVE WEB MUSIC PLAYER (SOCKET.IO)
+    // ==========================================
+    const socket = io();
+    let isPlaying = false;
+
+    function wpAction(action) {
+      if (!currentGuildId) return;
+      if (action === 'pause') {
+         if (isPlaying) {
+           action = 'pause';
+           isPlaying = false;
+         } else {
+           action = 'resume';
+           isPlaying = true;
+         }
+         document.getElementById('wp-play-pause').innerText = isPlaying ? '⏸' : '▶️';
+      }
+      socket.emit('music_control', { guildId: currentGuildId, action });
+    }
+
+    socket.on('music_play', (data) => {
+      document.getElementById('web-player').classList.add('active');
+      document.getElementById('wp-thumb').src = data.thumbnail || 'https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?auto=format&fit=crop&q=80&w=150&h=150';
+      document.getElementById('wp-title').innerText = data.name || 'Unknown Track';
+      document.getElementById('wp-queue').innerText = `Queue: ${data.queueLength}`;
+      document.getElementById('wp-duration').innerText = data.duration;
+      isPlaying = true;
+      document.getElementById('wp-play-pause').innerText = '⏸';
+    });
+
+    socket.on('music_add', (data) => {
+      document.getElementById('wp-queue').innerText = `Queue: ${data.queueLength}`;
+    });
+
+    socket.on('music_addList', (data) => {
+      document.getElementById('wp-queue').innerText = `Queue: ${data.queueLength}`;
+    });
+
+    socket.on('music_stop', () => {
+      document.getElementById('web-player').classList.remove('active');
+      isPlaying = false;
+    });
+
+    // --- Reaction Roles ---
+    async function fetchReactionRoles() {
+      const tbody = document.getElementById('rr-tbody');
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Loading...</td></tr>';
+      const res = await fetch(`/api/guilds/${currentGuildId}/reaction-roles`);
+      const roles = await res.json();
+      tbody.innerHTML = '';
+      if (!roles.length) tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No reaction roles set up.</td></tr>';
+      
+      roles.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r.channelId}</td>
+          <td>${r.messageId}</td>
+          <td>${r.emoji}</td>
+          <td>${r.roleName}</td>
+          <td><button class="btn btn-danger btn-sm" onclick="deleteReactionRole('${r._id}')">Delete</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function addReactionRole() {
+      const msgId = document.getElementById('rr-msgid').value;
+      const channelId = document.getElementById('rr-channel').value;
+      const emoji = document.getElementById('rr-emoji').value;
+      const roleId = document.getElementById('rr-role').value;
+      const roleName = document.getElementById('rr-role').options[document.getElementById('rr-role').selectedIndex].text;
+      if (!msgId || !channelId || !emoji || !roleId) return alert('Fill all fields');
+      
+      await fetch(`/api/guilds/${currentGuildId}/reaction-roles`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'add', messageId: msgId, channelId, emoji, roleId, roleName })
+      });
+      fetchReactionRoles();
+    }
+
+    async function deleteReactionRole(id) {
+      await fetch(`/api/guilds/${currentGuildId}/reaction-roles`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete', _id: id })
+      });
+      fetchReactionRoles();
+    }
+
+    async function deleteMember(userId) {
+      if (!confirm('Delete all data for this user?')) return;
+      await fetch(`/api/guilds/${currentGuildId}/members/${userId}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete' })
+      });
+      fetchMembers();
+    }
+
+    // ==========================================
+    // LOGS PAGE LOGIC
+    // ==========================================
+    let currentLogFilter = 'all';
+
+    document.querySelectorAll('.log-filter-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.log-filter-btn').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        currentLogFilter = e.target.dataset.type;
+        fetchLogs();
+      });
+    });
+
+    async function fetchLogs() {
+      const list = document.getElementById('log-list');
+      list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">Loading logs...</div>';
+      
+      try {
+        const res = await fetch(`/api/guilds/${currentGuildId}/logs?type=${currentLogFilter}`);
+        const logs = await res.json();
+        
+        if (!logs.length) {
+          list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No logs found.</div>';
+          return;
+        }
+
+        list.innerHTML = '';
+        logs.forEach(log => {
+          const div = document.createElement('div');
+          div.className = 'log-item';
+          div.style.cssText = 'display: flex; gap: 16px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid var(--border);';
+          
+          let icon = '🛡️';
+          if (log.type.includes('message')) icon = '📝';
+          if (log.type.includes('member')) icon = '👤';
+
+          div.innerHTML = `
+            <div style="font-size: 24px; padding-top: 4px;">${icon}</div>
+            <div>
+              <h4 style="margin-bottom: 4px;">${log.title}</h4>
+              <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 8px;">${log.description}</p>
+              <div style="font-size: 11px; color: var(--text-dim);">${new Date(log.timestamp).toLocaleString()}</div>
+            </div>
+          `;
+          list.appendChild(div);
+        });
+      } catch (err) {
+        list.innerHTML = '<div style="color: #f85149; text-align: center; padding: 20px;">Failed to load logs.</div>';
+      }
+    }
+
+    // ==========================================
+    // COMMAND PERMISSIONS LOGIC
+    // ==========================================
+    let currentCmdCategory = 'Economy';
+    let allCommandPermissions = {};
+    let guildRoles = [];
+    let guildChannels = [];
+
+    const DASH_COMMANDS = {
+      Economy: [
+        { name: '/balance', desc: 'Check your current coin balance' },
+        { name: '/daily', desc: 'Claim your daily free coins (every 24h)' },
+        { name: '/work', desc: 'Work a shift to earn some coins' },
+        { name: '/pay', desc: 'Transfer coins to another member' },
+        { name: '/rob', desc: 'Attempt to steal coins from someone' },
+        { name: '/shop', desc: 'View and buy custom roles from the shop' },
+        { name: '/slots', desc: 'Gamble coins on the slot machine' },
+        { name: '/blackjack', desc: 'Play blackjack against the bot' }
+      ],
+      Moderation: [
+        { name: '/ban', desc: 'Permanently ban a member' },
+        { name: '/kick', desc: 'Kick a member from the server' },
+        { name: '/mute', desc: 'Timeout/mute a member temporarily' },
+        { name: '/unmute', desc: 'Remove a timeout from a member' },
+        { name: '/warn', desc: 'Issue a formal warning to a member' },
+        { name: '/clear', desc: 'Bulk delete recent messages' },
+        { name: '/lock', desc: 'Lock the current channel' },
+        { name: '/unlock', desc: 'Unlock a previously locked channel' },
+        { name: '/slowmode', desc: 'Set channel slowmode delay' }
+      ],
+      Music: [
+        { name: '/play', desc: 'Play a song from YouTube/Spotify' },
+        { name: '/stop', desc: 'Stop the music and clear queue' },
+        { name: '/skip', desc: 'Skip the currently playing song' },
+        { name: '/queue', desc: 'View the upcoming songs list' },
+        { name: '/volume', desc: 'Change the music volume' },
+        { name: '/pause', desc: 'Pause the music player' },
+        { name: '/resume', desc: 'Resume paused music' },
+        { name: '/nowplaying', desc: 'See what song is currently playing' },
+        { name: '/shuffle', desc: 'Shuffle the music queue' }
+      ],
+      Playlists: [
+        { name: '/playlist create', desc: 'Create a new empty personal playlist' },
+        { name: '/playlist add', desc: 'Add a song to one of your playlists' },
+        { name: '/playlist play', desc: 'Queue an entire playlist to play' },
+        { name: '/playlist remove', desc: 'Remove a specific song from a playlist' },
+        { name: '/playlist list', desc: 'View all your saved playlists' },
+        { name: '/playlist view', desc: 'See all songs inside a playlist' },
+        { name: '/playlist delete', desc: 'Permanently delete a playlist' }
+      ],
+      Fun: [
+        { name: '/meme', desc: 'Get a random meme from Reddit' },
+        { name: '/8ball', desc: 'Ask the magic 8-ball a question' },
+        { name: '/coinflip', desc: 'Flip a coin (heads or tails)' },
+        { name: '/joke', desc: 'Get a random dad joke' },
+        { name: '/rps', desc: 'Play Rock Paper Scissors' },
+        { name: '/tictactoe', desc: 'Play Tic-Tac-Toe' },
+        { name: '/trivia', desc: 'Answer a trivia question' }
+      ]
+    };
+
+    async function loadDashCommands() {
+      // Fetch permissions
+      const pRes = await fetch(`/api/guilds/${currentGuildId}/command-permissions`);
+      allCommandPermissions = await pRes.json() || {};
+      
+      // Fetch server roles/channels to populate the modal later
+      const gRes = await fetch(`/api/guilds/${currentGuildId}`);
+      const gData = await gRes.json();
+      guildRoles = gData.roles || [];
+      guildChannels = gData.channels || [];
+
+      filterDashCommands(currentCmdCategory);
+    }
+
+        function filterDashCommands(category) {
+      currentCmdCategory = category;
+      document.querySelectorAll('#cmd-category-tabs button').forEach(b => {
+        if (b.innerText === category) {
+          b.classList.remove('btn-gray');
+          b.classList.add('btn-accent');
+        } else {
+          b.classList.add('btn-gray');
+          b.classList.remove('btn-accent');
+        }
+      });
+      const grid = document.getElementById('dash-commands-grid');
+      grid.innerHTML = '';
+      
+      const cmds = DASH_COMMANDS[category] || [];
+      
+      cmds.forEach(cmdObj => {
+        const cmdName = cmdObj.name || cmdObj;
+        const cmdDesc = cmdObj.desc || '';
+        const perms = allCommandPermissions[cmdName] || { enabled: true };
+        
+        const card = document.createElement('div');
+        card.className = 'module-card';
+        card.style.cssText = 'padding: 20px; gap: 12px; cursor: default; justify-content: flex-start;';
+        
+        card.innerHTML = `
+          <div class="module-card-header">
+            <h3 style="color: var(--cyan); font-family: monospace;">${cmdName}</h3>
+            <label class="toggle">
+              <input type="checkbox" onchange="toggleCommand('${cmdName}', this.checked)" ${perms.enabled ? 'checked' : ''}>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          ${cmdDesc ? `<p style="color: var(--text-dim); font-size: 13px; margin-top: -6px; margin-bottom: 12px; line-height: 1.4;">${cmdDesc}</p>` : ''}
+          <button class="btn btn-gray btn-sm" style="width: 100%; justify-content: center; margin-top: auto;" onclick="openPermModal('${cmdName}')">⚙️ Edit Permissions</button>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    async function toggleCommand(cmdName, enabled) {
+      if (!allCommandPermissions[cmdName]) allCommandPermissions[cmdName] = {};
+      allCommandPermissions[cmdName].enabled = enabled;
+      await fetch(`/api/guilds/${currentGuildId}/command-permissions`, {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ commandName: cmdName, enabled })
+      });
+    }
+
+    async function toggleAllCommands(enabled) {
+      const cmds = DASH_COMMANDS[currentCmdCategory] || [];
+      for (const c of cmds) {
+        await toggleCommand(c, enabled);
+      }
+      filterDashCommands(currentCmdCategory);
+    }
+
+    let editingCommand = null;
+    function openPermModal(cmdName) {
+      editingCommand = cmdName;
+      document.getElementById('perm-modal-title').innerText = `Permissions for ${cmdName}`;
+      
+      const perms = allCommandPermissions[cmdName] || {};
+      const aRoles = perms.allowedRoles || [];
+      const iChans = perms.ignoredChannels || [];
+
+      const roleSelect = document.getElementById('perm-allowed-roles');
+      roleSelect.innerHTML = '';
+      guildRoles.forEach(r => {
+        const checked = aRoles.includes(r.id) ? 'checked' : '';
+        roleSelect.innerHTML += `
+          <label class="multi-select-item">
+            <input type="checkbox" value="${r.id}" ${checked}>
+            <span class="multi-select-label" style="color:${r.color}">${r.name}</span>
+          </label>
+        `;
+      });
+
+      const chanSelect = document.getElementById('perm-ignored-channels');
+      chanSelect.innerHTML = '';
+      guildChannels.forEach(c => {
+        const checked = iChans.includes(c.id) ? 'checked' : '';
+        chanSelect.innerHTML += `
+          <label class="multi-select-item">
+            <input type="checkbox" value="${c.id}" ${checked}>
+            <span class="multi-select-label">#${c.name}</span>
+          </label>
+        `;
+      });
+
+      document.getElementById('perm-modal').style.display = 'flex';
+    }
+
+    document.getElementById('perm-save-btn').addEventListener('click', async () => {
+      const roleSelect = document.getElementById('perm-allowed-roles');
+      const allowedRoles = Array.from(roleSelect.querySelectorAll('input:checked')).map(cb => cb.value);
+      
+      const chanSelect = document.getElementById('perm-ignored-channels');
+      const ignoredChannels = Array.from(chanSelect.querySelectorAll('input:checked')).map(cb => cb.value);
+      
+      await fetch(`/api/guilds/${currentGuildId}/command-permissions`, {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ 
+          commandName: editingCommand, 
+          allowedRoles, 
+          ignoredChannels,
+          enabled: (allCommandPermissions[editingCommand] || {}).enabled !== false
+        })
+      });
+      
+      if (!allCommandPermissions[editingCommand]) allCommandPermissions[editingCommand] = {};
+      allCommandPermissions[editingCommand].allowedRoles = allowedRoles;
+      allCommandPermissions[editingCommand].ignoredChannels = ignoredChannels;
+      
+      document.getElementById('perm-modal').style.display = 'none';
+    });
+
+    // Patch navClick to trigger loads
+    const originalNavClick = navClick;
+    navClick = function(el, pageName) {
+      originalNavClick(el, pageName);
+      if (pageName === 'logs') fetchLogs();
+      if (pageName === 'commands-dash') loadDashCommands();
+    };
+  </script>
+
+  <div id="global-toast">
+    <span id="toast-icon">✅</span>
+    <span id="toast-text">Success message</span>
+  </div>
+  
+  <script>
+    function openLeaderboard() {
+      if (currentGuildId) {
+        window.open('../leaderboard.html?guild=' + currentGuildId, '_blank');
+      } else {
+        showToast('Please select a server first.', 'warning');
+      }
+    }
+
+    // --- EDIT / UPDATE UI WORKFLOW ---
+    function showToast(msg, type = 'success') {
+      const toast = document.getElementById('global-toast');
+      const icon = document.getElementById('toast-icon');
+      const text = document.getElementById('toast-text');
+      
+      toast.className = 'show ' + type;
+      text.innerText = msg;
+      
+      if (type === 'success') icon.innerText = '✅';
+      else if (type === 'error') icon.innerText = '❌';
+      else if (type === 'warning') icon.innerText = '⚠️';
+      
+      setTimeout(() => toast.classList.remove('show'), 4000);
+    }
+
+    // Override the floating banner logic
+    document.querySelectorAll('.floating-save-banner, #floating-save-banner').forEach(el => el.remove());
+    
+    // Original saveSettings refactored to return success state
+    saveSettings = async function(container, inputs, updateBtn, editBtn) {
+      updateBtn.innerText = 'Saving...';
+      const payload = {
+        welcomeChannel: document.getElementById('select-welcome').value,
+        levelChannel: document.getElementById('select-level').value,
+        logChannel: document.getElementById('select-log').value,
+      };
+
+      if (currentSettingsModule === 'Leveling') {
+        payload.xpSettings = {
+          ...guildSettings.xpSettings,
+          minXp: parseInt(document.getElementById('xp-min').value) || 15,
+          maxXp: parseInt(document.getElementById('xp-max').value) || 25,
+          cooldown: parseInt(document.getElementById('xp-cooldown').value) || 60,
+          levelUpMessages: document.getElementById('xp-level-msgs').value.split('\\n').map(l => l.trim()).filter(l => l.length > 0)
+        };
+      } else if (currentSettingsModule === 'Economy') {
+        payload.economySettings = {
+          ...guildSettings.economySettings,
+          currencySymbol: document.getElementById('econ-symbol').value || '🪙',
+          startingBalance: parseInt(document.getElementById('econ-start').value) || 500,
+          dailyReward: parseInt(document.getElementById('econ-daily').value) || 100
+        };
+      } else if (currentSettingsModule === 'Moderation') {
+        payload.automodSettings = {
+          ...guildSettings.automodSettings,
+          antiSpam: document.getElementById('automod-spam').checked,
+          antiScamLinks: document.getElementById('automod-scam').checked,
+          filterWords: document.getElementById('automod-words').value.split(',').map(w => w.trim()).filter(w => w.length > 0)
+        };
+      } else if (currentSettingsModule === 'Welcome') {
+        payload.welcomeSettings = {
+          ...guildSettings.welcomeSettings,
+          joinMessage: document.getElementById('welcome-msg').value,
+          leaveMessage: document.getElementById('leave-msg').value,
+          joinBannerUrl: document.getElementById('welcome-banner').value,
+          leaveBannerUrl: document.getElementById('leave-banner').value
+        };
+        payload.autoRoles = {
+          ...guildSettings.autoRoles,
+          joinRole: document.getElementById('select-autorole').value
+        };
+      } else if (currentSettingsModule === 'AI') {
+        payload.aiSettings = {
+          ...guildSettings.aiSettings,
+          channelId: document.getElementById('ai-channel').value,
+          systemInstruction: document.getElementById('ai-instruction').value
+        };
+      } else if (currentSettingsModule === 'Tickets') {
+        payload.ticketSettings = {
+          ...guildSettings.ticketSettings,
+          staffRoleId: document.getElementById('ticket-staff').value
+        };
+      }
+
+      try {
+        const res = await fetch(`/api/guilds/${currentGuildId}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          guildSettings = data.settings;
+          showToast('Updated successfully!', 'success');
+          inputs.forEach(input => input.disabled = true);
+          updateBtn.style.display = 'none';
+          editBtn.style.display = 'inline-flex';
+        } else {
+          showToast(data.error || 'Failed to update.', 'error');
+          // Leave fields enabled so user can fix
+        }
+      } catch (err) {
+        showToast('Network error while saving.', 'error');
+      }
+      updateBtn.innerText = 'Update';
+    };
+    
+    saveGeneralSettings = async function(container, inputs, updateBtn, editBtn) {
+        updateBtn.innerText = 'Saving...';
+        const rolesEl = document.getElementById('bot-manager-roles');
+        const managerRoles = Array.from(rolesEl.querySelectorAll('input:checked')).map(cb => cb.value);
+
+        const payload = {
+          prefix: document.getElementById('bot-prefix').value || '/',
+          nickname: document.getElementById('bot-nickname').value || '',
+          timezone: document.getElementById('bot-timezone').value || 'UTC',
+          managerRoles: managerRoles
+        };
+        
+        try {
+          const res = await fetch(`/api/guilds/${currentGuildId}`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          
+          if (data.success) {
+            guildSettings = data.settings;
+            showToast('Updated successfully!', 'success');
+            inputs.forEach(input => input.disabled = true);
+            updateBtn.style.display = 'none';
+            editBtn.style.display = 'inline-flex';
+          } else {
+            showToast(data.error || 'Update failed.', 'error');
+          }
+        } catch (err) {
+          showToast('Network error while saving.', 'error');
+        }
+        updateBtn.innerText = 'Update';
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // Apply Edit/Update workflow to standard forms
+      const updatableSections = [
+        '#tab-general', '#mod-settings-Leveling', '#mod-settings-Moderation', 
+        '#mod-settings-Welcome', '#mod-settings-Economy', '#mod-settings-AI', '#mod-settings-Tickets'
+      ];
+      
+      updatableSections.forEach(selector => {
+         const container = document.querySelector(selector);
+         if (!container) return;
+         
+         const inputs = container.querySelectorAll('input, select, textarea');
+         if (inputs.length === 0) return;
+         
+         const btnDiv = document.createElement('div');
+         btnDiv.className = 'edit-actions';
+         btnDiv.style.cssText = 'margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end; border-top: 1px solid var(--border); padding-top: 16px;';
+         btnDiv.innerHTML = `
+           <button class="btn btn-gray btn-sm edit-btn">✏️ Edit</button>
+           <button class="btn btn-accent btn-sm update-btn" style="display:none;">💾 Update</button>
+         `;
+         container.appendChild(btnDiv);
+         
+         // Disable all inputs initially
+         inputs.forEach(input => input.disabled = true);
+         
+         const editBtn = btnDiv.querySelector('.edit-btn');
+         const updateBtn = btnDiv.querySelector('.update-btn');
+         
+         let initialState = {};
+         
+         editBtn.addEventListener('click', () => {
+           inputs.forEach(input => {
+              input.disabled = false;
+              initialState[input.id || input.name || Math.random()] = input.type === 'checkbox' ? input.checked : input.value;
+           });
+           editBtn.style.display = 'none';
+           updateBtn.style.display = 'inline-flex';
+         });
+         
+         updateBtn.addEventListener('click', async () => {
+           let hasChanges = false;
+           inputs.forEach(input => {
+              const current = input.type === 'checkbox' ? input.checked : input.value;
+              if (current !== initialState[input.id || input.name || Math.random()]) hasChanges = true;
+           });
+           
+           if (!hasChanges) {
+             showToast('No changes made.', 'warning');
+             inputs.forEach(input => input.disabled = true);
+             updateBtn.style.display = 'none';
+             editBtn.style.display = 'inline-flex';
+             return;
+           }
+           
+           if (selector === '#tab-general') {
+               await saveGeneralSettings(container, inputs, updateBtn, editBtn);
+           } else {
+               await saveSettings(container, inputs, updateBtn, editBtn);
+           }
+         });
+      });
+    });
+  </script>
+<script>
+    // Smart login button script - instantly updates buttons if user is already logged in
+    fetch('/api/auth/status')
+      .then(res => res.json())
+      .then(data => {
+        if (data.loggedIn) {
+          document.querySelectorAll('.login-btn').forEach(link => {
+            link.href = '/dashboard.html';
+            link.innerHTML = 'Go to Dashboard';
+          });
+        }
+      })
+      .catch(() => {});
+  </script>
+</body>
+</html>
+

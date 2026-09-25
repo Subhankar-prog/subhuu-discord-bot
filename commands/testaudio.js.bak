@@ -1,0 +1,58 @@
+const { SlashCommandBuilder, AttachmentBuilder } = require('discord.js');
+const ffmpeg = require('@ffmpeg-installer/ffmpeg');
+const child_process = require('child_process');
+const path = require('path');
+const fs = require('fs');
+const { YtDlpPlugin } = require('@distube/yt-dlp');
+
+module.exports = {
+  data: new SlashCommandBuilder()
+    .setName('testaudio')
+    .setDescription('Debug command to test if Render can download audio.'),
+  
+  async execute(interaction, client) {
+    await interaction.deferReply();
+    
+    try {
+      const plugin = new YtDlpPlugin({ update: false });
+      await interaction.editReply('1. Resolving song via yt-dlp...');
+      // We search for a reliable small clip
+      const song = await plugin.resolve('https://www.youtube.com/watch?v=BaW_vrWEBtc'); 
+      const streamUrl = await plugin.getStreamURL(song);
+      
+      await interaction.editReply(`2. Stream URL acquired! Testing FFmpeg download...`);
+      
+      const filepath = path.join(__dirname, '..', `test-${Date.now()}.mp3`);
+      
+      const args = [
+        '-y', 
+        '-i', streamUrl, 
+        '-t', '5', // only 5 seconds
+        '-f', 'mp3', 
+        filepath
+      ];
+      
+      const process = child_process.spawn(ffmpeg.path, args);
+      let stderrLog = '';
+      
+      process.stderr.on('data', data => {
+        stderrLog += data.toString();
+      });
+      
+      process.on('close', async (code) => {
+        if (code !== 0 || !fs.existsSync(filepath) || fs.statSync(filepath).size === 0) {
+          const log = stderrLog.slice(-1500);
+          return interaction.editReply(`❌ FFmpeg crashed with code ${code}.\n**Logs:**\n\`\`\`\n${log}\n\`\`\``);
+        }
+        
+        const attachment = new AttachmentBuilder(filepath, { name: 'test-audio.mp3' });
+        await interaction.editReply({ content: '✅ FFmpeg successfully downloaded and converted the audio! This proves the issue is UDP/Voice connection, NOT YouTube or FFmpeg!', files: [attachment] });
+        
+        fs.unlinkSync(filepath);
+      });
+      
+    } catch (e) {
+      await interaction.editReply(`❌ Plugin/Network Error: ${e.message}`);
+    }
+  }
+};
