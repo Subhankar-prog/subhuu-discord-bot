@@ -115,6 +115,15 @@ module.exports = function startAdminPanel(client) {
     res.json({ loggedIn: !!token });
   });
 
+  app.get('/api/auth/debug', (req, res) => {
+    res.json({
+      isReady: client.isReady(),
+      wsStatus: client.ws.status,
+      user: client.user ? client.user.tag : null,
+      uptime: client.uptime
+    });
+  });
+
   // --- PUBLIC API ---
   app.get('/api/guilds/:id/leaderboard', async (req, res) => {
     try {
