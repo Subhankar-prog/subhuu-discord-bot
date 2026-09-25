@@ -434,4 +434,10 @@ setInterval(() => {
   fetch(RENDER_URL).catch(() => { });
 }, 14 * 60 * 1000);
 
+
+// Start Web Admin Panel IMMEDIATELY before logging in so Render detects the port instantly
+const startAdminPanel = require('./utils/adminPanel');
+startAdminPanel(client);
+
 client.login(process.env.DISCORD_TOKEN);
+

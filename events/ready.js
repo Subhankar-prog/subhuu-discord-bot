@@ -1,4 +1,4 @@
-const startAdminPanel = require('../utils/adminPanel');
+// const startAdminPanel = require('../utils/adminPanel');
 
 module.exports = {
   name: 'ready', // Fixed from clientReady to ready
@@ -8,7 +8,7 @@ module.exports = {
     client.user.setActivity('/play a song');
     
     // Start Web Admin Panel
-    startAdminPanel(client);
+    // startAdminPanel(client);
 
     // Start checking for scheduled reminders
     const reminderManager = require('../utils/reminderManager');
