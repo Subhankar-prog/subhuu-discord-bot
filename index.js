@@ -467,10 +467,35 @@ setInterval(() => {
 const startAdminPanel = require('./utils/adminPanel');
 startAdminPanel(client);
 
-client.login(process.env.DISCORD_TOKEN).catch(err => {
-  console.error('[FATAL] Discord Login Failed:', err);
-  if (global.discordDebugLogs) {
-    global.discordDebugLogs.push(`[FATAL] Login Failed: ${err.message}`);
+// Network diagnostic: test if we can reach Discord at all before trying to login
+(async () => {
+  try {
+    console.log('[Network] Testing Discord API connectivity...');
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    const testRes = await fetch('https://discord.com/api/v10/gateway', { signal: controller.signal });
+    clearTimeout(timeout);
+    const gatewayData = await testRes.json();
+    console.log('[Network] Discord API reachable! Gateway:', JSON.stringify(gatewayData));
+    if (global.discordDebugLogs) {
+      global.discordDebugLogs.push(`[Network] Discord reachable: ${JSON.stringify(gatewayData)}`);
+    }
+  } catch (err) {
+    console.error('[Network] Discord API UNREACHABLE:', err.message);
+    if (global.discordDebugLogs) {
+      global.discordDebugLogs.push(`[Network] UNREACHABLE: ${err.message}`);
+    }
   }
-});
 
+  // Now attempt login
+  try {
+    console.log('[Bot] Attempting Discord login...');
+    await client.login(process.env.DISCORD_TOKEN);
+    console.log('[Bot] Login successful!');
+  } catch (err) {
+    console.error('[FATAL] Discord Login Failed:', err.message);
+    if (global.discordDebugLogs) {
+      global.discordDebugLogs.push(`[FATAL] Login Failed: ${err.message}`);
+    }
+  }
+})();
