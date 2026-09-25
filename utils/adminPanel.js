@@ -211,6 +211,12 @@ module.exports = function startAdminPanel(client) {
   // Get user profile + manageable guilds
   app.get('/api/user/guilds', requireDiscordAuth, async (req, res) => {
     try {
+      // If the bot hasn't finished logging in yet (e.g. Render just woke up), wait for it!
+      if (!client.isReady()) {
+        console.log('[Web] Waiting for Discord client to log in before serving guilds...');
+        await new Promise(resolve => client.once('ready', resolve));
+      }
+
       // Use cached user info if available
       const cached = userInfoCache.get(req.token);
       let userData;
