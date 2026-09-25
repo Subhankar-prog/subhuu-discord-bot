@@ -1324,8 +1324,13 @@
     if (urlParams.get('loggedin') === 'true') window.history.replaceState({}, '', '/dashboard.html');
 
     fetch('/api/user/guilds')
-      .then(res => {
+      .then(async res => {
         if (res.status === 401) { window.location.href = '/api/auth/login'; return; }
+        if (res.status === 503 || !res.ok) {
+          const body = await res.json().catch(() => ({ error: 'Unknown server error.' }));
+          document.getElementById('server-grid').innerHTML = `<div style="grid-column: 1 / -1; padding: 40px; text-align: center; background: rgba(244, 63, 94, 0.1); border: 1px solid var(--red); border-radius: 12px;"><h3 style="color: var(--red); margin-bottom: 12px;">Connection Timeout</h3><p style="color: #fff;">${body.error || 'Server is taking too long to respond. Please refresh.'}</p></div>`;
+          return null;
+        }
         return res.json();
       })
       .then(data => {

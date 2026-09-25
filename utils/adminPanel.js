@@ -214,7 +214,15 @@ module.exports = function startAdminPanel(client) {
       // If the bot hasn't finished logging in yet (e.g. Render just woke up), wait for it!
       if (!client.isReady()) {
         console.log('[Web] Waiting for Discord client to log in before serving guilds...');
-        await new Promise(resolve => client.once('ready', resolve));
+        try {
+          await Promise.race([
+            new Promise(resolve => client.once('ready', resolve)),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 10000))
+          ]);
+        } catch (err) {
+          console.error('[Web] Timed out waiting for client to become ready.');
+          return res.status(503).json({ error: 'The bot is taking unusually long to start up, possibly due to Discord rate limits. Please wait a minute and refresh the page.' });
+        }
       }
 
       // Use cached user info if available
