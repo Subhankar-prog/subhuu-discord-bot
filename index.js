@@ -469,8 +469,8 @@ startAdminPanel(client);
 
 // Login with exponential backoff to avoid extending Cloudflare's IP rate-limit ban
 (async () => {
-  const MAX_RETRIES = 10;
-  let delay = 30000; // Start with 30 seconds
+  const MAX_RETRIES = 999; // Keep retrying for hours until Cloudflare ban lifts
+  let delay = 30000; // Start with 30 seconds, caps at 10 minutes
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
@@ -493,7 +493,7 @@ startAdminPanel(client);
           global.discordDebugLogs.push(`[Bot] 429 rate-limited. Waiting ${waitTime / 1000}s...`);
         }
         await new Promise(r => setTimeout(r, waitTime));
-        delay = Math.min(delay * 2, 300000); // Double delay, max 5 minutes
+        delay = Math.min(delay * 2, 600000); // Double delay, max 10 minutes
         continue;
       }
 
@@ -522,7 +522,7 @@ startAdminPanel(client);
           global.discordDebugLogs.push(`[Bot] Retrying in ${delay / 1000}s...`);
         }
         await new Promise(r => setTimeout(r, delay));
-        delay = Math.min(delay * 2, 300000);
+        delay = Math.min(delay * 2, 600000);
       }
     }
   }
